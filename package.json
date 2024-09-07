@@ -26,5 +26,11 @@
     "tsup": "^8.2.4",
     "typescript": "^5.5.4"
   },
+<<<<<<< HEAD
   "dependencies": {}
+=======
+  "dependencies": {
+    
+  }
+>>>>>>> 67ff798917246036a5b56932b6ae1abaad403d6b
 }
