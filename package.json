@@ -1,0 +1,32 @@
+{
+  "name": "@mr-mkz/http-router",
+  "version": "0.0.1",
+  "description": "A http router who tries to be simple and powerfull.",
+  "author": "Mr.MKZ",
+  "license": "ISC",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "dev-server": "nodemon tests/index.ts",
+    "build": "tsup",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.1.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@mr-mkz/http-router": "file:../../../../home/mr-mkz/mr-mkz-http-router-0.0.1.tgz"
+  }
+}
