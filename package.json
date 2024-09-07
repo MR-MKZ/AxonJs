@@ -26,7 +26,5 @@
     "tsup": "^8.2.4",
     "typescript": "^5.5.4"
   },
-  "dependencies": {
-    "@mr-mkz/http-router": "file:../../../../home/mr-mkz/mr-mkz-http-router-0.0.1.tgz"
-  }
+  "dependencies": {}
 }
