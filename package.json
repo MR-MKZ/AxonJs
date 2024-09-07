@@ -4,6 +4,27 @@
   "description": "A http router who tries to be simple and powerfull.",
   "author": "Mr.MKZ",
   "license": "ISC",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mr-MKZ/AxonJs.git"
+  },
+  "keywords": [
+    "http-router",
+    "http",
+    "backend",
+    "nodejs",
+    "javascript",
+    "npm",
+    "restapi",
+    "rest-api"
+  ],
+  "bugs": {
+    "url": "https://github.com/Mr-MKZ/AxonJs/issues"
+  },
+  "homepage": "https://github.com/Mr-MKZ/AxonJs#readme",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -25,6 +46,5 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.2.4",
     "typescript": "^5.5.4"
-  },
-  "dependencies": {}
+  }
 }
