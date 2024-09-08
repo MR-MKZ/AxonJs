@@ -2,14 +2,14 @@
  * Javascript simple example with controller return code completion.
  */
 
-import { HttpRouterCore, Router } from "@mr-mkz/http-router";
+import { HttpRouterCore, Router } from "../src";
 
 const core = new HttpRouterCore();
 
 const router = new Router();
 
 /**
- * @returns {import("@mr-mkz/http-router").JsonResponse}
+ * @returns {import("../src").JsonResponse}
  */
 const controller = async () => {
     return {

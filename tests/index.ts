@@ -2,7 +2,7 @@
  * Typescript simple example
  */
 
-import { HttpRouterCore, Router } from "@mr-mkz/http-router";
+import { HttpRouterCore, Router } from "../src";
 
 const core = new HttpRouterCore()
 
