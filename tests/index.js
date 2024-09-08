@@ -6,7 +6,15 @@ import { HttpRouterCore, Router } from "../src";
 
 const core = new HttpRouterCore();
 
-const router = new Router();
+/**
+ * @type {import("../src").AxonCoreConfig}
+ */
+core.loadConfig({
+    DEBUG: true
+})
+
+const router = Router();
+const router2 = Router();
 
 /**
  * @returns {import("../src").JsonResponse}
@@ -20,10 +28,14 @@ const controller = async () => {
     }
 }
 
-router.get('/', controller)
+router.get('/', controller);
 
-core.loadRoute(router)
+router2.get('/hello', controller);
 
-core.listen(8000, () => {
+// second parameter is route prefix which for example change your route from /hello to /api/v1/hello. (Route prefix is optional)
+core.loadRoute(router, '/api/v1')
+core.loadRoute(router2)
+
+core.listen(8000, "127.0.0.1", () => {
     console.log("Listening on port 8000 ...");
 })

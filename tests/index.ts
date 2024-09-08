@@ -2,23 +2,19 @@
  * Typescript simple example
  */
 
-import { HttpRouterCore, Router } from "../src";
+import { HttpRouterCore } from "../src";
+import { v1Routes } from "./routes/v1";
+import { v2Routes } from "./routes/v2";
 
 const core = new HttpRouterCore()
 
-const router = new Router();
-
-router.get('/', async () => {
-    return {
-        body: {
-            message: "Hello, World"
-        },
-        responseCode: 200
-    }
+core.loadConfig({
+    DEBUG: true
 })
 
-core.loadRoute(router)
+core.loadRoute(v1Routes)
+core.loadRoute(v2Routes, "/api/v1")
 
-core.listen(8000, () => {
+core.listen(8000, "127.0.0.1", () => {
     console.log("Listening on port 8000");
 })

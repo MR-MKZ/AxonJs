@@ -12,7 +12,7 @@ const duplicateError = (path: string) => {
     })
 }
 
-class Router {
+class AxonRouter {
     private routes: HttpMethods;
 
     constructor() {
@@ -144,4 +144,4 @@ class Router {
     }
 }
 
-export default Router;
+export default AxonRouter;

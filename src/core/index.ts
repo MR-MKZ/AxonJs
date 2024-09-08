@@ -2,9 +2,13 @@ import Router from "../Router";
 import { HttpMethods, JsonResponse, CoreReq } from "../types"
 import * as http from "http";
 import { routeDuplicateException } from "./CoreExceptions";
+import addRoutePrefix from "./utils/routePrefixHandler";
+import { AxonCoreConfig } from "./coreTypes";
+import { logger } from "./utils/coreLogger";
 
 export default class HttpRouterCore {
     private routes: HttpMethods;
+    private config: AxonCoreConfig;
 
     constructor() {
         this.routes = {
@@ -15,19 +19,48 @@ export default class HttpRouterCore {
             DELETE: {},
             OPTIONS: {}
         }
+
+        this.config = {
+            DEBUG: false
+        };
+    }
+
+    /**
+     * A method to config core as you want
+     * 
+     * If you want to config the core, use this method before all other methods.
+     * @param config core config object
+     */
+    loadConfig(config: AxonCoreConfig) {
+        this.config.DEBUG = config.DEBUG || false
+
+        if (this.config.DEBUG) {
+            logger.level = "debug"
+        }
     }
 
     /**
      * loads created routes
      * @param router instance of Router which routes setted with it.
      */
-    async loadRoute(router: Router) {
+    async loadRoute(router: Router, prefix?: string) {
         let routerRoutes: HttpMethods = router.exportRoutes();
 
         (Object.keys(routerRoutes) as Array<keyof HttpMethods>).forEach((method) => {
             Object.keys(routerRoutes[method]).forEach((route) => {
                 if (!this.routes[method][route]) {
-                    this.routes[method][route] = routerRoutes[method][route]
+                    const originalRoute = route
+
+                    if (prefix) {
+                        route = addRoutePrefix(route, prefix)
+                    }
+
+                    if (route[0] !== "/")
+                        route = `/${route}`
+
+                    this.routes[method][route] = routerRoutes[method][originalRoute]
+
+                    logger.debug(`loaded route ${method} ${route}`)
                 } else {
                     routeDuplicateException(method, route)
                 }
@@ -109,7 +142,7 @@ export default class HttpRouterCore {
      * @param port server port
      * @param callback a function to run after starting to listen
      */
-    async listen(port: number, callback: () => void) {
+    async listen(port: number, host: string, callback: () => void) {
         const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
             let requestBody: string = "";
 
@@ -118,11 +151,17 @@ export default class HttpRouterCore {
             })
 
             req.on('end', () => {
+                logger.debug(JSON.parse(requestBody), "request body")
                 this.#handleRequest({ http: req, body: requestBody }, res)
             })
         })
 
-        server.listen(port, callback)
+        server.listen(port, host, callback)
+
+        server.on('error', (e) => {
+            logger.error(e, `starting server failed`)
+            process.exit(-1)
+        });
     }
 
 }

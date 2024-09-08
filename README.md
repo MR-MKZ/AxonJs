@@ -59,7 +59,7 @@ Install Axon.js with npm
 - Support middlewares.
 - Some changes in response structure.
 - Response meta generator.
-- Logger system.
+- Logger system. [In Progress]
 - Auto error detector (maybe)
 - Default schemas.
 - Default database connection methods.
@@ -74,8 +74,14 @@ import { HttpRouterCore, Router } from "@mr-mkz/axon";
 
 // Axon core instance
 const core = new HttpRouterCore();
-// Router instance
-const router = new Router();
+
+// configuring core (not completed)
+core.loadConfig({
+    DEBUG: true
+})
+
+// Router instance function
+const router = Router();
 
 // route with method GET.
 // all methods: [get, post, put, patch, delete, options]
@@ -91,8 +97,11 @@ router.get('/', async () => {
 // Giving routes to Axon core
 core.loadRoute(router)
 
+// Giving routes to Axon core with prefix
+core.loadRoute(router, "/api/v1")
+
 // Starting server
-core.listen(8000, () => {
+core.listen(8000, "127.0.0.1", () => {
     console.log("Listening on port 8000...")
 })
 ```

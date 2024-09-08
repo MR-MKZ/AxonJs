@@ -1,7 +1,7 @@
 import * as http from "http";
 
 interface Route {
-    controller: () => Promise<JsonResponse>
+    controller: () => Promise<JsonResponse>;
 }
 
 interface Routes {
