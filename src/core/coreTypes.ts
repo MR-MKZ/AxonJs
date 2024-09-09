@@ -1,5 +1,7 @@
 interface AxonCoreConfig {
-    DEBUG?: boolean
+    DEBUG?: boolean;
+    LOGGER?: boolean;
+    LOGGER_VERBOSE?: boolean;
 }
 
 export {

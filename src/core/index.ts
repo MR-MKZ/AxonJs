@@ -5,10 +5,14 @@ import { routeDuplicateException } from "./CoreExceptions";
 import addRoutePrefix from "./utils/routePrefixHandler";
 import { AxonCoreConfig } from "./coreTypes";
 import { logger } from "./utils/coreLogger";
+import { colors } from "@spacingbat3/kolor"
+import getRequestBody from "./utils/getRequestBody";
 
-export default class HttpRouterCore {
+export default class AxonCore {
     private routes: HttpMethods;
     private config: AxonCoreConfig;
+    private configsLoaded: boolean;
+    private routesLoaded: boolean;
 
     constructor() {
         this.routes = {
@@ -21,8 +25,13 @@ export default class HttpRouterCore {
         }
 
         this.config = {
-            DEBUG: false
+            DEBUG: false,
+            LOGGER: true,
+            LOGGER_VERBOSE: false
         };
+
+        this.configsLoaded = false;
+        this.routesLoaded = false;
     }
 
     /**
@@ -33,10 +42,14 @@ export default class HttpRouterCore {
      */
     loadConfig(config: AxonCoreConfig) {
         this.config.DEBUG = config.DEBUG || false
+        this.config.LOGGER = config.LOGGER || true
+        this.config.LOGGER_VERBOSE = config.LOGGER_VERBOSE || false
 
         if (this.config.DEBUG) {
             logger.level = "debug"
         }
+
+        this.configsLoaded = true;
     }
 
     /**
@@ -66,6 +79,8 @@ export default class HttpRouterCore {
                 }
             })
         })
+
+        this.routesLoaded = true;
     }
 
     /**
@@ -74,14 +89,25 @@ export default class HttpRouterCore {
      * @param res server response
      * @returns 
      */
-    async #handleRequest(req: CoreReq, res: http.ServerResponse) {
-        console.log(req.http.url, req.http.method, req.http.headers);
+    async #handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
+        // log incoming requests
+        if (this.config.LOGGER_VERBOSE) {
+            logger.request({
+                ip: req.socket.remoteAddress,
+                url: req.url,
+                method: req.method,
+                headers: req.headers,
+                body: req.body
+            }, "new http request")
+        } else {
+            logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} - ${req.headers["user-agent"]}`)
+        }
 
-        if (req.http.method && !Object.keys(this.routes).includes(req.http.method)) {
+        if (req.method && !Object.keys(this.routes).includes(req.method)) {
             res.statusCode = 405
 
             res.write(JSON.stringify({
-                msg: `Method ${req.http.method} not allowed`
+                msg: `Method ${req.method} not allowed`
             }));
 
             return res.end();
@@ -90,10 +116,10 @@ export default class HttpRouterCore {
         let controller: JsonResponse;
 
         (Object.keys(this.routes) as Array<keyof HttpMethods>).forEach(async (method) => {
-            if (method == req.http.method) {
-                if (req.http.url) {
+            if (method == req.method) {
+                if (req.url) {
                     try {
-                        controller = await this.routes[method][req.http.url]["controller"]()
+                        controller = await this.routes[method][req.url]["controller"]()
 
                         if (controller.responseMessage) {
                             res.statusMessage = controller.responseMessage
@@ -133,28 +159,47 @@ export default class HttpRouterCore {
         })
     }
 
-    async #responseHandler(req: CoreReq, res: http.ServerResponse) {
+    async #responseHandler(req: CoreReq, res: http.ServerResponse) { }
 
-    }
 
     /**
      * Start listening to http incoming requests
-     * @param port server port
-     * @param callback a function to run after starting to listen
+     * @param {string} host server host address
+     * @param {number} port server port
+     * @param {Function} [callback] callback a function to run after starting to listen
      */
-    async listen(port: number, host: string, callback: () => void) {
-        const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
-            let requestBody: string = "";
+    async listen(host: string, port: number, callback?: () => void) {
 
-            req.on('data', (chunk: string) => {
-                requestBody += chunk
-            })
+        // Wait until some necessary items are loaded before starting the server
+        const corePreloader = async (): Promise<void> => {
+            return new Promise((resolve) => {
+                const interval = setInterval(() => {
+                    if (this.routesLoaded && this.configsLoaded) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 100);
+            });
+        };
 
-            req.on('end', () => {
-                logger.debug(JSON.parse(requestBody), "request body")
-                this.#handleRequest({ http: req, body: requestBody }, res)
-            })
+        // Wait for necessary items to be loaded
+        await corePreloader();
+
+        const server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
+            try {
+                await getRequestBody(req)
+
+                this.#handleRequest(req, res)
+            } catch (error) {
+                logger.error(error, "Unexpected core error")
+            }
         })
+
+        if (!callback) {
+            callback = () => {
+                logger.core(colors.whiteBright(`server started on ${host}:${port}`))
+            }
+        }
 
         server.listen(port, host, callback)
 
@@ -163,5 +208,4 @@ export default class HttpRouterCore {
             process.exit(-1)
         });
     }
-
 }

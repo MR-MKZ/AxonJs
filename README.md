@@ -50,6 +50,8 @@ Install Axon.js with npm
 - Simple routing system
 - Support methods: GET, POST, PUT, PATCH, DELETE, OPTIONS. more methods soon...
 - Flexible routing system. (You can define routes in another files and then add them to core)
+- Default core logger (still developing)
+- Configurable core
 
 **More features soon...**
 
@@ -70,14 +72,16 @@ Currently Axon has a main core and a router class which you can make instance fr
 
 Example:
 ```js
-import { HttpRouterCore, Router } from "@mr-mkz/axon";
+import { AxonCore, Router } from "@mr-mkz/axon";
 
 // Axon core instance
-const core = new HttpRouterCore();
+const core = new AxonCore();
 
 // configuring core (not completed)
 core.loadConfig({
-    DEBUG: true
+    DEBUG: true,            // default false
+    LOGGER: true,           // default true
+    LOGGER_VERBOSE: false   // default false
 })
 
 // Router instance function
@@ -101,7 +105,9 @@ core.loadRoute(router)
 core.loadRoute(router, "/api/v1")
 
 // Starting server
-core.listen(8000, "127.0.0.1", () => {
+// callback function is optional and core has default log message for on start event
+// core.listen("127.0.0.1", 8000)
+core.listen("127.0.0.1", 8000, () => {
     console.log("Listening on port 8000...")
 })
 ```

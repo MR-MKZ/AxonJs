@@ -2,15 +2,17 @@
  * Javascript simple example with controller return code completion.
  */
 
-import { HttpRouterCore, Router } from "../src";
+import { AxonCore, Router } from "../src";
 
-const core = new HttpRouterCore();
+const core = new AxonCore();
 
 /**
  * @type {import("../src").AxonCoreConfig}
  */
 core.loadConfig({
-    DEBUG: true
+    DEBUG: true,            // default false
+    LOGGER: true,           // default true
+    LOGGER_VERBOSE: false   // default false
 })
 
 const router = Router();
@@ -36,6 +38,5 @@ router2.get('/hello', controller);
 core.loadRoute(router, '/api/v1')
 core.loadRoute(router2)
 
-core.listen(8000, "127.0.0.1", () => {
-    console.log("Listening on port 8000 ...");
-})
+// callback function is optional and core has default log message for on start event
+core.listen("127.0.0.1", 8000)

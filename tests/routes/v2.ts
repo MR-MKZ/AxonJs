@@ -2,7 +2,7 @@ import { Router } from "../../src";
 
 const router = Router()
 
-router.get('hello', async () => {
+router.get('/hello', async () => {
     return {
         body: {
             message: "hello"
