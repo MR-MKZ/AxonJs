@@ -119,7 +119,7 @@ export default class AxonCore {
             if (method == req.method) {
                 if (req.url) {
                     try {
-                        controller = await this.routes[method][req.url]["controller"]()
+                        controller = await this.routes[method][req.url]["controller"](req, res)
 
                         if (controller.responseMessage) {
                             res.statusMessage = controller.responseMessage

@@ -1,5 +1,6 @@
 import RouterException from "../error/RouterException";
 import { HttpMethods, JsonResponse } from "../types";
+import * as http from "http";
 
 const duplicateError = (path: string) => {
     throw new RouterException({
@@ -38,7 +39,7 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    get(path: string, controller: () => Promise<JsonResponse>) {
+    get(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
         if (this.routes.GET[path]) {
             duplicateError(path)
         }
@@ -60,7 +61,7 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    post(path: string, controller: () => Promise<JsonResponse>) {
+    post(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
         if (this.routes.POST[path]) {
             duplicateError(path)
         }
@@ -78,7 +79,7 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    put(path: string, controller: () => Promise<JsonResponse>) {
+    put(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
         if (this.routes.PUT[path]) {
             duplicateError(path)
         }
@@ -95,7 +96,7 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    patch(path: string, controller: () => Promise<JsonResponse>) {
+    patch(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
         if (this.routes.PATCH[path]) {
             duplicateError(path)
         }
@@ -112,7 +113,7 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    delete(path: string, controller: () => Promise<JsonResponse>) {
+    delete(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
         if (this.routes.DELETE[path]) {
             duplicateError(path)
         }
@@ -129,7 +130,7 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    options(path: string, controller: () => Promise<JsonResponse>) {
+    options(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
         if (this.routes.OPTIONS[path]) {
             duplicateError(path)
         }

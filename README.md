@@ -70,6 +70,10 @@ Install Axon.js with npm
 
 Currently Axon has a main core and a router class which you can make instance from router class every where you want and then gave the router instance to core to load routes.
 
+More complete examples:
+- [Typescript Example](./tests/index.ts)
+- [Javascript Example](./tests/index.js)
+
 Example:
 ```js
 import { AxonCore, Router } from "@mr-mkz/axon";
@@ -89,7 +93,7 @@ const router = Router();
 
 // route with method GET.
 // all methods: [get, post, put, patch, delete, options]
-router.get('/', async () => {
+router.get('/', async (req, res) => {
     return {
         body: {},
         headers: {}, // optional
@@ -111,6 +115,68 @@ core.listen("127.0.0.1", 8000, () => {
     console.log("Listening on port 8000...")
 })
 ```
+
+### Router
+
+Router is stil under constructing and it's not a stable version yet but currently it support this methods:
+
+- GET
+- POST
+- PUT
+- PATCH
+- DELETE
+- OPTIONS
+
+You can access and create routes with just a few steps.
+
+1. creating a variable with a optional name and put `Router()` function in it.
+2. define your routes with methods which you want and controller.
+    - ```js
+        const router = Router()
+
+        router.get(path, controller(req, res))
+        ```
+3. load your routes in core with `loadRoute()` function;
+    - ```js
+        const core = new AxonCore();
+
+        core.loadRoute(router)
+4. Done, you created your routes successfully :D
+
+### Controller
+
+Controller is still under constructnig but currently it work like this:
+
+you have to pass your controller to your route, compute and do your jobs in controller and when you want to response to user (each response, error and success) you must return an object with type `JsonResponse`.
+
+```js
+import { JsonResponse } from "@mr-mkz/axon";
+
+/**
+ * Controller jsdoc (ts detect types automatically)
+ * @returns {JsonResponse}
+ */
+```
+
+Or
+
+```js
+/**
+ * Controller jsdoc (ts detect types automatically)
+ * @returns {import("@mr-mkz/axon").JsonResponse}
+ */
+```
+
+### Types
+
+AxonJs has some types which can help you in developing your applications for auto suggestions of your code editor.
+
+**Types detect automatically in Typescript but you need to set types for IDE suggestions in Javascript ([*Javascript Example*](./tests/index.js)).**
+
+- `JsonResponse`: Type of controller response object which must return to response the user request.
+- `AxonCoreConfig`: Type of core config object for configuration Axon core as you want.
+- `Request`: Type of controller request param. (IncomingMessage)
+- `Response`: Type of controller response param. (ServerResponse)
 
 ## Contributing
 

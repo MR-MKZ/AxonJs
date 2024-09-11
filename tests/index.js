@@ -19,9 +19,15 @@ const router = Router();
 const router2 = Router();
 
 /**
+ * 
+ * @param {import("../src").Request} req 
+ * @param {import("../src").Response} res 
  * @returns {import("../src").JsonResponse}
  */
-const controller = async () => {
+const controller = async (req, res) => {
+
+    console.log(req.url);    
+
     return {
         body: {
             message: "Hello, World"
