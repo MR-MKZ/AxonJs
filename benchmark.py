@@ -3,7 +3,7 @@ import time
 
 
 start_time = time.time()
-duration = 1
+duration = 10
 requests_count = 0
 response_time = []
 

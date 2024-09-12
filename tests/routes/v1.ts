@@ -2,13 +2,11 @@ import { Router } from "../../src";
 
 const router = Router();
 
-router.get('/', async (req, res) => {
-
-    console.log(req.url);
+router.get('/user/:name', async (req, res) => {
     
     return {
         body: {
-            message: "hello"
+            message: `Hello ${req.params.name}`
         },
         responseCode: 200
     }

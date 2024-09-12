@@ -1,7 +1,8 @@
-import * as http from "http";
+import { Request, Response, Headers } from ".";
 
 interface Route {
-    controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>;
+    controller: (req: Request, res: Response) => Promise<JsonResponse>;
+    middlewares?: Array<(req: Request, res: Response) => void>;
 }
 
 interface Routes {
@@ -19,19 +20,9 @@ export type HttpMethods = {
 
 export type JsonResponse = {
     body: object;
-    headers?: http.OutgoingHttpHeaders;
+    headers?: Headers;
     responseCode: number;
     responseMessage?: string;
-}
-
-export type CoreReq = {
-    http: http.IncomingMessage,
-    body: string
-}
-
-export type CoreRes = {
-    http: http.ServerResponse,
-    status: () => void, 
 }
 
 export interface ExceptionMeta {

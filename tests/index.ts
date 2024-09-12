@@ -11,7 +11,10 @@ const core = new AxonCore()
 core.loadConfig({
     DEBUG: true,            // default false
     LOGGER: true,           // default true
-    LOGGER_VERBOSE: false   // default false
+    LOGGER_VERBOSE: false,  // default false
+    RESPONSE_MESSAGES: {
+        notFound: "route not found"
+    }
 })
 
 core.loadRoute(v1Routes)

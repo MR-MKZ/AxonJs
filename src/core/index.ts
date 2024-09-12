@@ -1,5 +1,5 @@
 import Router from "../Router";
-import { HttpMethods, JsonResponse, CoreReq } from "../types"
+import { HttpMethods, JsonResponse } from "../types"
 import * as http from "http";
 import { routeDuplicateException } from "./CoreExceptions";
 import addRoutePrefix from "./utils/routePrefixHandler";
@@ -7,11 +7,20 @@ import { AxonCoreConfig } from "./coreTypes";
 import { logger } from "./utils/coreLogger";
 import { colors } from "@spacingbat3/kolor"
 import getRequestBody from "./utils/getRequestBody";
+import { Key, pathToRegexp, Keys } from "path-to-regexp";
+import { Request, Response, Headers } from "..";
+
+const defaultResponses = {
+    notFound: "Not found",
+    serverError: "Internal server error",
+    methodNotAllowed: "Method not allowed"
+}
 
 export default class AxonCore {
     private routes: HttpMethods;
     private config: AxonCoreConfig;
     private configsLoaded: boolean;
+    private passConfig: boolean;
     private routesLoaded: boolean;
 
     constructor() {
@@ -27,10 +36,12 @@ export default class AxonCore {
         this.config = {
             DEBUG: false,
             LOGGER: true,
-            LOGGER_VERBOSE: false
+            LOGGER_VERBOSE: false,
+            RESPONSE_MESSAGES: defaultResponses
         };
 
         this.configsLoaded = false;
+        this.passConfig = true;
         this.routesLoaded = false;
     }
 
@@ -41,9 +52,11 @@ export default class AxonCore {
      * @param config core config object
      */
     loadConfig(config: AxonCoreConfig) {
+        this.passConfig = false;
         this.config.DEBUG = config.DEBUG || false
         this.config.LOGGER = config.LOGGER || true
         this.config.LOGGER_VERBOSE = config.LOGGER_VERBOSE || false
+        this.config.RESPONSE_MESSAGES = { ...config.RESPONSE_MESSAGES }
 
         if (this.config.DEBUG) {
             logger.level = "debug"
@@ -89,7 +102,7 @@ export default class AxonCore {
      * @param res server response
      * @returns 
      */
-    async #handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
+    async #handleRequest(req: Request, res: Response) {
         // log incoming requests
         if (this.config.LOGGER_VERBOSE) {
             logger.request({
@@ -107,7 +120,7 @@ export default class AxonCore {
             res.statusCode = 405
 
             res.write(JSON.stringify({
-                msg: `Method ${req.method} not allowed`
+                message: this.config.RESPONSE_MESSAGES?.methodNotAllowed || defaultResponses.methodNotAllowed
             }));
 
             return res.end();
@@ -118,49 +131,92 @@ export default class AxonCore {
         (Object.keys(this.routes) as Array<keyof HttpMethods>).forEach(async (method) => {
             if (method == req.method) {
                 if (req.url) {
-                    try {
-                        controller = await this.routes[method][req.url]["controller"](req, res)
 
-                        if (controller.responseMessage) {
-                            res.statusMessage = controller.responseMessage
-                        }
+                    let findedRoute = false;
 
-                        res.statusCode = controller.responseCode
-
-                        if (controller.headers) {
-                            for (const key in controller.headers) {
-                                if (controller.headers[key]) {
-                                    res.setHeader(key, controller.headers[key])
-                                }
-                            }
-                        }
-
-                        res.write(JSON.stringify(controller.body))
-
-                        return res.end()
-                    } catch (error) {
-                        if (error instanceof TypeError) {
-                            res.statusCode = 404
-                            res.write(JSON.stringify({
-                                message: "Not found"
-                            }))
-
-                            return res.end()
-                        }
-                        res.statusCode = 500
+                    if (Object.keys(this.routes[method]).length === 0) {
+                        res.statusCode = 404
                         res.write(JSON.stringify({
-                            message: "Internal Server Error"
+                            message: this.config.RESPONSE_MESSAGES?.notFound || defaultResponses.notFound
                         }))
 
                         return res.end()
                     }
+
+                    return Object.keys(this.routes[method]).forEach(async (route, index) => {
+                        let keys: Keys;
+                        const regexp = pathToRegexp(route);
+                        keys = regexp.keys
+                        const match: RegExpExecArray | null = regexp.regexp.exec(req.url as string);
+
+                        if (match) {
+                            try {
+                                if (!findedRoute) {
+                                    findedRoute = true
+
+                                    const params: Record<string, string | undefined> = {};
+
+                                    keys.forEach((key: Key, index: number) => {
+                                        params[key.name] = match[index + 1];
+                                    });
+
+                                    req.params = params;
+
+                                    controller = await this.routes[method][route]["controller"](req, res)
+
+                                    if (controller.responseMessage) {
+                                        res.statusMessage = controller.responseMessage
+                                    }
+
+                                    if (typeof controller.body !== "object") {
+                                        throw new TypeError(`Response body can't be ${typeof controller.body}`)
+                                    }
+
+                                    if (typeof controller.responseCode !== "number") {
+                                        throw new TypeError(`Response code can't be ${typeof controller.responseCode}`);
+                                    }
+
+                                    res.statusCode = controller.responseCode
+
+                                    if (controller.headers) {
+                                        for (const key in controller.headers) {
+                                            if (controller.headers[key]) {
+                                                res.setHeader(key, controller.headers[key])
+                                            }
+                                        }
+                                    }
+
+                                    res.write(JSON.stringify(controller.body))
+
+                                    return res.end()
+                                } else {
+                                    return;
+                                }
+                            } catch (error) {
+                                logger.error(error)
+
+                                res.statusCode = 500
+                                res.write(JSON.stringify({
+                                    message: this.config.RESPONSE_MESSAGES?.serverError || defaultResponses.serverError
+                                }))
+                                return res.end()
+                            }
+                        }
+
+                        if (!findedRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
+                            res.statusCode = 404
+                            res.write(JSON.stringify({
+                                message: this.config.RESPONSE_MESSAGES?.notFound || defaultResponses.notFound
+                            }))
+
+                            return res.end()
+                        }
+
+                    })
                 }
             }
         })
     }
-
-    async #responseHandler(req: CoreReq, res: http.ServerResponse) { }
-
 
     /**
      * Start listening to http incoming requests
@@ -174,9 +230,18 @@ export default class AxonCore {
         const corePreloader = async (): Promise<void> => {
             return new Promise((resolve) => {
                 const interval = setInterval(() => {
-                    if (this.routesLoaded && this.configsLoaded) {
-                        clearInterval(interval);
-                        resolve();
+                    if (this.passConfig) {
+                        if (this.routesLoaded) {
+                            logger.info("all routes loaded!");
+                            clearInterval(interval);
+                            resolve();
+                        }
+                    } else {
+                        if (this.routesLoaded && this.configsLoaded) {
+                            logger.info("all configs and routes loaded!");
+                            clearInterval(interval);
+                            resolve();
+                        }
                     }
                 }, 100);
             });

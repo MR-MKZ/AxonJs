@@ -177,6 +177,7 @@ AxonJs has some types which can help you in developing your applications for aut
 - `AxonCoreConfig`: Type of core config object for configuration Axon core as you want.
 - `Request`: Type of controller request param. (IncomingMessage)
 - `Response`: Type of controller response param. (ServerResponse)
+- `Headers`: Type of response headers. (OutgoingHeaders)
 
 ## Contributing
 
