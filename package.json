@@ -1,6 +1,6 @@
 {
   "name": "@mr-mkz/axon",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A http router who tries to be simple and powerfull.",
   "author": "Mr.MKZ",
   "license": "ISC",
