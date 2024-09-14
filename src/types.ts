@@ -1,12 +1,13 @@
 import { Request, Response, Headers } from ".";
+import { AxonRouteHandler } from "./Router/AxonRouter";
 
 interface Route {
-    controller: (req: Request, res: Response) => Promise<JsonResponse>;
-    middlewares?: Array<(req: Request, res: Response) => void>;
+    controller: Controller;
+    middlewares?: Array<Middleware>;
 }
 
 interface Routes {
-    [key: string]: Route
+    [key: string]: AxonRouteHandler
 }
 
 export type HttpMethods = {
@@ -24,6 +25,10 @@ export type JsonResponse = {
     responseCode: number;
     responseMessage?: string;
 }
+
+export type Controller = (req: Request, res: Response) => Promise<any>
+
+export type Middleware = (req: Request, res: Response, next: () => Promise<any>) => Promise<any>;
 
 export interface ExceptionMeta {
     type: string;

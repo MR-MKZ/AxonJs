@@ -13,7 +13,7 @@ core.loadConfig({
     LOGGER: true,           // default true
     LOGGER_VERBOSE: false,  // default false
     RESPONSE_MESSAGES: {
-        notFound: "route not found"
+        notFound: "route '{path}' not found"
     }
 })
 

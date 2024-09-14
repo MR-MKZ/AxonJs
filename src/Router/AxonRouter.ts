@@ -1,6 +1,5 @@
 import RouterException from "../error/RouterException";
-import { HttpMethods, JsonResponse } from "../types";
-import * as http from "http";
+import { Controller, HttpMethods, Middleware } from "../types";
 
 const duplicateError = (path: string) => {
     throw new RouterException({
@@ -13,9 +12,31 @@ const duplicateError = (path: string) => {
     })
 }
 
+export class AxonRouteHandler {  
+    private controller: Controller;  
+    private middlewares: Middleware[];  
+
+    constructor(controller: Controller) {  
+        this.controller = controller;  
+        this.middlewares = [];  
+    }  
+
+    middleware(fn: Middleware) {  
+        this.middlewares.push(fn);
+        return this;
+    }  
+
+    getController() {  
+        return this.controller;  
+    }  
+
+    getMiddlewares() {  
+        return this.middlewares;  
+    }  
+}  
+
 class AxonRouter {
     private routes: HttpMethods;
-
     constructor() {
         this.routes = {
             GET: {},
@@ -39,14 +60,15 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    get(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
+    public get(path: string, controller: Controller) {
         if (this.routes.GET[path]) {
             duplicateError(path)
         }
         
-        this.routes.GET[path] = {
-            controller: controller
-        }
+        const handler = new AxonRouteHandler(controller);
+        this.routes.GET[path] = handler
+
+        return handler;
     }
 
     /**
@@ -61,15 +83,15 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    post(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
+    public post(path: string, controller: Controller) {
         if (this.routes.POST[path]) {
             duplicateError(path)
         }
 
-        this.routes.POST[path] = {
-            controller: controller
+        const handler = new AxonRouteHandler(controller);
+        this.routes.POST[path] = handler
 
-        }
+        return handler;
     }
 
     /**
@@ -79,14 +101,15 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    put(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
+    public put(path: string, controller: Controller) {
         if (this.routes.PUT[path]) {
             duplicateError(path)
         }
 
-        this.routes.PUT[path] = {
-            controller: controller
-        }
+        const handler = new AxonRouteHandler(controller);
+        this.routes.PUT[path] = handler
+
+        return handler;
     }
 
     /**
@@ -96,14 +119,15 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    patch(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
+    public patch(path: string, controller: Controller) {
         if (this.routes.PATCH[path]) {
             duplicateError(path)
         }
 
-        this.routes.PATCH[path] = {
-            controller: controller
-        }
+        const handler = new AxonRouteHandler(controller);
+        this.routes.PATCH[path] = handler
+
+        return handler;
     }
 
     /**
@@ -113,14 +137,15 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    delete(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
+    public delete(path: string, controller: Controller) {
         if (this.routes.DELETE[path]) {
             duplicateError(path)
         }
 
-        this.routes.DELETE[path] = {
-            controller: controller
-        }
+        const handler = new AxonRouteHandler(controller);
+        this.routes.DELETE[path] = handler
+
+        return handler;
     }
 
     /**
@@ -130,15 +155,16 @@ class AxonRouter {
      * @param path route path
      * @param controller route request controller
      */
-    options(path: string, controller: (req: http.IncomingMessage, res: http.ServerResponse) => Promise<JsonResponse>) {
+    public options(path: string, controller: Controller) {
         if (this.routes.OPTIONS[path]) {
             duplicateError(path)
         }
 
-        this.routes.OPTIONS[path] = {
-            controller: controller
-        }
-    }
+        const handler = new AxonRouteHandler(controller);
+        this.routes.OPTIONS[path] = handler
+
+        return handler;
+    } 
 
     exportRoutes() {
         return this.routes

@@ -8,6 +8,8 @@ interface AxonCoreConfig {
 interface AxonResponseMessage {
     /**
      * response error message for 404 not found response from core
+     * 
+     * use `{path}` to show request method.
      */
     notFound?:  string;
     /**
@@ -16,6 +18,12 @@ interface AxonResponseMessage {
     serverError?:  string;
     /**
      * response error message for 405 method not allowed response from core
+     * 
+     * use `{method}` to show request method.
+     * 
+     * example:
+     * - config: 'Method {method} is not allowed'
+     * - response: 'Method TRACE is not allowed'
      */
     methodNotAllowed?: string;
     [key: string]: string | undefined;

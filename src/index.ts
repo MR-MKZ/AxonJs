@@ -1,8 +1,9 @@
-import AxonCore from "./core";
-import AxonRouter from "./Router";
-import { JsonResponse } from "./types";
+import AxonCore from "./core/AxonCore";
+import AxonRouter from "./Router/AxonRouter";
+import { JsonResponse, Controller, Middleware } from "./types";
 import { AxonCoreConfig } from "./core/coreTypes";
 import * as http from "http"
+import AxonResponse from "./core/AxonResponse";
 
 const Router = () => {
   return new AxonRouter()
@@ -24,6 +25,14 @@ declare module 'http' {
      */
     params: any;
   }
+
+  interface ServerResponse {
+    /**
+     * to add http response code for client.
+     * @param code http response code
+     */
+    status: (code: number) => AxonResponse;
+  }
 }
 
 interface Request extends http.IncomingMessage {};
@@ -33,9 +42,10 @@ interface Headers extends http.OutgoingHttpHeaders {};
 export {
   AxonCore,
   Router,
-  JsonResponse,
   AxonCoreConfig,
   Request,
   Response,
-  Headers
+  Headers,
+  Controller,
+  Middleware
 }

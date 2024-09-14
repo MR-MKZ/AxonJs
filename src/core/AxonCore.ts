@@ -1,5 +1,5 @@
-import Router from "../Router";
-import { HttpMethods, JsonResponse } from "../types"
+import Router from "../Router/AxonRouter";
+import { Controller, HttpMethods, JsonResponse, Middleware } from "../types"
 import * as http from "http";
 import { routeDuplicateException } from "./CoreExceptions";
 import addRoutePrefix from "./utils/routePrefixHandler";
@@ -9,11 +9,12 @@ import { colors } from "@spacingbat3/kolor"
 import getRequestBody from "./utils/getRequestBody";
 import { Key, pathToRegexp, Keys } from "path-to-regexp";
 import { Request, Response, Headers } from "..";
+import AxonResponse from "./AxonResponse";
 
 const defaultResponses = {
     notFound: "Not found",
     serverError: "Internal server error",
-    methodNotAllowed: "Method not allowed"
+    methodNotAllowed: "Method {method} not allowed"
 }
 
 export default class AxonCore {
@@ -116,106 +117,147 @@ export default class AxonCore {
             logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} - ${req.headers["user-agent"]}`)
         }
 
-        if (req.method && !Object.keys(this.routes).includes(req.method)) {
-            res.statusCode = 405
+        res.status = (code: number) => {
+            if (typeof code !== "number") {
+                throw new TypeError("response code must be number");
+            }
 
-            res.write(JSON.stringify({
-                message: this.config.RESPONSE_MESSAGES?.methodNotAllowed || defaultResponses.methodNotAllowed
-            }));
+            res.statusCode = code
 
-            return res.end();
+            return new AxonResponse(res);
         }
 
-        let controller: JsonResponse;
+        if (!Object.keys(this.routes).includes(req.method as keyof HttpMethods)) {
+            return this.response(res, {
+                body: {
+                    message: this.config.RESPONSE_MESSAGES?.methodNotAllowed?.replace("{method}", (req.method as string)) || defaultResponses.methodNotAllowed?.replace("{method}", (req.method as string))
+                },
+                responseCode: 405
+            })
+        }
 
-        (Object.keys(this.routes) as Array<keyof HttpMethods>).forEach(async (method) => {
-            if (method == req.method) {
-                if (req.url) {
+        const method = req.method as keyof HttpMethods
 
-                    let findedRoute = false;
+        let findedRoute = false;
 
-                    if (Object.keys(this.routes[method]).length === 0) {
-                        res.statusCode = 404
-                        res.write(JSON.stringify({
-                            message: this.config.RESPONSE_MESSAGES?.notFound || defaultResponses.notFound
-                        }))
+        if (Object.keys(this.routes[method]).length === 0) {
+            return this.response(res, {
+                body: {
+                    message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) || defaultResponses.notFound?.replace("{path}", (req.url as string))
+                },
+                responseCode: 404
+            })
+        }
 
-                        return res.end()
+        return Object.keys(this.routes[method]).forEach(async (path, index) => {
+            let keys: Keys;
+            const regexp = pathToRegexp(path);
+            keys = regexp.keys
+            const match: RegExpExecArray | null = regexp.regexp.exec(req.url as string);
+
+            if (match) {
+                try {
+                    if (!findedRoute) {
+                        findedRoute = true
+
+                        const params: Record<string, string | undefined> = {};
+
+                        keys.forEach((key: Key, index: number) => {
+                            params[key.name] = match[index + 1];
+                        });
+
+                        req.params = params;
+
+                        let route = this.routes[method][path]
+
+                        let middlewares: Middleware[] = route.getMiddlewares();
+
+                        let controller: Controller = route.getController();
+
+                        return await this.handleMiddleware(req, res, async () => {
+                            await controller(req, res);
+                        }, middlewares);
+
+                    } else {
+                        return;
                     }
+                } catch (error) {
+                    logger.error(error)
 
-                    return Object.keys(this.routes[method]).forEach(async (route, index) => {
-                        let keys: Keys;
-                        const regexp = pathToRegexp(route);
-                        keys = regexp.keys
-                        const match: RegExpExecArray | null = regexp.regexp.exec(req.url as string);
-
-                        if (match) {
-                            try {
-                                if (!findedRoute) {
-                                    findedRoute = true
-
-                                    const params: Record<string, string | undefined> = {};
-
-                                    keys.forEach((key: Key, index: number) => {
-                                        params[key.name] = match[index + 1];
-                                    });
-
-                                    req.params = params;
-
-                                    controller = await this.routes[method][route]["controller"](req, res)
-
-                                    if (controller.responseMessage) {
-                                        res.statusMessage = controller.responseMessage
-                                    }
-
-                                    if (typeof controller.body !== "object") {
-                                        throw new TypeError(`Response body can't be ${typeof controller.body}`)
-                                    }
-
-                                    if (typeof controller.responseCode !== "number") {
-                                        throw new TypeError(`Response code can't be ${typeof controller.responseCode}`);
-                                    }
-
-                                    res.statusCode = controller.responseCode
-
-                                    if (controller.headers) {
-                                        for (const key in controller.headers) {
-                                            if (controller.headers[key]) {
-                                                res.setHeader(key, controller.headers[key])
-                                            }
-                                        }
-                                    }
-
-                                    res.write(JSON.stringify(controller.body))
-
-                                    return res.end()
-                                } else {
-                                    return;
-                                }
-                            } catch (error) {
-                                logger.error(error)
-
-                                res.statusCode = 500
-                                res.write(JSON.stringify({
-                                    message: this.config.RESPONSE_MESSAGES?.serverError || defaultResponses.serverError
-                                }))
-                                return res.end()
-                            }
-                        }
-
-                        if (!findedRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
-                            res.statusCode = 404
-                            res.write(JSON.stringify({
-                                message: this.config.RESPONSE_MESSAGES?.notFound || defaultResponses.notFound
-                            }))
-
-                            return res.end()
-                        }
-
+                    return this.response(res, {
+                        body: {
+                            message: this.config.RESPONSE_MESSAGES?.serverError || defaultResponses.serverError
+                        },
+                        responseCode: 500
                     })
                 }
             }
+
+            if (!findedRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
+                return this.response(res, {
+                    body: {
+                        message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) || defaultResponses.notFound?.replace("{path}", (req.url as string))
+                    },
+                    responseCode: 404
+                })
+            }
+
         })
+
+        // (Object.keys(this.routes) as Array<keyof HttpMethods>).forEach(async (method) => {
+
+        // })
+    }
+
+    /**
+     * 
+     * @param req 
+     * @param res 
+     * @param next 
+     * @param middlewares 
+     */
+    private async handleMiddleware(
+        req: Request,
+        res: Response,
+        next: () => Promise<any>,
+        middlewares: Middleware[]
+    ) {
+        let index = 0;
+
+        const executeMiddleware = async () => {
+            if (index < middlewares.length) {
+                const middleware = middlewares[index++];
+                
+                await middleware(req, res, executeMiddleware);
+            } else {
+                await next();
+            }
+        };
+
+        await executeMiddleware();
+    }
+
+    private response(res: Response, data: JsonResponse) {
+        if (data.responseMessage) {
+            res.statusMessage = data.responseMessage
+        }
+
+        if (typeof data.body !== "object") {
+            throw new TypeError(`Response body can't be ${typeof data.body}`)
+        }
+
+        if (typeof data.responseCode !== "number") {
+            throw new TypeError(`Response code can't be ${typeof data.responseCode}`);
+        }
+
+        if (data.headers) {
+            for (const key in data.headers) {
+                if (data.headers[key]) {
+                    res.setHeader(key, data.headers[key])
+                }
+            }
+        }
+        return res.status(data.responseCode).body(JSON.stringify(data.body))
     }
 
     /**
