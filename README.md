@@ -4,6 +4,8 @@
 
 Axon is a backend library who tries to be simple and powerfull.
 
+Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](./benchmarks/README.md)
+
 
 
 ## Installation
