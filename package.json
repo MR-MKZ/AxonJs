@@ -1,6 +1,6 @@
 {
   "name": "@mr-mkz/axon",
-  "version": "0.2.0",
+  "version": "0.2.0-1",
   "description": "A backend library who tries to be simple and powerfull.",
   "author": "Mr.MKZ",
   "license": "ISC",
@@ -37,7 +37,8 @@
     "dev": "tsup --watch",
     "dev-server": "nodemon tests/index.ts",
     "build": "tsup",
-    "test": "jest"
+    "test": "jest",
+    "doc": "npx typedoc src/index.ts"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -47,13 +48,14 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsup": "^8.2.4",
+    "typedoc": "^0.26.7",
     "typescript": "^5.5.4"
   },
   "dependencies": {
     "@spacingbat3/kolor": "^4.0.0",
+    "@types/node": "^22.5.4",
     "moment": "^2.30.1",
     "pino": "^9.4.0",
-    "pino-pretty": "^11.2.2",
-    "@types/node": "^22.5.4"
+    "pino-pretty": "^11.2.2"
   }
 }
