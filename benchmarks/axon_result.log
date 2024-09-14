@@ -1,0 +1,59 @@
+  50 connections
+  1 middleware
+ 3.59ms
+ 17719.68
+
+  50 connections
+  5 middleware
+ 4.30ms
+ 16694.89
+
+  50 connections
+  10 middleware
+ 3.50ms
+ 17319.34
+
+  50 connections
+  15 middleware
+ 3.32ms
+ 18176.99
+
+  50 connections
+  20 middleware
+ 3.59ms
+ 17802.75
+
+  50 connections
+  30 middleware
+ 3.65ms
+ 17577.63
+
+  50 connections
+  50 middleware
+ 3.69ms
+ 16761.86
+
+  50 connections
+  100 middleware
+ 3.51ms
+ 17420.01
+
+  100 connections
+  10 middleware
+ 12.19ms
+ 17103.76
+
+  250 connections
+  10 middleware
+ 113.95ms
+ 16931.00
+
+  500 connections
+  10 middleware
+ 68.96ms
+ 17403.32
+
+  1000 connections
+  10 middleware
+ 42.79ms
+ 16146.45

@@ -13,6 +13,12 @@ Install Axon.js with npm
 ```bash
   npm install @mr-mkz/axon
 ```
+
+## Benchmarks
+
+You can checkout Axon benchmarks document and results from below link.
+
+[Axon Benchmarks](./benchmarks/README.md)
     
 ## Badges
 
@@ -71,50 +77,8 @@ Install Axon.js with npm
 Currently Axon has a main core and a router class which you can make instance from router class every where you want and then gave the router instance to core to load routes.
 
 More complete examples:
-- [Typescript Example](./tests/index.ts)
-- [Javascript Example](./tests/index.js)
-
-Example:
-```js
-import { AxonCore, Router } from "@mr-mkz/axon";
-
-// Axon core instance
-const core = new AxonCore();
-
-// configuring core (not completed)
-core.loadConfig({
-    DEBUG: true,            // default false
-    LOGGER: true,           // default true
-    LOGGER_VERBOSE: false   // default false
-})
-
-// Router instance function
-const router = Router();
-
-// route with method GET.
-// all methods: [get, post, put, patch, delete, options]
-router.get('/', async (req, res) => {
-    return {
-        body: {},
-        headers: {}, // optional
-        responseCode: 200,
-        responseMessage: "OK" // optional
-    }
-})
-
-// Giving routes to Axon core
-core.loadRoute(router)
-
-// Giving routes to Axon core with prefix
-core.loadRoute(router, "/api/v1")
-
-// Starting server
-// callback function is optional and core has default log message for on start event
-// core.listen("127.0.0.1", 8000)
-core.listen("127.0.0.1", 8000, () => {
-    console.log("Listening on port 8000...")
-})
-```
+- [Typescript Example](./examples/index.ts)
+- [Javascript Example](./examples/index.js)
 
 ### Router
 
@@ -145,39 +109,93 @@ You can access and create routes with just a few steps.
 
 ### Controller
 
-Controller is still under constructnig but currently it work like this:
-
-you have to pass your controller to your route, compute and do your jobs in controller and when you want to response to user (each response, error and success) you must return an object with type `JsonResponse`.
+you have to pass your controller to your route, compute and do your jobs in controller and when you want to response to user (each response, error and success) you must return res with some options which example and description for each option is below.
 
 ```js
-import { JsonResponse } from "@mr-mkz/axon";
-
-/**
- * Controller jsdoc (ts detect types automatically)
- * @returns {JsonResponse}
- */
+res.{option}
 ```
 
-Or
+Options:
 
+- status: This option must set to get access to other options. (you can use each option just once)
+- message: This option will set the response message for example response message of status 200 is OK.
+- setHeader: You can set header with this option and also you can use this option many times.
+- body: This option will end request and send response to user so you must use this as last option
+
+Example:
 ```js
-/**
- * Controller jsdoc (ts detect types automatically)
- * @returns {import("@mr-mkz/axon").JsonResponse}
- */
+const controller = async (req, res) => {
+    return res.status(200).body({
+        message: "Hello, World"
+    })
+}
 ```
+
+### Middleware
+
+middleware is a function which runs before running controller for validations or some actions like this and you can use it in two ways.
+
+1. adding a middleware for special route
+    - Example:
+        ```js
+            router.get('/', controller).middleware(async (req, res, next) => next());
+        ```
+        you can also use multiple middlewares for a route by repeating middleware function and middlewares will run in order.
+2. loading middleware as a global middleware in Axon core.
+    - Example:
+        ```js
+            core.globalMiddleware(async (req, res, next) => next());
+        ```
+        you can also use multiple middlewares in this way by adding middleware functions into an array (suggested method) or repeating this line of code.
 
 ### Types
 
 AxonJs has some types which can help you in developing your applications for auto suggestions of your code editor.
 
-**Types detect automatically in Typescript but you need to set types for IDE suggestions in Javascript ([*Javascript Example*](./tests/index.js)).**
+**Types detect automatically in Typescript but you need to set types for IDE suggestions in Javascript ([*Javascript Example*](./examples/index.js)).**
 
-- `JsonResponse`: Type of controller response object which must return to response the user request.
 - `AxonCoreConfig`: Type of core config object for configuration Axon core as you want.
+- `AxonResponseMessage`: Type of core config option RESPONSE_MESSAGES.
 - `Request`: Type of controller request param. (IncomingMessage)
 - `Response`: Type of controller response param. (ServerResponse)
 - `Headers`: Type of response headers. (OutgoingHeaders)
+- `nextFn`: Type of next function param in middleware.
+- `Controller`: Type of controller function.
+- `Middleware`: Type of middleware function.
+
+### Axon Core config
+
+you can config Axon core with `loadConfig` method.
+if you want to have ide suggestions for core config use AxonCoreConfig type.
+
+Usage:
+```js
+core.loadConfig({
+    LOGGER: false
+})
+```
+
+Configs:
+
+- `DEBUG`: boolean to set debug mode of core. (default false)
+- `LOGGER`: boolean to set core logger on or off. (default true)
+- `LOGGER_VERBOSE`: boolean to set core logger in verbose mode. (default false)
+- `RESPONSE_MESSAGES`: object to change default value of some core responses. (type: AxonResponseMessage)
+
+### Running server
+
+`listen` method runs your webserver.
+
+**`core.listen()` has some default values**
+1. host: default value of host in 127.0.0.1
+2. port: default value of port is 8000
+3. callback: if you don't set callback function, core will log running message automatically if logger be on in core config.(logger is on in default config)
+
+```js
+core.listen("0.0.0.0", 80, () => {
+    console.log("server is running on port 80")
+});
+```
 
 ## Contributing
 

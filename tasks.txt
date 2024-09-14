@@ -1,10 +1,10 @@
 TODO: Router system [Done]
 - (Can use in multiple files) [Done]
-TODO: Controller
-TODO: Middleware
-TODO: Response structure
+TODO: Controller [Done]
+TODO: Middleware [Done]
+TODO: Response structure [Working]
 TODO: Meta generator
 - (With config for core)
 TODO: (Optional) Logger system [In Progress]
-TODO: (Optional) Auto error detector
+TODO: (Optional) Auto error detector [In Progress](Currently server return error in console and send 500 internal server error to user)
 - To prevent API server goes down and send a debugger response from core to user. [Must choose or config where should core send response. api or console]

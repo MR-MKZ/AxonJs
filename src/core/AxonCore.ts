@@ -19,6 +19,7 @@ const defaultResponses = {
 
 export default class AxonCore {
     private routes: HttpMethods;
+    private globalMiddlewares: Middleware[];
     private config: AxonCoreConfig;
     private configsLoaded: boolean;
     private passConfig: boolean;
@@ -33,6 +34,8 @@ export default class AxonCore {
             DELETE: {},
             OPTIONS: {}
         }
+
+        this.globalMiddlewares = [];
 
         this.config = {
             DEBUG: false,
@@ -55,12 +58,16 @@ export default class AxonCore {
     loadConfig(config: AxonCoreConfig) {
         this.passConfig = false;
         this.config.DEBUG = config.DEBUG || false
-        this.config.LOGGER = config.LOGGER || true
+        this.config.LOGGER = config.LOGGER;
         this.config.LOGGER_VERBOSE = config.LOGGER_VERBOSE || false
         this.config.RESPONSE_MESSAGES = { ...config.RESPONSE_MESSAGES }
 
         if (this.config.DEBUG) {
             logger.level = "debug"
+        }
+
+        if (!this.config.LOGGER) {
+            logger.level = "silent"
         }
 
         this.configsLoaded = true;
@@ -97,6 +104,22 @@ export default class AxonCore {
         this.routesLoaded = true;
     }
 
+    async globalMiddleware(fn: Middleware | Middleware[]) {
+        if (typeof fn === "function") {
+            this.globalMiddlewares.push(fn)
+        }
+
+        if (typeof fn === "object") {
+            for (let middleware of fn) {
+                if (typeof middleware === "function") {
+                    this.globalMiddlewares.push(middleware);
+                }
+            }
+        }
+
+        logger.debug("loaded global middlewares")
+    }
+
     /**
      * Http request main handler
      * @param req incoming request
@@ -115,7 +138,7 @@ export default class AxonCore {
             }, "new http request")
         } else {
             logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} - ${req.headers["user-agent"]}`)
-        }
+        } 
 
         res.status = (code: number) => {
             if (typeof code !== "number") {
@@ -175,8 +198,10 @@ export default class AxonCore {
                         let controller: Controller = route.getController();
 
                         return await this.handleMiddleware(req, res, async () => {
-                            await controller(req, res);
-                        }, middlewares);
+                            return await this.handleMiddleware(req, res, async () => {
+                                await controller(req, res);
+                            }, middlewares);
+                        }, this.globalMiddlewares);
 
                     } else {
                         return;
@@ -203,10 +228,6 @@ export default class AxonCore {
             }
 
         })
-
-        // (Object.keys(this.routes) as Array<keyof HttpMethods>).forEach(async (method) => {
-
-        // })
     }
 
     /**
@@ -227,7 +248,7 @@ export default class AxonCore {
         const executeMiddleware = async () => {
             if (index < middlewares.length) {
                 const middleware = middlewares[index++];
-                
+
                 await middleware(req, res, executeMiddleware);
             } else {
                 await next();
@@ -266,7 +287,7 @@ export default class AxonCore {
      * @param {number} port server port
      * @param {Function} [callback] callback a function to run after starting to listen
      */
-    async listen(host: string, port: number, callback?: () => void) {
+    async listen(host: string = "127.0.0.1", port: number = 8000, callback?: () => void) {
 
         // Wait until some necessary items are loaded before starting the server
         const corePreloader = async (): Promise<void> => {
