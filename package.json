@@ -1,6 +1,6 @@
 {
   "name": "@mr-mkz/axon",
-  "version": "0.2.0-1",
+  "version": "0.2.2-1",
   "description": "A backend library who tries to be simple and powerfull.",
   "author": "Mr.MKZ",
   "license": "ISC",
@@ -35,7 +35,7 @@
   ],
   "scripts": {
     "dev": "tsup --watch",
-    "dev-server": "nodemon tests/index.ts",
+    "dev-server": "nodemon examples/index.ts",
     "build": "tsup",
     "test": "jest",
     "doc": "npx typedoc src/index.ts"

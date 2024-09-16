@@ -127,19 +127,6 @@ export default class AxonCore {
      * @returns 
      */
     async #handleRequest(req: Request, res: Response) {
-        // log incoming requests
-        if (this.config.LOGGER_VERBOSE) {
-            logger.request({
-                ip: req.socket.remoteAddress,
-                url: req.url,
-                method: req.method,
-                headers: req.headers,
-                body: req.body
-            }, "new http request")
-        } else {
-            logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} - ${req.headers["user-agent"]}`)
-        } 
-
         res.status = (code: number) => {
             if (typeof code !== "number") {
                 throw new TypeError("response code must be number");
@@ -151,7 +138,7 @@ export default class AxonCore {
         }
 
         if (!Object.keys(this.routes).includes(req.method as keyof HttpMethods)) {
-            return this.response(res, {
+            return this.response(req, res, {
                 body: {
                     message: this.config.RESPONSE_MESSAGES?.methodNotAllowed?.replace("{method}", (req.method as string)) || defaultResponses.methodNotAllowed?.replace("{method}", (req.method as string))
                 },
@@ -164,7 +151,7 @@ export default class AxonCore {
         let findedRoute = false;
 
         if (Object.keys(this.routes[method]).length === 0) {
-            return this.response(res, {
+            return this.response(req, res, {
                 body: {
                     message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) || defaultResponses.notFound?.replace("{path}", (req.url as string))
                 },
@@ -176,7 +163,12 @@ export default class AxonCore {
             let keys: Keys;
             const regexp = pathToRegexp(path);
             keys = regexp.keys
-            const match: RegExpExecArray | null = regexp.regexp.exec(req.url as string);
+
+            // Using the WHATWG URL API to get the pathname because url.parse is deprecated and this way is more secure.
+            const url = new URL(req.url as string, `http://${req.headers.host}`);
+            const pathname = url.pathname;
+
+            const match: RegExpExecArray | null = regexp.regexp.exec(pathname);
 
             if (match) {
                 try {
@@ -200,6 +192,22 @@ export default class AxonCore {
                         return await this.handleMiddleware(req, res, async () => {
                             return await this.handleMiddleware(req, res, async () => {
                                 await controller(req, res);
+
+                                // log incoming requests
+                                if (this.config.LOGGER_VERBOSE) {
+                                    logger.request({
+                                        ip: req.socket.remoteAddress,
+                                        url: req.url,
+                                        method: req.method,
+                                        headers: req.headers,
+                                        body: req.body,
+                                        code: req.statusCode,
+                                        message: req.statusMessage
+                                    }, "new http request")
+                                } else {
+                                    logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${req.statusCode} ${req.statusMessage || '-'} - ${req.headers["user-agent"]}`)
+                                } 
+
                             }, middlewares);
                         }, this.globalMiddlewares);
 
@@ -209,7 +217,7 @@ export default class AxonCore {
                 } catch (error) {
                     logger.error(error)
 
-                    return this.response(res, {
+                    return this.response(req, res, {
                         body: {
                             message: this.config.RESPONSE_MESSAGES?.serverError || defaultResponses.serverError
                         },
@@ -219,7 +227,7 @@ export default class AxonCore {
             }
 
             if (!findedRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
-                return this.response(res, {
+                return this.response(req, res, {
                     body: {
                         message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) || defaultResponses.notFound?.replace("{path}", (req.url as string))
                     },
@@ -258,7 +266,7 @@ export default class AxonCore {
         await executeMiddleware();
     }
 
-    private response(res: Response, data: JsonResponse) {
+    private response(req: Request, res: Response, data: JsonResponse) {
         if (data.responseMessage) {
             res.statusMessage = data.responseMessage
         }
@@ -271,6 +279,8 @@ export default class AxonCore {
             throw new TypeError(`Response code can't be ${typeof data.responseCode}`);
         }
 
+        res.statusCode = data.responseCode
+
         if (data.headers) {
             for (const key in data.headers) {
                 if (data.headers[key]) {
@@ -278,6 +288,22 @@ export default class AxonCore {
                 }
             }
         }
+
+        // log incoming requests
+        if (this.config.LOGGER_VERBOSE) {
+            logger.request({
+                ip: req.socket.remoteAddress,
+                url: req.url,
+                method: req.method,
+                headers: req.headers,
+                body: req.body,
+                code: req.statusCode,
+                message: req.statusMessage
+            }, "new http request")
+        } else {
+            logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${req.statusCode} ${req.statusMessage || '-'} - ${req.headers["user-agent"]}`)
+        } 
+
         return res.status(data.responseCode).body(JSON.stringify(data.body))
     }
 
