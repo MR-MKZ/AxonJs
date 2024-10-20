@@ -33,4 +33,4 @@ core.loadRoute(v2Routes, "/api/v1")
 
 // callback function is optional and core has default log message for on start event
 // host default is 127.0.0.1 and port default is 8000
-core.listen("127.0.0.1", 8000)
+core.listen("127.0.0.1", 3000)
