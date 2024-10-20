@@ -10,6 +10,7 @@ import getRequestBody from "./utils/getRequestBody";
 import { Key, pathToRegexp, Keys } from "path-to-regexp";
 import { Request, Response, Headers } from "..";
 import AxonResponse from "./AxonResponse";
+import { AxonPlugin } from "./AxonPlugin";
 
 const defaultResponses = {
     notFound: "Not found",
@@ -24,6 +25,8 @@ export default class AxonCore {
     private configsLoaded: boolean;
     private passConfig: boolean;
     private routesLoaded: boolean;
+    private plugins: Record<string, AxonPlugin> = {};
+    public plugin: any;
 
     constructor() {
         this.routes = {
@@ -47,6 +50,16 @@ export default class AxonCore {
         this.configsLoaded = false;
         this.passConfig = true;
         this.routesLoaded = false;
+
+        this.plugin = new Proxy({}, {
+            get: (target, pluginName: string) => {
+                if (this.plugins[pluginName]){
+                    return this.plugins[pluginName];
+                } else {
+                    throw new Error(`Plugin ${pluginName} not found.`);
+                }
+            }
+        });
     }
 
     /**
@@ -71,6 +84,11 @@ export default class AxonCore {
         }
 
         this.configsLoaded = true;
+    }
+
+    async usePlugin(pluginName: string, plugin: AxonPlugin) {
+        this.plugins[pluginName] = plugin;
+        plugin.init(this);
     }
 
     /**
@@ -127,6 +145,7 @@ export default class AxonCore {
      * @returns 
      */
     async #handleRequest(req: Request, res: Response) {
+        logger.coreDebug(this.plugins);
         res.status = (code: number) => {
             if (typeof code !== "number") {
                 throw new TypeError("response code must be number");
