@@ -1,31 +1,26 @@
 import { AxonCore, AxonPlugin, Router } from "../../../src";
-
-interface LogPlugin extends AxonPlugin {
-    log(): void;
-}
-
-export class LogPluginTest implements LogPlugin {
+export class LogPluginTest implements AxonPlugin {
     private logs: number;
 
     constructor() {
         this.logs = 0;
     }
 
+    name: string = "Pretty Logger";
+    version: string = "1.2.0-beta";
+    
     init(core: AxonCore): void {
         const router = Router();
 
-        router.get("/log", async (req, res) => {
+        router.get('/log', async (req, res) => {
             this.logs++;
             
             return res.status(200).body({
-                message: "This is the fist plugin of AxonJs"
+                message: "This is the fist plugin of AxonJs",
+                logs: this.logs
             });
         });
 
         core.loadRoute(router);
-    }    
-    
-    log(): void {
-        console.log(`logs count until now is ${this.logs}`);
     }
 }

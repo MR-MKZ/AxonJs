@@ -10,7 +10,7 @@ import { LogPluginTest } from "./plugins/log";
 const core = new AxonCore()
 
 core.loadConfig({
-    DEBUG: true,            // default false
+    DEBUG: false,            // default false
     LOGGER: true,           // default true
     LOGGER_VERBOSE: false,  // default false
     RESPONSE_MESSAGES: {
@@ -19,9 +19,6 @@ core.loadConfig({
 })
 
 const testMid = async (req: Request, res: Response, next: nextFn) => {
-    
-    core.plugin.log.log();
-
     next()
 }
 
@@ -33,7 +30,9 @@ core.globalMiddleware(testMid);
 core.loadRoute(v1Routes)
 core.loadRoute(v2Routes, "/api/v1")
 
-core.usePlugin('log', new LogPluginTest());
+// using plugins for more flexible code and also using ready codes to develope faster than past.
+// you can make your own plugins with AxonPlugin interface.
+core.loadPlugin(new LogPluginTest());
 
 // callback function is optional and core has default log message for on start event
 // host default is 127.0.0.1 and port default is 8000
