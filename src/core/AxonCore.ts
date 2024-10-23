@@ -218,12 +218,12 @@ export default class AxonCore {
                                         method: req.method,
                                         headers: req.headers,
                                         body: req.body,
-                                        code: res.statusCode,
-                                        message: res.statusMessage
+                                        code: req.statusCode,
+                                        message: req.statusMessage
                                     }, "new http request")
                                 } else {
-                                    logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
-                                }
+                                    logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${req.statusCode} ${req.statusMessage || '-'} - ${req.headers["user-agent"]}`)
+                                } 
 
                             }, middlewares);
                         }, this.globalMiddlewares);
@@ -314,12 +314,12 @@ export default class AxonCore {
                 method: req.method,
                 headers: req.headers,
                 body: req.body,
-                code: res.statusCode,
-                message: res.statusMessage
+                code: req.statusCode,
+                message: req.statusMessage
             }, "new http request")
         } else {
-            logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
-        }
+            logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${req.statusCode} ${req.statusMessage || '-'} - ${req.headers["user-agent"]}`)
+        } 
 
         return res.status(data.responseCode).body(data.body)
     }
