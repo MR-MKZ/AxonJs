@@ -10,7 +10,8 @@ import getRequestBody from "./utils/getRequestBody";
 import { Key, pathToRegexp, Keys } from "path-to-regexp";
 import { Request, Response, Headers } from "..";
 import AxonResponse from "./AxonResponse";
-import { AxonPlugin } from "./AxonPlugin";
+import { PLuginLoader } from "./PluginLoader";
+import { AxonPlugin } from "../types/AxonPlugin";
 
 const defaultResponses = {
     notFound: "Not found",
@@ -25,8 +26,8 @@ export default class AxonCore {
     private configsLoaded: boolean;
     private passConfig: boolean;
     private routesLoaded: boolean;
-    private plugins: Record<string, AxonPlugin> = {};
-    public plugin: any;
+
+    private pluginLoader: PLuginLoader = new PLuginLoader();
 
     constructor() {
         this.routes = {
@@ -50,16 +51,19 @@ export default class AxonCore {
         this.configsLoaded = false;
         this.passConfig = true;
         this.routesLoaded = false;
+    }
 
-        this.plugin = new Proxy({}, {
-            get: (target, pluginName: string) => {
-                if (this.plugins[pluginName]){
-                    return this.plugins[pluginName];
-                } else {
-                    throw new Error(`Plugin ${pluginName} not found.`);
-                }
-            }
-        });
+    /**
+     * Loads a specified Axon plugin using the plugin loader.
+     *
+     * @param {AxonPlugin} plugin - The plugin to be loaded. It should be an instance of AxonPlugin.
+     */
+    async loadPlugin(plugin: AxonPlugin) {
+        await this.pluginLoader.loadPlugin(plugin);
+    }
+
+    async #initializePlugins() {
+        await this.pluginLoader.initializePlugins(this);
     }
 
     /**
@@ -68,7 +72,7 @@ export default class AxonCore {
      * If you want to config the core, use this method before all other methods.
      * @param config core config object
      */
-    loadConfig(config: AxonCoreConfig) {
+    async loadConfig(config: AxonCoreConfig) {
         this.passConfig = false;
         this.config.DEBUG = config.DEBUG || false
         this.config.LOGGER = config.LOGGER;
@@ -84,11 +88,6 @@ export default class AxonCore {
         }
 
         this.configsLoaded = true;
-    }
-
-    async usePlugin(pluginName: string, plugin: AxonPlugin) {
-        this.plugins[pluginName] = plugin;
-        plugin.init(this);
     }
 
     /**
@@ -135,7 +134,7 @@ export default class AxonCore {
             }
         }
 
-        logger.debug("loaded global middlewares")
+        logger.debug("global middlewares loaded")
     }
 
     /**
@@ -145,7 +144,6 @@ export default class AxonCore {
      * @returns 
      */
     async #handleRequest(req: Request, res: Response) {
-        logger.coreDebug(this.plugins);
         res.status = (code: number) => {
             if (typeof code !== "number") {
                 throw new TypeError("response code must be number");
@@ -225,7 +223,7 @@ export default class AxonCore {
                                     }, "new http request")
                                 } else {
                                     logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${req.statusCode} ${req.statusMessage || '-'} - ${req.headers["user-agent"]}`)
-                                } 
+                                }
 
                             }, middlewares);
                         }, this.globalMiddlewares);
@@ -321,9 +319,9 @@ export default class AxonCore {
             }, "new http request")
         } else {
             logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${req.statusCode} ${req.statusMessage || '-'} - ${req.headers["user-agent"]}`)
-        } 
+        }
 
-        return res.status(data.responseCode).body(JSON.stringify(data.body))
+        return res.status(data.responseCode).body(data.body)
     }
 
     /**
@@ -357,6 +355,8 @@ export default class AxonCore {
 
         // Wait for necessary items to be loaded
         await corePreloader();
+
+        await this.#initializePlugins();
 
         const server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
             try {

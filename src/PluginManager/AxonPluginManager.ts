@@ -1,5 +1,0 @@
-class AxonPluginManager {
-    constructor() {
-        
-    }
-}
