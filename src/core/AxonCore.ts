@@ -10,6 +10,8 @@ import getRequestBody from "./utils/getRequestBody";
 import { Key, pathToRegexp, Keys } from "path-to-regexp";
 import { Request, Response, Headers } from "..";
 import AxonResponse from "./AxonResponse";
+import { PLuginLoader } from "./PluginLoader";
+import { AxonPlugin } from "../types/AxonPlugin";
 
 const defaultResponses = {
     notFound: "Not found",
@@ -24,6 +26,8 @@ export default class AxonCore {
     private configsLoaded: boolean;
     private passConfig: boolean;
     private routesLoaded: boolean;
+
+    private pluginLoader: PLuginLoader = new PLuginLoader();
 
     constructor() {
         this.routes = {
@@ -50,12 +54,25 @@ export default class AxonCore {
     }
 
     /**
+     * Loads a specified Axon plugin using the plugin loader.
+     *
+     * @param {AxonPlugin} plugin - The plugin to be loaded. It should be an instance of AxonPlugin.
+     */
+    async loadPlugin(plugin: AxonPlugin) {
+        await this.pluginLoader.loadPlugin(plugin);
+    }
+
+    async #initializePlugins() {
+        await this.pluginLoader.initializePlugins(this);
+    }
+
+    /**
      * A method to config core as you want
      * 
      * If you want to config the core, use this method before all other methods.
      * @param config core config object
      */
-    loadConfig(config: AxonCoreConfig) {
+    async loadConfig(config: AxonCoreConfig) {
         this.passConfig = false;
         this.config.DEBUG = config.DEBUG || false
         this.config.LOGGER = config.LOGGER;
@@ -117,7 +134,7 @@ export default class AxonCore {
             }
         }
 
-        logger.debug("loaded global middlewares")
+        logger.debug("global middlewares loaded")
     }
 
     /**
@@ -302,7 +319,7 @@ export default class AxonCore {
             logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
         } 
 
-        return res.status(data.responseCode).body(JSON.stringify(data.body))
+        return res.status(data.responseCode).body(data.body)
     }
 
     /**
@@ -336,6 +353,8 @@ export default class AxonCore {
 
         // Wait for necessary items to be loaded
         await corePreloader();
+
+        await this.#initializePlugins();
 
         const server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
             try {

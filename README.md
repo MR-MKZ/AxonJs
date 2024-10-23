@@ -6,6 +6,10 @@ Axon is a backend library who tries to be simple and powerfull.
 
 Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](./benchmarks/README.md)
 
+Latest change: 
+- `text/plain` response in core default response errors bug fixed.
+- Plugin manager system added to core. (Document will update soon - 2024/10/24)
+
 
 
 ## Installation
@@ -56,20 +60,20 @@ You can checkout Axon benchmarks document and results from below link.
 ## Features
 
 - Simple routing system
-- Support methods: GET, POST, PUT, PATCH, DELETE, OPTIONS. more methods soon...
+- Support methods: GET, POST, PUT, PATCH, DELETE, OPTIONS.
 - Flexible routing system. (You can define routes in another files and then add them to core)
-- Default core logger (still developing)
+- Default core logger 
 - Configurable core
+- Plugin manager (You can create your own plugins and use them in other projects)
+- Controllers and Middlewares
 
 **More features soon...**
 
 ## Roadmap (still thinking)
 
 - Support controllers better than now.
-- Support middlewares.
 - Some changes in response structure.
 - Response meta generator.
-- Logger system. [In Progress]
 - Auto error detector (maybe)
 - Default schemas.
 - Default database connection methods.
