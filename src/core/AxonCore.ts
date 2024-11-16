@@ -12,6 +12,7 @@ import { Request, Response, Headers } from "..";
 import AxonResponse from "./AxonResponse";
 import { PLuginLoader } from "./PluginLoader";
 import { AxonPlugin } from "../types/AxonPlugin";
+import AxonCors from "./AxonCors";
 
 const defaultResponses = {
     notFound: "Not found",
@@ -110,6 +111,7 @@ export default class AxonCore {
                         route = `/${route}`
 
                     this.routes[method][route] = routerRoutes[method][originalRoute]
+                    this.routes['OPTIONS'][route] = routerRoutes[method][originalRoute];
 
                     logger.debug(`loaded route ${method} ${route}`)
                 } else {
@@ -206,26 +208,32 @@ export default class AxonCore {
 
                         let controller: Controller = route.getController();
 
-                        return await this.handleMiddleware(req, res, async () => {
+                        const axonCors = await AxonCors.middlewareWrapper(); // this function gives custom config.
+                        
+                        // TODO: AxonCors is ready and I need to add cors config to AxonConfing option.
+
+                        return this.handleMiddleware(req, res, async () => {
                             return await this.handleMiddleware(req, res, async () => {
-                                await controller(req, res);
-
-                                // log incoming requests
-                                if (this.config.LOGGER_VERBOSE) {
-                                    logger.request({
-                                        ip: req.socket.remoteAddress,
-                                        url: req.url,
-                                        method: req.method,
-                                        headers: req.headers,
-                                        body: req.body,
-                                        code: res.statusCode
-                                    }, "new http request")
-                                } else {
-                                    logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
-                                } 
-
-                            }, middlewares);
-                        }, this.globalMiddlewares);
+                                return await this.handleMiddleware(req, res, async () => {
+                                    await controller(req, res);
+    
+                                    // log incoming requests
+                                    if (this.config.LOGGER_VERBOSE) {
+                                        logger.request({
+                                            ip: req.socket.remoteAddress,
+                                            url: req.url,
+                                            method: req.method,
+                                            headers: req.headers,
+                                            body: req.body,
+                                            code: res.statusCode
+                                        }, "new http request")
+                                    } else {
+                                        logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
+                                    } 
+    
+                                }, middlewares);
+                            }, this.globalMiddlewares);
+                        }, [axonCors]);
 
                     } else {
                         return;
