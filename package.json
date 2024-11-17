@@ -1,7 +1,7 @@
 {
   "name": "@mr-mkz/axon",
-  "version": "0.3.0",
-  "description": "A backend library who tries to be simple and powerfull.",
+  "version": "0.4.0",
+  "description": "A backend library that aims to be simple and powerful.",
   "author": "Mr.MKZ",
   "license": "ISC",
   "directories": {
