@@ -17,7 +17,7 @@ core.loadConfig({
         notFound: "route '{path}' not found"
     },
     CORS: {
-        origin: ''
+        origin: 'https://github.com'
     }
 })
 
