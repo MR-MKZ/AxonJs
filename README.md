@@ -66,6 +66,7 @@ You can checkout Axon benchmarks document and results from below link.
 - Configurable core
 - Plugin manager (You can create your own plugins and use them in other projects)
 - Controllers and Middlewares
+- Default cors configuration method
 
 **More features soon...**
 
@@ -162,6 +163,7 @@ AxonJs has some types which can help you in developing your applications for aut
 
 - `AxonCoreConfig`: Type of core config object for configuration Axon core as you want.
 - `AxonResponseMessage`: Type of core config option RESPONSE_MESSAGES.
+- `AxonCorsConfig`: Type of core config option CORS.
 - `Request`: Type of controller request param. (IncomingMessage)
 - `Response`: Type of controller response param. (ServerResponse)
 - `Headers`: Type of response headers. (OutgoingHeaders)
@@ -187,6 +189,7 @@ Configs:
 - `LOGGER`: boolean to set core logger on or off. (default true)
 - `LOGGER_VERBOSE`: boolean to set core logger in verbose mode. (default false)
 - `RESPONSE_MESSAGES`: object to change default value of some core responses. (type: AxonResponseMessage)
+- `CORS`: object to change core cors settings. (type: AxonCorsConfig)
 
 ### Running server
 

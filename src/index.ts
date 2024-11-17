@@ -4,7 +4,7 @@ import { Controller, Middleware , nextFn} from "./types";
 import { AxonCoreConfig } from "./core/coreTypes";
 import * as http from "http"
 import AxonResponse from "./core/AxonResponse";
-import { AxonResponseMessage } from "./core/coreTypes";
+import { AxonResponseMessage, AxonCorsConfig } from "./core/coreTypes";
 import { AxonPlugin } from "./types/AxonPlugin";
 
 const Router = () => {
@@ -46,6 +46,7 @@ export {
   Router,
   AxonCoreConfig,
   AxonResponseMessage,
+  AxonCorsConfig,
   Request,
   Response,
   Headers,

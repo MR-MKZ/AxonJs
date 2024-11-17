@@ -15,6 +15,9 @@ core.loadConfig({
     LOGGER_VERBOSE: false,  // default false
     RESPONSE_MESSAGES: {
         notFound: "route '{path}' not found"
+    },
+    CORS: {
+        origin: ''
     }
 })
 

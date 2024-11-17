@@ -48,6 +48,10 @@
 <li>Configurable core</li>
 <li>Plugin manager (You can create your own plugins and use them in other projects)</li>
 <li>Controllers and Middlewares</li>
+<<<<<<< HEAD
+<li>Default cors configuration method</li>
+=======
+>>>>>>> dcff1c2d383ff73442e501794ffbc565204741a4
 </ul>
 <p><strong>More features soon...</strong></p>
 <a id="md:roadmap-still-thinking" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Roadmap (still thinking)<a href="#md:roadmap-still-thinking" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
@@ -135,6 +139,7 @@ you can also use multiple middlewares in this way by adding middleware functions
 <ul>
 <li><code>AxonCoreConfig</code>: Type of core config object for configuration Axon core as you want.</li>
 <li><code>AxonResponseMessage</code>: Type of core config option RESPONSE_MESSAGES.</li>
+<li><code>AxonCorsConfig</code>: Type of core config option CORS.</li>
 <li><code>Request</code>: Type of controller request param. (IncomingMessage)</li>
 <li><code>Response</code>: Type of controller response param. (ServerResponse)</li>
 <li><code>Headers</code>: Type of response headers. (OutgoingHeaders)</li>
@@ -154,6 +159,7 @@ if you want to have ide suggestions for core config use AxonCoreConfig type.</p>
 <li><code>LOGGER</code>: boolean to set core logger on or off. (default true)</li>
 <li><code>LOGGER_VERBOSE</code>: boolean to set core logger in verbose mode. (default false)</li>
 <li><code>RESPONSE_MESSAGES</code>: object to change default value of some core responses. (type: AxonResponseMessage)</li>
+<li><code>CORS</code>: object to change core cors settings. (type: AxonCorsConfig)</li>
 </ul>
 <a id="md:running-server" class="tsd-anchor"></a><h3 class="tsd-anchor-link">Running server<a href="#md:running-server" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p><code>listen</code> method runs your webserver.</p>
 <p><strong><code>core.listen()</code> has some default values</strong></p>
