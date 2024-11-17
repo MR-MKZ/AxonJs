@@ -3,7 +3,7 @@ import { Controller, HttpMethods, JsonResponse, Middleware } from "../types"
 import * as http from "http";
 import { routeDuplicateException } from "./CoreExceptions";
 import addRoutePrefix from "./utils/routePrefixHandler";
-import { AxonCoreConfig } from "./coreTypes";
+import { AxonCoreConfig, AxonCorsConfig } from "./coreTypes";
 import { logger } from "./utils/coreLogger";
 import { colors } from "@spacingbat3/kolor"
 import getRequestBody from "./utils/getRequestBody";
@@ -18,6 +18,12 @@ const defaultResponses = {
     notFound: "Not found",
     serverError: "Internal server error",
     methodNotAllowed: "Method {method} not allowed"
+}
+
+const defaultCors: AxonCorsConfig = {
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false
 }
 
 export default class AxonCore {
@@ -46,7 +52,8 @@ export default class AxonCore {
             DEBUG: false,
             LOGGER: true,
             LOGGER_VERBOSE: false,
-            RESPONSE_MESSAGES: defaultResponses
+            RESPONSE_MESSAGES: defaultResponses,
+            CORS: defaultCors
         };
 
         this.configsLoaded = false;
@@ -79,6 +86,7 @@ export default class AxonCore {
         this.config.LOGGER = config.LOGGER;
         this.config.LOGGER_VERBOSE = config.LOGGER_VERBOSE || false
         this.config.RESPONSE_MESSAGES = { ...config.RESPONSE_MESSAGES }
+        this.config.CORS = { ...config.CORS }
 
         if (this.config.DEBUG) {
             logger.level = "debug"
@@ -208,15 +216,13 @@ export default class AxonCore {
 
                         let controller: Controller = route.getController();
 
-                        const axonCors = await AxonCors.middlewareWrapper(); // this function gives custom config.
-                        
-                        // TODO: AxonCors is ready and I need to add cors config to AxonConfing option.
+                        const axonCors = await AxonCors.middlewareWrapper(this.config.CORS);
 
                         return this.handleMiddleware(req, res, async () => {
                             return await this.handleMiddleware(req, res, async () => {
                                 return await this.handleMiddleware(req, res, async () => {
                                     await controller(req, res);
-    
+
                                     // log incoming requests
                                     if (this.config.LOGGER_VERBOSE) {
                                         logger.request({
@@ -229,8 +235,8 @@ export default class AxonCore {
                                         }, "new http request")
                                     } else {
                                         logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
-                                    } 
-    
+                                    }
+
                                 }, middlewares);
                             }, this.globalMiddlewares);
                         }, [axonCors]);
@@ -325,7 +331,7 @@ export default class AxonCore {
             }, "new http request")
         } else {
             logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
-        } 
+        }
 
         return res.status(data.responseCode).body(data.body)
     }
