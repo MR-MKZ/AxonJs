@@ -55,6 +55,7 @@ interface Headers extends http.OutgoingHttpHeaders {};
 
 export {
   AxonCore,
+  AxonRouter,
   Axon,
   Router,
   AxonCoreConfig,
