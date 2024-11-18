@@ -1,5 +1,5 @@
-import RouterException from "../error/RouterException";
-import { Controller, HttpMethods, Middleware } from "../types";
+import RouterException from "./exceptions/RouterException";
+import { Controller, HttpMethods, Middleware } from "../types/GlobalTypes";
 
 const duplicateError = (path: string) => {
     throw new RouterException({

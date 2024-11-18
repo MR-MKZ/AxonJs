@@ -2,9 +2,9 @@
  * Javascript simple example with controller return code completion.
  */
 
-import { AxonCore, Router } from "../src";
+import { Axon, Router } from "../src";
 
-const core = new AxonCore();
+const core = Axon();
 
 /**
  * all core configs are optional.

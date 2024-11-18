@@ -8,6 +8,9 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 
 Latest change: 
 - `CORS` config added to AxonCore.
+- An instance maker added for AxonCore for easier usage. (Axon function)
+- Rebase folder structure and filenames of project [#12](https://github.com/MR-MKZ/AxonJs/issues/12).
+- fixed routing bug [#2](https://github.com/MR-MKZ/AxonJs/issues/2)
 - Plugin manager system added to core. (Document will update soon - 2024/10/24)
 
 
@@ -33,13 +36,7 @@ You can checkout Axon benchmarks document and results from below link.
         <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/mr-mkz/axonjs/npm-publish.yml">
     </a>
     <a href="https://www.npmjs.com/package/@mr-mkz/axon">
-        <img alt="jsDelivr hits (npm)" src="https://img.shields.io/jsdelivr/npm/hy/%40mr-mkz%2Faxon">
-    </a>
-    <a href="https://www.npmjs.com/package/@mr-mkz/axon">
         <img alt="NPM Downloads" src="https://img.shields.io/npm/dy/%40mr-mkz%2Faxon?label=NPM%20Downloads&color=%235304db">
-    </a>
-    <a href="https://github.com/Mr-MKZ/AxonJs/releases/latest">
-        <img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/mr-mkz/axonjs/total?style=flat&label=Github%20Downloads&color=%235bc912">
     </a>
 </p>
 <p align="center">
@@ -48,9 +45,6 @@ You can checkout Axon benchmarks document and results from below link.
     </a>
     <a href="#">
         <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/%40mr-mkz%2Faxon">
-    </a>
-    <a href="#">
-        <img alt="GitHub Release" src="https://img.shields.io/github/v/release/mr-mkz/axonjs?label=Github%20release">
     </a>
     <a href="https://www.npmjs.com/package/@mr-mkz/axon">
         <img alt="NPM Version" src="https://img.shields.io/npm/v/%40mr-mkz%2Faxon?label=NPM%20release&color=%2304dba9">
@@ -109,7 +103,9 @@ You can access and create routes with just a few steps.
         ```
 3. load your routes in core with `loadRoute()` function;
     - ```js
-        const core = new AxonCore();
+        const core = Axon(); // easier and newer method
+        // or
+        // const core = new AxonCore();
 
         core.loadRoute(router)
 4. Done, you created your routes successfully :D

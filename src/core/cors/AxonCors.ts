@@ -1,5 +1,5 @@
 import assign from "object-assign";
-import { nextFn, Request, Response } from "..";
+import { nextFn, Request, Response } from "../..";
 import vary from "vary";
 
 const defaults = {

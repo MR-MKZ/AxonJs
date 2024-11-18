@@ -1,15 +1,27 @@
+// Libraries
+import * as http from "http";
+
+// Instances
 import AxonCore from "./core/AxonCore";
 import AxonRouter from "./Router/AxonRouter";
-import { Controller, Middleware , nextFn} from "./types";
-import { AxonCoreConfig } from "./core/coreTypes";
-import * as http from "http"
-import AxonResponse from "./core/AxonResponse";
-import { AxonResponseMessage, AxonCorsConfig } from "./core/coreTypes";
-import { AxonPlugin } from "./types/AxonPlugin";
 
-const Router = () => {
-  return new AxonRouter()
-}
+// Types
+import AxonResponse from "./core/response/AxonResponse";
+import { Controller, Middleware , nextFn} from "./types/GlobalTypes";
+import { AxonResponseMessage, AxonCorsConfig, AxonCoreConfig } from "./types/CoreTypes";
+import { AxonPlugin } from "./types/PluginTypes";
+
+/**
+ * Instance of AxonRouter for easier usage
+ * @returns {AxonRouter} returns an instance of AxonRouter
+ */
+const Router = (): AxonRouter => new AxonRouter();
+
+/**
+ * Instance of AxonCore for easier usage
+ * @returns {AxonCore} returns an instance of AxonCore
+ */
+const Axon = (): AxonCore => new AxonCore();
 
 declare module 'http' {
   interface IncomingMessage {
@@ -43,6 +55,7 @@ interface Headers extends http.OutgoingHttpHeaders {};
 
 export {
   AxonCore,
+  Axon,
   Router,
   AxonCoreConfig,
   AxonResponseMessage,

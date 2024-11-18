@@ -1,6 +1,6 @@
-import { AxonPlugin } from "../types/AxonPlugin";
-import AxonCore from "./AxonCore";
-import { logger } from "./utils/coreLogger";
+import { AxonPlugin } from "../../types/PluginTypes";
+import AxonCore from "../AxonCore";
+import { logger } from "../utils/coreLogger";
 
 export class PLuginLoader {
     private plugins: AxonPlugin[] = [];

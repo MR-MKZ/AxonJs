@@ -1,4 +1,4 @@
-interface AxonCoreConfig {
+type AxonCoreConfig = {
     /**
      * AxonCore debug mode.
      */
@@ -100,7 +100,7 @@ type AxonCorsConfig = {
 /**
  * Configuration for AxonCore custom response messages.
  */
-interface AxonResponseMessage {
+type AxonResponseMessage = {
     /**
      * response error message for 404 not found response from core
      * 

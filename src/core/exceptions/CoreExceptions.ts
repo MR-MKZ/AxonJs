@@ -1,5 +1,5 @@
-import RouterException from "../error/RouterException"
-import { HttpMethods } from "../types"
+import RouterException from "../../Router/exceptions/RouterException"
+import { HttpMethods } from "../../types/GlobalTypes"
 
 /**
  * throw new route duplicate error from core to client

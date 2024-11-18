@@ -3,7 +3,10 @@
 <p>Currently Axon is 2X faster than Express. :D please checkout <a href="media/README.md">Axon Benchmarks</a></p>
 <p>Latest change:</p>
 <ul>
-<li><code>text/plain</code> response in core default response errors bug fixed.</li>
+<li><code>CORS</code> config added to AxonCore.</li>
+<li>An instance maker added for AxonCore for easier usage. (Axon function)</li>
+<li>Rebase folder structure and filenames of project <a href="https://github.com/MR-MKZ/AxonJs/issues/12" target="_blank" class="external">#12</a>.</li>
+<li>fixed routing bug <a href="https://github.com/MR-MKZ/AxonJs/issues/2" target="_blank" class="external">#2</a></li>
 <li>Plugin manager system added to core. (Document will update soon - 2024/10/24)</li>
 </ul>
 <a id="md:installation" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Installation<a href="#md:installation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Install Axon.js with npm</p>
@@ -17,13 +20,7 @@
         <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/mr-mkz/axonjs/npm-publish.yml">
     </a>
     <a href="https://www.npmjs.com/package/@mr-mkz/axon">
-        <img alt="jsDelivr hits (npm)" src="https://img.shields.io/jsdelivr/npm/hy/%40mr-mkz%2Faxon">
-    </a>
-    <a href="https://www.npmjs.com/package/@mr-mkz/axon">
         <img alt="NPM Downloads" src="https://img.shields.io/npm/dy/%40mr-mkz%2Faxon?label=NPM%20Downloads&color=%235304db">
-    </a>
-    <a href="https://github.com/Mr-MKZ/AxonJs/releases/latest">
-        <img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/mr-mkz/axonjs/total?style=flat&label=Github%20Downloads&color=%235bc912">
     </a>
 </p>
 <p align="center">
@@ -32,9 +29,6 @@
     </a>
     <a href="#">
         <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/%40mr-mkz%2Faxon">
-    </a>
-    <a href="#">
-        <img alt="GitHub Release" src="https://img.shields.io/github/v/release/mr-mkz/axonjs?label=Github%20release">
     </a>
     <a href="https://www.npmjs.com/package/@mr-mkz/axon">
         <img alt="NPM Version" src="https://img.shields.io/npm/v/%40mr-mkz%2Faxon?label=NPM%20release&color=%2304dba9">
@@ -89,7 +83,7 @@
 <li>load your routes in core with <code>loadRoute()</code> function;
 <ul>
 <li>
-<pre><code class="js"><span class="hl-0">  </span><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-4">core</span><span class="hl-0"> = </span><span class="hl-3">new</span><span class="hl-0"> </span><span class="hl-1">AxonCore</span><span class="hl-0">();</span><br/><br/><span class="hl-0">  </span><span class="hl-5">core</span><span class="hl-0">.</span><span class="hl-1">loadRoute</span><span class="hl-0">(</span><span class="hl-5">router</span><span class="hl-0">)</span>
+<pre><code class="js"><span class="hl-0">  </span><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-4">core</span><span class="hl-0"> = </span><span class="hl-1">Axon</span><span class="hl-0">(); </span><span class="hl-6">// easier and newer method</span><br/><span class="hl-0">  </span><span class="hl-6">// or</span><br/><span class="hl-0">  </span><span class="hl-6">// const core = new AxonCore();</span><br/><br/><span class="hl-0">  </span><span class="hl-5">core</span><span class="hl-0">.</span><span class="hl-1">loadRoute</span><span class="hl-0">(</span><span class="hl-5">router</span><span class="hl-0">)</span>
 </code><button type="button">Copy</button></pre>
 
 </li>
@@ -109,7 +103,7 @@
 <li>body: This option will end request and send response to user so you must use this as last option</li>
 </ul>
 <p>Example:</p>
-<pre><code class="js"><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-1">controller</span><span class="hl-0"> = </span><span class="hl-3">async</span><span class="hl-0"> (</span><span class="hl-5">req</span><span class="hl-0">, </span><span class="hl-5">res</span><span class="hl-0">) </span><span class="hl-3">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-6">return</span><span class="hl-0"> </span><span class="hl-5">res</span><span class="hl-0">.</span><span class="hl-1">status</span><span class="hl-0">(</span><span class="hl-7">200</span><span class="hl-0">).</span><span class="hl-1">body</span><span class="hl-0">({</span><br/><span class="hl-0">        </span><span class="hl-5">message:</span><span class="hl-0"> </span><span class="hl-2">&quot;Hello, World&quot;</span><br/><span class="hl-0">    })</span><br/><span class="hl-0">}</span>
+<pre><code class="js"><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-1">controller</span><span class="hl-0"> = </span><span class="hl-3">async</span><span class="hl-0"> (</span><span class="hl-5">req</span><span class="hl-0">, </span><span class="hl-5">res</span><span class="hl-0">) </span><span class="hl-3">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-7">return</span><span class="hl-0"> </span><span class="hl-5">res</span><span class="hl-0">.</span><span class="hl-1">status</span><span class="hl-0">(</span><span class="hl-8">200</span><span class="hl-0">).</span><span class="hl-1">body</span><span class="hl-0">({</span><br/><span class="hl-0">        </span><span class="hl-5">message:</span><span class="hl-0"> </span><span class="hl-2">&quot;Hello, World&quot;</span><br/><span class="hl-0">    })</span><br/><span class="hl-0">}</span>
 </code><button type="button">Copy</button></pre>
 
 <a id="md:middleware" class="tsd-anchor"></a><h3 class="tsd-anchor-link">Middleware<a href="#md:middleware" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p>middleware is a function which runs before running controller for validations or some actions like this and you can use it in two ways.</p>
@@ -165,7 +159,7 @@ if you want to have ide suggestions for core config use AxonCoreConfig type.</p>
 <li>port: default value of port is 8000</li>
 <li>callback: if you don't set callback function, core will log running message automatically if logger be on in core config.(logger is on in default config)</li>
 </ol>
-<pre><code class="js"><span class="hl-5">core</span><span class="hl-0">.</span><span class="hl-1">listen</span><span class="hl-0">(</span><span class="hl-2">&quot;0.0.0.0&quot;</span><span class="hl-0">, </span><span class="hl-7">80</span><span class="hl-0">, () </span><span class="hl-3">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-5">console</span><span class="hl-0">.</span><span class="hl-1">log</span><span class="hl-0">(</span><span class="hl-2">&quot;server is running on port 80&quot;</span><span class="hl-0">)</span><br/><span class="hl-0">});</span>
+<pre><code class="js"><span class="hl-5">core</span><span class="hl-0">.</span><span class="hl-1">listen</span><span class="hl-0">(</span><span class="hl-2">&quot;0.0.0.0&quot;</span><span class="hl-0">, </span><span class="hl-8">80</span><span class="hl-0">, () </span><span class="hl-3">=&gt;</span><span class="hl-0"> {</span><br/><span class="hl-0">    </span><span class="hl-5">console</span><span class="hl-0">.</span><span class="hl-1">log</span><span class="hl-0">(</span><span class="hl-2">&quot;server is running on port 80&quot;</span><span class="hl-0">)</span><br/><span class="hl-0">});</span>
 </code><button type="button">Copy</button></pre>
 
 <a id="md:contributing" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Contributing<a href="#md:contributing" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Contributions are always welcome!</p>

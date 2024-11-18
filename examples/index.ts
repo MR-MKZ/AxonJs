@@ -2,12 +2,12 @@
  * Typescript simple example
  */
 
-import { AxonCore, Request, Response, nextFn } from "../src";
+import { Axon, Request, Response, nextFn } from "../src";
 import { v1Routes } from "./routes/v1";
 import { v2Routes } from "./routes/v2";
 import { LogPluginTest } from "./plugins/log";
 
-const core = new AxonCore()
+const core = Axon()
 
 core.loadConfig({
     DEBUG: false,            // default false

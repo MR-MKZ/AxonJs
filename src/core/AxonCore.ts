@@ -1,19 +1,30 @@
-import Router from "../Router/AxonRouter";
-import { Controller, HttpMethods, JsonResponse, Middleware } from "../types"
 import * as http from "http";
-import { routeDuplicateException } from "./CoreExceptions";
-import addRoutePrefix from "./utils/routePrefixHandler";
-import { AxonCoreConfig, AxonCorsConfig } from "./coreTypes";
-import { logger } from "./utils/coreLogger";
 import { colors } from "@spacingbat3/kolor"
-import getRequestBody from "./utils/getRequestBody";
 import { Key, pathToRegexp, Keys } from "path-to-regexp";
-import { Request, Response, Headers } from "..";
-import AxonResponse from "./AxonResponse";
-import { PLuginLoader } from "./PluginLoader";
-import { AxonPlugin } from "../types/AxonPlugin";
-import AxonCors from "./AxonCors";
 
+// Utils
+import { logger } from "./utils/coreLogger";
+import addRoutePrefix from "./utils/routePrefixHandler";
+import getRequestBody from "./utils/getRequestBody";
+
+// Types
+import { Request, Response} from "..";
+import { AxonPlugin } from "../types/PluginTypes";
+import { AxonCoreConfig, AxonCorsConfig } from "../types/CoreTypes";
+import { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes"
+
+// Exceptions
+import { routeDuplicateException } from "./exceptions/CoreExceptions";
+
+// Instances
+import Router from "../Router/AxonRouter";
+
+// Features
+import { PLuginLoader } from "./plugin/PluginLoader";
+import AxonResponse from "./response/AxonResponse";
+import AxonCors from "./cors/AxonCors";
+
+// Default values
 const defaultResponses = {
     notFound: "Not found",
     serverError: "Internal server error",
@@ -117,6 +128,9 @@ export default class AxonCore {
 
                     if (route[0] !== "/")
                         route = `/${route}`
+
+                    if (route[route.length - 1] === "/")
+                        route = route.slice(0, -1)
 
                     this.routes[method][route] = routerRoutes[method][originalRoute]
                     this.routes['OPTIONS'][route] = routerRoutes[method][originalRoute];
@@ -382,7 +396,7 @@ export default class AxonCore {
 
         if (!callback) {
             callback = () => {
-                logger.core(colors.whiteBright(`server started on ${host}:${port}`))
+                logger.core(colors.whiteBright(`server started on http://${host}:${port}`))
             }
         }
 
