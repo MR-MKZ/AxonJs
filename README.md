@@ -7,10 +7,7 @@ Axon is a backend library who tries to be simple and powerfull.
 Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](./benchmarks/README.md)
 
 Latest change: 
-- `CORS` config added to AxonCore.
-- An instance maker added for AxonCore for easier usage. (Axon function)
-- Rebase folder structure and filenames of project [#12](https://github.com/MR-MKZ/AxonJs/issues/12).
-- fixed routing bug [#2](https://github.com/MR-MKZ/AxonJs/issues/2)
+- fixed core freeze when load route function didn't bind. [#3](https://github.com/MR-MKZ/AxonJs/issues/3)
 - Plugin manager system added to core. (Document will update soon - 2024/10/24)
 
 
