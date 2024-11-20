@@ -8,7 +8,7 @@ import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
 
 // Types
-import { Request, Response} from "..";
+import { Request, Response } from "..";
 import { AxonPlugin } from "../types/PluginTypes";
 import { AxonCoreConfig, AxonCorsConfig } from "../types/CoreTypes";
 import { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes"
@@ -43,6 +43,7 @@ export default class AxonCore {
     private config: AxonCoreConfig;
     private configsLoaded: boolean;
     private passConfig: boolean;
+    private passRoutes: boolean;
     private routesLoaded: boolean;
 
     private pluginLoader: PLuginLoader = new PLuginLoader();
@@ -69,6 +70,7 @@ export default class AxonCore {
 
         this.configsLoaded = false;
         this.passConfig = true;
+        this.passRoutes = true;
         this.routesLoaded = false;
     }
 
@@ -115,31 +117,35 @@ export default class AxonCore {
      * @param router instance of Router which routes setted with it.
      */
     async loadRoute(router: Router, prefix?: string) {
+        this.passRoutes = false;
+
         let routerRoutes: HttpMethods = router.exportRoutes();
 
         (Object.keys(routerRoutes) as Array<keyof HttpMethods>).forEach((method) => {
-            Object.keys(routerRoutes[method]).forEach((route) => {
-                if (!this.routes[method][route]) {
-                    const originalRoute = route
+            if (Object.keys(routerRoutes[method]).length > 0) {
+                Object.keys(routerRoutes[method]).forEach((route) => {
+                    if (!this.routes[method][route]) {
+                        const originalRoute = route
 
-                    if (prefix) {
-                        route = addRoutePrefix(route, prefix)
+                        if (prefix) {
+                            route = addRoutePrefix(route, prefix)
+                        }
+
+                        if (route[0] !== "/")
+                            route = `/${route}`
+
+                        if (route[route.length - 1] === "/")
+                            route = route.slice(0, -1)
+
+                        this.routes[method][route] = routerRoutes[method][originalRoute]
+                        this.routes['OPTIONS'][route] = routerRoutes[method][originalRoute];
+
+                        logger.debug(`loaded route ${method} ${route}`)
+                    } else {
+                        routeDuplicateException(method, route)
                     }
-
-                    if (route[0] !== "/")
-                        route = `/${route}`
-
-                    if (route[route.length - 1] === "/")
-                        route = route.slice(0, -1)
-
-                    this.routes[method][route] = routerRoutes[method][originalRoute]
-                    this.routes['OPTIONS'][route] = routerRoutes[method][originalRoute];
-
-                    logger.debug(`loaded route ${method} ${route}`)
-                } else {
-                    routeDuplicateException(method, route)
-                }
-            })
+                })
+            }
         })
 
         this.routesLoaded = true;
@@ -362,15 +368,18 @@ export default class AxonCore {
         const corePreloader = async (): Promise<void> => {
             return new Promise((resolve) => {
                 const interval = setInterval(() => {
-                    if (this.passConfig) {
+                    if (this.passConfig && !this.passRoutes) {                        
                         if (this.routesLoaded) {
-                            logger.info("all routes loaded!");
+                            logger.info("all routes loaded");
                             clearInterval(interval);
                             resolve();
                         }
                     } else {
                         if (this.routesLoaded && this.configsLoaded) {
-                            logger.info("all configs and routes loaded!");
+                            logger.info("all configs and routes loaded");
+                            clearInterval(interval);
+                            resolve();
+                        } else if (this.passRoutes) {
                             clearInterval(interval);
                             resolve();
                         }
