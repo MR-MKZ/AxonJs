@@ -1,4 +1,5 @@
 import * as http from "http";
+import * as https from "https";
 import { colors } from "@spacingbat3/kolor"
 import { Key, pathToRegexp, Keys } from "path-to-regexp";
 
@@ -23,6 +24,7 @@ import Router from "../Router/AxonRouter";
 import { PLuginLoader } from "./plugin/PluginLoader";
 import AxonResponse from "./response/AxonResponse";
 import AxonCors from "./cors/AxonCors";
+import { log } from "console";
 
 // Default values
 const defaultResponses = {
@@ -65,7 +67,8 @@ export default class AxonCore {
             LOGGER: true,
             LOGGER_VERBOSE: false,
             RESPONSE_MESSAGES: defaultResponses,
-            CORS: defaultCors
+            CORS: defaultCors,
+            HTTPS: {}
         };
 
         this.configsLoaded = false;
@@ -100,6 +103,7 @@ export default class AxonCore {
         this.config.LOGGER_VERBOSE = config.LOGGER_VERBOSE || false
         this.config.RESPONSE_MESSAGES = { ...config.RESPONSE_MESSAGES }
         this.config.CORS = { ...config.CORS }
+        this.config.HTTPS = { ...config.HTTPS }
 
         if (this.config.DEBUG) {
             logger.level = "debug"
@@ -206,7 +210,7 @@ export default class AxonCore {
             })
         }
 
-        return Object.keys(this.routes[method]).forEach(async (path, index) => {
+        Object.keys(this.routes[method]).forEach(async (path, index) => {
             let keys: Keys;
             const regexp = pathToRegexp(path);
             keys = regexp.keys
@@ -238,28 +242,27 @@ export default class AxonCore {
 
                         const axonCors = await AxonCors.middlewareWrapper(this.config.CORS);
 
-                        return this.handleMiddleware(req, res, async () => {
-                            return await this.handleMiddleware(req, res, async () => {
-                                return await this.handleMiddleware(req, res, async () => {
+                        await this.handleMiddleware(req, res, async () => {
+                            await this.handleMiddleware(req, res, async () => {
+                                await this.handleMiddleware(req, res, async () => {
                                     await controller(req, res);
-
-                                    // log incoming requests
-                                    if (this.config.LOGGER_VERBOSE) {
-                                        logger.request({
-                                            ip: req.socket.remoteAddress,
-                                            url: req.url,
-                                            method: req.method,
-                                            headers: req.headers,
-                                            body: req.body,
-                                            code: res.statusCode
-                                        }, "new http request")
-                                    } else {
-                                        logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
-                                    }
-
                                 }, middlewares);
                             }, this.globalMiddlewares);
                         }, [axonCors]);
+
+                        // log incoming requests
+                        if (this.config.LOGGER_VERBOSE) {
+                            logger.request({
+                                ip: req.socket.remoteAddress,
+                                url: req.url,
+                                method: req.method,
+                                headers: req.headers,
+                                body: req.body,
+                                code: res.statusCode
+                            }, "new http request")
+                        } else {
+                            logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
+                        }
 
                     } else {
                         return;
@@ -362,7 +365,7 @@ export default class AxonCore {
      * @param {number} port server port
      * @param {Function} [callback] callback a function to run after starting to listen
      */
-    async listen(host: string = "127.0.0.1", port: number = 8000, callback?: () => void) {
+    async listen(host: string = "127.0.0.1", port: number | { https: number, http: number } = 8000, callback?: (mode?: string) => void) {
 
         // Wait until some necessary items are loaded before starting the server
         const corePreloader = async (): Promise<void> => {
@@ -393,7 +396,7 @@ export default class AxonCore {
 
         await this.#initializePlugins();
 
-        const server = http.createServer(async (req: http.IncomingMessage, res: http.ServerResponse) => {
+        const httpHandler = async (req: http.IncomingMessage, res: http.ServerResponse) => {
             try {
                 await getRequestBody(req)
 
@@ -401,17 +404,55 @@ export default class AxonCore {
             } catch (error) {
                 logger.error(error, "Unexpected core error")
             }
-        })
+        }
 
-        if (!callback) {
-            callback = () => {
-                logger.core(colors.whiteBright(`server started on http://${host}:${port}`))
+        const portHandler = (mode: string) => {
+            switch (mode) {
+                case "http":
+                    if (typeof port === "object") {
+                        return port.http 
+                    } else {
+                        return port
+                    }
+                case "https":
+                    if (typeof port === "object") {
+                        return port.https
+                    } else {
+                        return 8443
+                    }
+                default:
+                    return 8000
             }
         }
 
-        server.listen(port, host, callback)
+        const isHttpsActive = () => Object.keys(this.config.HTTPS || {}).length > 0;
+        let httpsServer;
 
-        server.on('error', (e) => {
+        if (isHttpsActive()) {
+            httpsServer = https.createServer(this.config.HTTPS || {}, httpHandler);
+        }
+        const httpServer = http.createServer(httpHandler)
+
+        if (!callback) {
+            callback = (mode?: string) => {
+                if (mode === "https") {
+                    isHttpsActive() && logger.core(colors.whiteBright(`server started on https://${host}:${portHandler("https")}`));
+                } else if (mode === "http") {
+                    logger.core(colors.whiteBright(`server started on http://${host}:${portHandler("http")}`));
+                }
+            }
+        }
+
+        // running web servers
+        httpsServer?.listen(portHandler("https"), host, () => callback("https"));
+        httpServer.listen(portHandler("http"), host, () => callback("http"));
+
+        httpsServer?.on('error', (e) => {
+            logger.error(e, `starting server failed`)
+            process.exit(-1)
+        });
+
+        httpServer.on('error', (e) => {
             logger.error(e, `starting server failed`)
             process.exit(-1)
         });

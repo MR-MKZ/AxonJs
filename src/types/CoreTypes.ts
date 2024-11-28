@@ -1,3 +1,5 @@
+import { ServerOptions } from "https";
+
 type AxonCoreConfig = {
     /**
      * AxonCore debug mode.
@@ -19,7 +21,14 @@ type AxonCoreConfig = {
      * Cors configuration for AxonCore.
      */
     CORS?: AxonCorsConfig;
+
+    /**
+     * Https configuration for AxonCore.
+     */
+    HTTPS?: AxonHttpsConfig;
 }
+
+type AxonHttpsConfig = ServerOptions
 
 /**
  * Cors configuration for AxonCore.
@@ -127,5 +136,6 @@ type AxonResponseMessage = {
 export {
     AxonCoreConfig,
     AxonResponseMessage,
-    AxonCorsConfig
+    AxonCorsConfig,
+    AxonHttpsConfig
 }

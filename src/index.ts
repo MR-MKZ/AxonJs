@@ -8,7 +8,7 @@ import AxonRouter from "./Router/AxonRouter";
 // Types
 import AxonResponse from "./core/response/AxonResponse";
 import { Controller, Middleware , nextFn} from "./types/GlobalTypes";
-import { AxonResponseMessage, AxonCorsConfig, AxonCoreConfig } from "./types/CoreTypes";
+import { AxonResponseMessage, AxonCorsConfig, AxonCoreConfig, AxonHttpsConfig } from "./types/CoreTypes";
 import { AxonPlugin } from "./types/PluginTypes";
 
 /**
@@ -61,6 +61,7 @@ export {
   AxonCoreConfig,
   AxonResponseMessage,
   AxonCorsConfig,
+  AxonHttpsConfig,
   Request,
   Response,
   Headers,
