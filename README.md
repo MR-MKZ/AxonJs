@@ -7,7 +7,7 @@ Axon is a backend library who tries to be simple and powerfull.
 Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](./benchmarks/README.md)
 
 Latest change: 
-- fixed core freeze when load route function didn't bind. [#3](https://github.com/MR-MKZ/AxonJs/issues/3)
+- Https support added to AxonCore. [#17](https://github.com/MR-MKZ/AxonJs/issues/17)
 - Plugin manager system added to core. (Document will update soon - 2024/10/24)
 
 
@@ -58,6 +58,7 @@ You can checkout Axon benchmarks document and results from below link.
 - Plugin manager (You can create your own plugins and use them in other projects)
 - Controllers and Middlewares
 - Default cors configuration method
+- Support https server
 
 **More features soon...**
 
@@ -157,6 +158,7 @@ AxonJs has some types which can help you in developing your applications for aut
 - `AxonCoreConfig`: Type of core config object for configuration Axon core as you want.
 - `AxonResponseMessage`: Type of core config option RESPONSE_MESSAGES.
 - `AxonCorsConfig`: Type of core config option CORS.
+- `AxonHttpsConfig`: Type of core config option HTTPS.
 - `Request`: Type of controller request param. (IncomingMessage)
 - `Response`: Type of controller response param. (ServerResponse)
 - `Headers`: Type of response headers. (OutgoingHeaders)
@@ -183,10 +185,22 @@ Configs:
 - `LOGGER_VERBOSE`: boolean to set core logger in verbose mode. (default false)
 - `RESPONSE_MESSAGES`: object to change default value of some core responses. (type: AxonResponseMessage)
 - `CORS`: object to change core cors settings. (type: AxonCorsConfig)
+- `HTTPS`: object to config server for https. (type: AxonHttpsConfig)
 
 ### Running server
 
 `listen` method runs your webserver.
+
+**If you want to run your server on https, you have to set key and cert file in HTTPS config of core to run https server automatically by core**
+
+```js
+core.loadConfig({
+    HTTPS: {
+        key: fs.readFileSync(path.join("server.key")),
+        cert: fs.readFileSync(path.join("server.crt"))
+    }
+})
+```
 
 **`core.listen()` has some default values**
 1. host: default value of host in 127.0.0.1
