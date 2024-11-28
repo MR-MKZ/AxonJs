@@ -3,6 +3,8 @@
  */
 
 import { Axon, Router } from "../src";
+import path from "path";
+import fs from "fs";
 
 const core = Axon();
 
@@ -19,6 +21,10 @@ core.loadConfig({
     },
     CORS: {
         origin: 'https://github.com'
+    },
+    HTTPS: {
+        key: fs.readFileSync(path.join("examples", "server.key")),
+        cert: fs.readFileSync(path.join("examples", "server.crt"))
     }
 })
 

@@ -3,10 +3,7 @@
 <p>Currently Axon is 2X faster than Express. :D please checkout <a href="media/README.md">Axon Benchmarks</a></p>
 <p>Latest change:</p>
 <ul>
-<li><code>CORS</code> config added to AxonCore.</li>
-<li>An instance maker added for AxonCore for easier usage. (Axon function)</li>
-<li>Rebase folder structure and filenames of project <a href="https://github.com/MR-MKZ/AxonJs/issues/12" target="_blank" class="external">#12</a>.</li>
-<li>fixed routing bug <a href="https://github.com/MR-MKZ/AxonJs/issues/2" target="_blank" class="external">#2</a></li>
+<li>Https support added to AxonCore. <a href="https://github.com/MR-MKZ/AxonJs/issues/17" target="_blank" class="external">#17</a></li>
 <li>Plugin manager system added to core. (Document will update soon - 2024/10/24)</li>
 </ul>
 <a id="md:installation" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Installation<a href="#md:installation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>Install Axon.js with npm</p>
@@ -43,6 +40,7 @@
 <li>Plugin manager (You can create your own plugins and use them in other projects)</li>
 <li>Controllers and Middlewares</li>
 <li>Default cors configuration method</li>
+<li>Support https server</li>
 </ul>
 <p><strong>More features soon...</strong></p>
 <a id="md:roadmap-still-thinking" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Roadmap (still thinking)<a href="#md:roadmap-still-thinking" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
@@ -131,6 +129,7 @@ you can also use multiple middlewares in this way by adding middleware functions
 <li><code>AxonCoreConfig</code>: Type of core config object for configuration Axon core as you want.</li>
 <li><code>AxonResponseMessage</code>: Type of core config option RESPONSE_MESSAGES.</li>
 <li><code>AxonCorsConfig</code>: Type of core config option CORS.</li>
+<li><code>AxonHttpsConfig</code>: Type of core config option HTTPS.</li>
 <li><code>Request</code>: Type of controller request param. (IncomingMessage)</li>
 <li><code>Response</code>: Type of controller response param. (ServerResponse)</li>
 <li><code>Headers</code>: Type of response headers. (OutgoingHeaders)</li>
@@ -151,8 +150,13 @@ if you want to have ide suggestions for core config use AxonCoreConfig type.</p>
 <li><code>LOGGER_VERBOSE</code>: boolean to set core logger in verbose mode. (default false)</li>
 <li><code>RESPONSE_MESSAGES</code>: object to change default value of some core responses. (type: AxonResponseMessage)</li>
 <li><code>CORS</code>: object to change core cors settings. (type: AxonCorsConfig)</li>
+<li><code>HTTPS</code>: object to config server for https. (type: AxonHttpsConfig)</li>
 </ul>
 <a id="md:running-server" class="tsd-anchor"></a><h3 class="tsd-anchor-link">Running server<a href="#md:running-server" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><p><code>listen</code> method runs your webserver.</p>
+<p><strong>If you want to run your server on https, you have to set key and cert file in HTTPS config of core to run https server automatically by core</strong></p>
+<pre><code class="js"><span class="hl-5">core</span><span class="hl-0">.</span><span class="hl-1">loadConfig</span><span class="hl-0">({</span><br/><span class="hl-0">    </span><span class="hl-5">HTTPS:</span><span class="hl-0"> {</span><br/><span class="hl-0">        </span><span class="hl-5">key:</span><span class="hl-0"> </span><span class="hl-5">fs</span><span class="hl-0">.</span><span class="hl-1">readFileSync</span><span class="hl-0">(</span><span class="hl-5">path</span><span class="hl-0">.</span><span class="hl-1">join</span><span class="hl-0">(</span><span class="hl-2">&quot;server.key&quot;</span><span class="hl-0">)),</span><br/><span class="hl-0">        </span><span class="hl-5">cert:</span><span class="hl-0"> </span><span class="hl-5">fs</span><span class="hl-0">.</span><span class="hl-1">readFileSync</span><span class="hl-0">(</span><span class="hl-5">path</span><span class="hl-0">.</span><span class="hl-1">join</span><span class="hl-0">(</span><span class="hl-2">&quot;server.crt&quot;</span><span class="hl-0">))</span><br/><span class="hl-0">    }</span><br/><span class="hl-0">})</span>
+</code><button type="button">Copy</button></pre>
+
 <p><strong><code>core.listen()</code> has some default values</strong></p>
 <ol>
 <li>host: default value of host in 127.0.0.1</li>
