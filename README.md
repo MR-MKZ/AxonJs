@@ -6,6 +6,8 @@ Axon is a backend library who tries to be simple and powerfull.
 
 Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](./benchmarks/README.md)
 
+[Axon telegram channel](https://t.me/axonjs)
+
 Latest change: 
 - Https support added to AxonCore. [#17](https://github.com/MR-MKZ/AxonJs/issues/17)
 - Plugin manager system added to core. (Document will update soon - 2024/10/24)
