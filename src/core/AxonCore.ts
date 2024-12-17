@@ -123,7 +123,7 @@ export default class AxonCore {
     async loadRoute(router: Router, prefix?: string) {
         this.passRoutes = false;
 
-        let routerRoutes: HttpMethods = router.exportRoutes();
+        const routerRoutes: HttpMethods = router.exportRoutes();
 
         (Object.keys(routerRoutes) as Array<keyof HttpMethods>).forEach((method) => {
             if (Object.keys(routerRoutes[method]).length > 0) {
@@ -161,7 +161,7 @@ export default class AxonCore {
         }
 
         if (typeof fn === "object") {
-            for (let middleware of fn) {
+            for (const middleware of fn) {
                 if (typeof middleware === "function") {
                     this.globalMiddlewares.push(middleware);
                 }
@@ -234,11 +234,11 @@ export default class AxonCore {
 
                         req.params = params;
 
-                        let route = this.routes[method][path]
+                        const route = this.routes[method][path]
 
-                        let middlewares: Middleware[] = route.getMiddlewares();
+                        const middlewares: Middleware[] = route.getMiddlewares();
 
-                        let controller: Controller = route.getController();
+                        const controller: Controller = route.getController();
 
                         const axonCors = await AxonCors.middlewareWrapper(this.config.CORS);
 
