@@ -15,7 +15,7 @@ const isString = (s: any) => {
 
 const isOriginAllowed = async (origin: any, allowedOrigin: any) => {
     if (Array.isArray(allowedOrigin)) {
-        for (var i = 0; i < allowedOrigin.length; ++i) {
+        for (let i = 0; i < allowedOrigin.length; ++i) {
             if (await isOriginAllowed(origin, allowedOrigin[i])) {
                 return true;
             }
@@ -31,7 +31,7 @@ const isOriginAllowed = async (origin: any, allowedOrigin: any) => {
 }
 
 const configureOrigin = async (options: any, req: Request) => {
-    var requestOrigin = req.headers.origin,
+    let requestOrigin = req.headers.origin,
         headers = [],
         isAllowed;
 
@@ -68,7 +68,7 @@ const configureOrigin = async (options: any, req: Request) => {
 }
 
 const configureMethods = async (options: any) => {
-    var methods = options.methods;
+    let methods = options.methods;
     if (methods.join) {
         methods = options.methods.join(','); // .methods is an array, so turn it into a string
     }
@@ -89,8 +89,8 @@ const configureCredentials = async (options: any) => {
 }
 
 const configureAllowedHeaders = async (options: any, req: Request) => {
-    var allowedHeaders = options.allowedHeaders || options.headers;
-    var headers = [];
+    let allowedHeaders = options.allowedHeaders || options.headers;
+    const headers = [];
 
     if (!allowedHeaders) {
         allowedHeaders = req.headers['access-control-request-headers']; // .headers wasn't specified, so reflect the request headers
@@ -112,7 +112,7 @@ const configureAllowedHeaders = async (options: any, req: Request) => {
 }
 
 const configureExposedHeaders = async (options: any) => {
-    var headers = options.exposedHeaders;
+    let headers = options.exposedHeaders;
     if (!headers) {
         return null;
     } else if (headers.join) {
@@ -128,7 +128,7 @@ const configureExposedHeaders = async (options: any) => {
 }
 
 const configureMaxAge = async (options: any) => {
-    var maxAge = (typeof options.maxAge === 'number' || options.maxAge) && options.maxAge.toString()
+    const maxAge = (typeof options.maxAge === 'number' || options.maxAge) && options.maxAge.toString()
     if (maxAge && maxAge.length) {
         return {
             key: 'Access-Control-Max-Age',
@@ -139,8 +139,8 @@ const configureMaxAge = async (options: any) => {
 }
 
 const applyHeaders = async (headers: any, res: Response) => {
-    for (var i = 0, n = headers.length; i < n; i++) {
-        var header = headers[i];
+    for (let i = 0, n = headers.length; i < n; i++) {
+        const header = headers[i];
         if (header) {
             if (Array.isArray(header)) {
                 applyHeaders(header, res);
@@ -154,7 +154,7 @@ const applyHeaders = async (headers: any, res: Response) => {
 }
 
 const cors = async (options: any, req: Request, res: Response, next: nextFn) => {
-    var headers = [],
+    const headers = [],
         method = req.method && req.method.toUpperCase && req.method.toUpperCase();
 
     if (method === 'OPTIONS') {
@@ -188,7 +188,7 @@ const cors = async (options: any, req: Request, res: Response, next: nextFn) => 
 
 const middlewareWrapper = async (o?: any) => {
     // if options are static (either via defaults or custom options passed in), wrap in a function
-    var optionsCallback: (req: Request, cb: any) => Promise<void>;
+    let optionsCallback: (req: Request, cb: any) => Promise<void>;
     if (typeof o === 'function') {
         optionsCallback = o;
     } else {
@@ -210,8 +210,8 @@ const middlewareWrapper = async (o?: any) => {
                 });
                 // await next(err);
             } else {
-                var corsOptions = assign({}, defaults, options);
-                var originCallback = null;
+                const corsOptions = assign({}, defaults, options);
+                let originCallback = null;
                 if (corsOptions.origin && typeof corsOptions.origin === 'function') {
                     originCallback = corsOptions.origin;
                 } else if (corsOptions.origin) {
