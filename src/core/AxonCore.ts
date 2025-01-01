@@ -81,6 +81,16 @@ export default class AxonCore {
      * Loads a specified Axon plugin using the plugin loader.
      *
      * @param {AxonPlugin} plugin - The plugin to be loaded. It should be an instance of AxonPlugin.
+     * @example
+     * // this class must implements AxonPlugin type
+     * class MyPlugin implements AxonPlugin {
+     *      name = "plugin"
+     *      version = "1.0.0"
+     * 
+     *      init(core) {}
+     * }
+     * 
+     * core.loadPlugin(new MyPlugin())
      */
     async loadPlugin(plugin: AxonPlugin) {
         await this.pluginLoader.loadPlugin(plugin);
@@ -94,7 +104,13 @@ export default class AxonCore {
      * A method to config core as you want
      * 
      * If you want to config the core, use this method before all other methods.
+     * 
      * @param config core config object
+     * @example
+     * core.loadConfig({
+     *      DEBUG: true,
+     *      CORS: {}
+     * });
      */
     async loadConfig(config: AxonCoreConfig) {
         this.passConfig = false;
@@ -119,6 +135,13 @@ export default class AxonCore {
     /**
      * loads created routes
      * @param router instance of Router which routes setted with it.
+     * @example
+     * const router = Router()
+     * 
+     * router.get('/', async (req, res) => {});
+     * 
+     * core.loadRoute(router) // without prefix
+     * core.loadRoute(router, '/api/v1') // with prefix
      */
     async loadRoute(router: Router, prefix?: string) {
         this.passRoutes = false;
@@ -155,6 +178,13 @@ export default class AxonCore {
         this.routesLoaded = true;
     }
 
+    /**
+     * You can set one or many middlewares in global scope with this method.
+     * @param middleware
+     * @example
+     * core.globalMiddleware(authMiddleware)
+     * core.globalMiddleware([uploadMiddleware, useMiddleware])
+     */
     async globalMiddleware(fn: Middleware | Middleware[]) {
         if (typeof fn === "function") {
             this.globalMiddlewares.push(fn)
@@ -301,7 +331,7 @@ export default class AxonCore {
     private async handleMiddleware(
         req: Request,
         res: Response,
-        next: () => Promise<any>,
+        next: () => Promise<void>,
         middlewares: Middleware[]
     ) {
         let index = 0;
@@ -364,6 +394,13 @@ export default class AxonCore {
      * @param {string} host server host address
      * @param {number} port server port
      * @param {Function} [callback] callback a function to run after starting to listen
+     * @example
+     * core.listen("0.0.0.0", 80)
+     * // or
+     * core.listen("0.0.0.0", {
+     *      https: 443,
+     *      http: 80
+     * })
      */
     async listen(host: string = "127.0.0.1", port: number | { https: number, http: number } = 8000, callback?: (mode?: string) => void) {
 
@@ -436,7 +473,9 @@ export default class AxonCore {
         if (!callback) {
             callback = (mode?: string) => {
                 if (mode === "https") {
-                    isHttpsActive() && logger.core(colors.whiteBright(`server started on https://${host}:${portHandler("https")}`));
+                    if (isHttpsActive()) {
+                        logger.core(colors.whiteBright(`server started on https://${host}:${portHandler("https")}`));
+                    }
                 } else if (mode === "http") {
                     logger.core(colors.whiteBright(`server started on http://${host}:${portHandler("http")}`));
                 }

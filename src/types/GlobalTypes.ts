@@ -21,11 +21,11 @@ export type JsonResponse = {
     responseMessage?: string;
 }
 
-export type Controller = (req: Request, res: Response) => Promise<any>
+export type Controller = (req: Request, res: Response) => Promise<void>
 
-export type Middleware = (req: Request, res: Response, next: nextFn) => Promise<any>;
+export type Middleware = (req: Request, res: Response, next: nextFn) => Promise<void>;
 
-export type nextFn = () => Promise<any>;
+export type nextFn = () => Promise<void>;
 
 export interface ExceptionMeta {
     type: string;
