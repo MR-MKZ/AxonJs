@@ -56,10 +56,13 @@
   "dependencies": {
     "@spacingbat3/kolor": "^4.0.0",
     "@types/node": "^22.5.4",
+    "joi": "^17.13.3",
     "moment": "^2.30.1",
     "object-assign": "^4.1.1",
     "pino": "^9.4.0",
     "pino-pretty": "^11.2.2",
-    "vary": "^1.1.2"
+    "vary": "^1.1.2",
+    "yup": "^1.4.0",
+    "zod": "^3.23.8"
   }
 }

@@ -28,7 +28,7 @@ declare module 'http' {
     /**
      * the body of request which sent from client
      */
-    body?: any;
+    body?: string | Record<string, string | undefined> | undefined;
     /**
      * incoming request parameters in request path
      * 
@@ -37,7 +37,7 @@ declare module 'http' {
      * - path: `/api/v1/user/12`
      * - params: { "id": 12 }
      */
-    params: any;
+    params: Record<string, string | undefined>;
   }
 
   interface ServerResponse {
