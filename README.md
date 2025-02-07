@@ -196,12 +196,11 @@ Configs:
 **If you want to run your server on https, you have to set key and cert file in HTTPS config of core to run https server automatically by core**
 
 ```js
-core.loadConfig({
-    HTTPS: {
-        key: fs.readFileSync(path.join("server.key")),
-        cert: fs.readFileSync(path.join("server.crt"))
-    }
-})
+// put this in config file (axon.config.js .etc)
+HTTPS: {
+    key: fs.readFileSync(path.join("server.key")),
+    cert: fs.readFileSync(path.join("server.crt"))
+}
 ```
 
 **`core.listen()` has some default values**
