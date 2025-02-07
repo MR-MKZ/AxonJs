@@ -6,26 +6,8 @@ import { Axon, Request, Response, nextFn } from "../src";
 import { v1Routes } from "./routes/v1";
 import { v2Routes } from "./routes/v2";
 import { LogPluginTest } from "./plugins/log";
-import path from "path";
-import fs from "fs";
 
 const core = Axon()
-
-core.loadConfig({
-    DEBUG: false,            // default false
-    LOGGER: true,           // default true
-    LOGGER_VERBOSE: false,  // default false
-    RESPONSE_MESSAGES: {
-        notFound: "route '{path}' not found"
-    },
-    CORS: {
-        origin: 'https://github.com'
-    },
-    HTTPS: {
-        key: fs.readFileSync(path.join("examples", "server.key")),
-        cert: fs.readFileSync(path.join("examples", "server.crt"))
-    }
-})
 
 const testMid = async (req: Request, res: Response, next: nextFn) => {
     next()

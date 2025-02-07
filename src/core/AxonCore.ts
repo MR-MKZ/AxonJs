@@ -9,10 +9,11 @@ import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
 
 // Types
-import { Request, Response } from "..";
-import { AxonPlugin } from "../types/PluginTypes";
-import { AxonCoreConfig, AxonCorsConfig } from "../types/CoreTypes";
-import { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes"
+import type { Request, Response } from "..";
+import type { AxonPlugin } from "../types/PluginTypes";
+import type { AxonCorsConfig } from "../types/CoreTypes";
+import type { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes";
+import type { AxonConfig } from "../types/ConfigTypes";
 
 // Exceptions
 import { routeDuplicateException } from "./exceptions/CoreExceptions";
@@ -24,7 +25,7 @@ import Router from "../Router/AxonRouter";
 import { PLuginLoader } from "./plugin/PluginLoader";
 import AxonResponse from "./response/AxonResponse";
 import AxonCors from "./cors/AxonCors";
-import { log } from "console";
+import { resolveConfig } from "./config/AxonConfig";
 
 // Default values
 const defaultResponses = {
@@ -42,9 +43,9 @@ const defaultCors: AxonCorsConfig = {
 export default class AxonCore {
     private routes: HttpMethods;
     private globalMiddlewares: Middleware[];
-    private config: AxonCoreConfig;
+    private config: AxonConfig;
     private configsLoaded: boolean;
-    private passConfig: boolean;
+    // private passConfig: boolean;
     private passRoutes: boolean;
     private routesLoaded: boolean;
 
@@ -61,18 +62,9 @@ export default class AxonCore {
         }
 
         this.globalMiddlewares = [];
-
-        this.config = {
-            DEBUG: false,
-            LOGGER: true,
-            LOGGER_VERBOSE: false,
-            RESPONSE_MESSAGES: defaultResponses,
-            CORS: defaultCors,
-            HTTPS: {}
-        };
-
+        
+        this.config = {};
         this.configsLoaded = false;
-        this.passConfig = true;
         this.passRoutes = true;
         this.routesLoaded = false;
     }
@@ -101,33 +93,13 @@ export default class AxonCore {
     }
 
     /**
-     * A method to config core as you want
+     * A method to load core configs
      * 
-     * If you want to config the core, use this method before all other methods.
-     * 
-     * @param config core config object
-     * @example
-     * core.loadConfig({
-     *      DEBUG: true,
-     *      CORS: {}
-     * });
      */
-    async loadConfig(config: AxonCoreConfig) {
-        this.passConfig = false;
-        this.config.DEBUG = config.DEBUG || false
-        this.config.LOGGER = config.LOGGER;
-        this.config.LOGGER_VERBOSE = config.LOGGER_VERBOSE || false
-        this.config.RESPONSE_MESSAGES = { ...config.RESPONSE_MESSAGES }
-        this.config.CORS = { ...config.CORS }
-        this.config.HTTPS = { ...config.HTTPS }
+    async #loadConfig() {
+        const config = await resolveConfig();
 
-        if (this.config.DEBUG) {
-            logger.level = "debug"
-        }
-
-        if (!this.config.LOGGER) {
-            logger.level = "silent"
-        }
+        this.config = config;
 
         this.configsLoaded = true;
     }
@@ -381,7 +353,7 @@ export default class AxonCore {
                 headers: req.headers,
                 body: req.body,
                 code: res.statusCode
-            }, "new http request")
+            }, "New http request")
         } else {
             logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
         }
@@ -408,30 +380,24 @@ export default class AxonCore {
         const corePreloader = async (): Promise<void> => {
             return new Promise((resolve) => {
                 const interval = setInterval(() => {
-                    if (this.passConfig && !this.passRoutes) {                        
-                        if (this.routesLoaded) {
-                            logger.info("all routes loaded");
-                            clearInterval(interval);
-                            resolve();
-                        }
-                    } else {
-                        if (this.routesLoaded && this.configsLoaded) {
-                            logger.info("all configs and routes loaded");
-                            clearInterval(interval);
-                            resolve();
-                        } else if (this.passRoutes) {
-                            clearInterval(interval);
-                            resolve();
-                        }
+                    if (this.routesLoaded && this.configsLoaded) {
+                        logger.info("All plugins and routes loaded");
+                        clearInterval(interval);
+                        resolve();
+                    } else if (this.passRoutes) {
+                        clearInterval(interval);
+                        resolve();
                     }
                 }, 100);
             });
         };
 
+        await this.#loadConfig();
+        
+        await this.#initializePlugins();
+
         // Wait for necessary items to be loaded
         await corePreloader();
-
-        await this.#initializePlugins();
 
         const httpHandler = async (req: http.IncomingMessage, res: http.ServerResponse) => {
             try {
@@ -474,10 +440,10 @@ export default class AxonCore {
             callback = (mode?: string) => {
                 if (mode === "https") {
                     if (isHttpsActive()) {
-                        logger.core(colors.whiteBright(`server started on https://${host}:${portHandler("https")}`));
+                        logger.core(colors.whiteBright(`Server started on https://${host}:${portHandler("https")}`));
                     }
                 } else if (mode === "http") {
-                    logger.core(colors.whiteBright(`server started on http://${host}:${portHandler("http")}`));
+                    logger.core(colors.whiteBright(`Server started on http://${host}:${portHandler("http")}`));
                 }
             }
         }
@@ -487,12 +453,12 @@ export default class AxonCore {
         httpServer.listen(portHandler("http"), host, () => callback("http"));
 
         httpsServer?.on('error', (e) => {
-            logger.error(e, `starting server failed`)
+            logger.error(e, `Starting server failed`)
             process.exit(-1)
         });
 
         httpServer.on('error', (e) => {
-            logger.error(e, `starting server failed`)
+            logger.error(e, `Starting server failed`)
             process.exit(-1)
         });
     }
