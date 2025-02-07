@@ -9,8 +9,8 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 [Axon telegram channel](https://t.me/axonjs)
 
 Latest change: 
-- Https support added to AxonCore. [#17](https://github.com/MR-MKZ/AxonJs/issues/17)
-- Plugin manager system added to core. (Document will update soon - 2024/10/24)
+- **New**: Improved config system using external config files.  
+- **Breaking**: Removed `core.loadConfig` – migrate to the new config file setup.  
 
 
 
@@ -170,15 +170,15 @@ AxonJs has some types which can help you in developing your applications for aut
 
 ### Axon Core config
 
-you can config Axon core with `loadConfig` method.
-if you want to have ide suggestions for core config use AxonCoreConfig type.
+You can config Axon core with creating a file in your project root directory.
 
-Usage:
-```js
-core.loadConfig({
-    LOGGER: false
-})
-```
+#### Acceptable files:
+- `axon.config.js`
+- `axon.config.ts`
+- `axon.config.cjs`
+- `axon.config.mjs`
+
+If you want to have ide suggestions for core config use AxonConfig type.
 
 Configs:
 

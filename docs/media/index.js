@@ -3,30 +3,8 @@
  */
 
 import { Axon, Router } from "../src";
-import path from "path";
-import fs from "fs";
 
 const core = Axon();
-
-/**
- * all core configs are optional.
- * @type {import("../src").AxonCoreConfig}
- */
-core.loadConfig({
-    DEBUG: true,            // default false
-    LOGGER: true,           // default true
-    LOGGER_VERBOSE: false,  // default false
-    RESPONSE_MESSAGES: {    
-        notFound: "route '{path}' not found"
-    },
-    CORS: {
-        origin: 'https://github.com'
-    },
-    HTTPS: {
-        key: fs.readFileSync(path.join("examples", "server.key")),
-        cert: fs.readFileSync(path.join("examples", "server.crt"))
-    }
-})
 
 const router = Router();
 

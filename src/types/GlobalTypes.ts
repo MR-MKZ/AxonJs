@@ -5,7 +5,7 @@ interface Routes {
     [key: string]: AxonRouteHandler
 }
 
-export type HttpMethods = {
+export interface HttpMethods {
     GET: Routes;
     POST: Routes;
     PUT: Routes;
@@ -14,7 +14,7 @@ export type HttpMethods = {
     PATCH: Routes;
 }
 
-export type JsonResponse = {
+export interface JsonResponse {
     body: object;
     headers?: Headers;
     responseCode: number;
@@ -32,7 +32,7 @@ export interface ExceptionMeta {
     description: string;
 }
 
-export type RouterExceptionError = {
+export interface RouterExceptionError {
     msg: string;
     name: string;
     meta: ExceptionMeta

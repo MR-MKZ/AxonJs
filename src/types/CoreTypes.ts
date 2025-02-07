@@ -1,39 +1,11 @@
 import { ServerOptions } from "https";
 
-type AxonCoreConfig = {
-    /**
-     * AxonCore debug mode.
-     */
-    DEBUG?: boolean;
-    /**
-     * AxonCore logger.
-     */
-    LOGGER?: boolean;
-    /**
-     * Verboose mode of logger.
-     */
-    LOGGER_VERBOSE?: boolean;
-    /**
-     * Configuration for AxonCore custom response messages.
-     */
-    RESPONSE_MESSAGES?: AxonResponseMessage;
-    /**
-     * Cors configuration for AxonCore.
-     */
-    CORS?: AxonCorsConfig;
-
-    /**
-     * Https configuration for AxonCore.
-     */
-    HTTPS?: AxonHttpsConfig;
-}
-
 type AxonHttpsConfig = ServerOptions
 
 /**
  * Cors configuration for AxonCore.
  */
-type AxonCorsConfig = {
+interface AxonCorsConfig {
     /**
      * Configures the Access-Control-Allow-Origin CORS header. 
      * 
@@ -109,7 +81,7 @@ type AxonCorsConfig = {
 /**
  * Configuration for AxonCore custom response messages.
  */
-type AxonResponseMessage = {
+interface AxonResponseMessage {
     /**
      * response error message for 404 not found response from core
      * 
@@ -134,7 +106,6 @@ type AxonResponseMessage = {
 }
 
 export {
-    AxonCoreConfig,
     AxonResponseMessage,
     AxonCorsConfig,
     AxonHttpsConfig
