@@ -34,7 +34,7 @@ You can checkout Axon benchmarks document and results from below link.
 ## Badges
 
 <p align="center">
-    <a href="https://www.npmjs.com/package/@axonlabs/axon">
+    <a href="https://www.npmjs.com/package/@axonlabs/core">
         <img alt="@axonlabs/core Downloads" src="https://img.shields.io/npm/dy/%40axonlabs%2Fcore?label=@axonlabs/core Downloads&color=%235304db">
     </a>
 </p>
@@ -44,7 +44,7 @@ You can checkout Axon benchmarks document and results from below link.
     </a>
 </p>
 <p align="center">
-    <a href="https://www.npmjs.com/package/@mr-mkz/axon">
+    <a href="https://www.npmjs.com/package/@axonlabs/core">
         <img alt="NPM Version" src="https://img.shields.io/npm/v/%40axonlabs%2Fcore?label=NPM%20release&color=%2304dba9">
     </a>
     <a href="#">
