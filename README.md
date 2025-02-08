@@ -1,8 +1,10 @@
 # Axon.js
 
+
 **like the brain's powerful neural pathways, simple yet strong.**
 
 Axon is a backend library who tries to be simple and powerfull.
+
 
 Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](./benchmarks/README.md)
 
@@ -13,13 +15,14 @@ Latest change:
 - **Breaking**: Removed `core.loadConfig` – migrate to the new config file setup.  
 
 
+### [warn] @mr-mkz/axon deprecated and transferred to @axonlabs/core
 
 ## Installation
 
 Install Axon.js with npm
 
 ```bash
-  npm install @mr-mkz/axon
+  npm install @axonlabs/core
 ```
 
 ## Benchmarks
@@ -31,22 +34,29 @@ You can checkout Axon benchmarks document and results from below link.
 ## Badges
 
 <p align="center">
-    <a href="#">
-        <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/mr-mkz/axonjs/npm-publish.yml">
+    <a href="https://www.npmjs.com/package/@axonlabs/axon">
+        <img alt="@axonlabs/core Downloads" src="https://img.shields.io/npm/dy/%40axonlabs%2Fcore?label=@axonlabs/core Downloads&color=%235304db">
     </a>
+</p>
+<p align="center">
     <a href="https://www.npmjs.com/package/@mr-mkz/axon">
-        <img alt="NPM Downloads" src="https://img.shields.io/npm/dy/%40mr-mkz%2Faxon?label=NPM%20Downloads&color=%235304db">
+        <img alt="@mr-mkz/axon Downloads" src="https://img.shields.io/npm/dy/%40mr-mkz%2Faxon?label=@mr-mkz/axon Downloads&color=%235304db">
+    </a>
+</p>
+<p align="center">
+    <a href="https://www.npmjs.com/package/@mr-mkz/axon">
+        <img alt="NPM Version" src="https://img.shields.io/npm/v/%40axonlabs%2Fcore?label=NPM%20release&color=%2304dba9">
+    </a>
+    <a href="#">
+        <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/axonjslabs/axonjs/npm-publish.yml">
     </a>
 </p>
 <p align="center">
     <a href="#">
-        <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/mr-mkz/axonjs?color=%23be04db">
+        <img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/axonjslabs/axonjs?color=%23be04db">
     </a>
     <a href="#">
-        <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/%40mr-mkz%2Faxon">
-    </a>
-    <a href="https://www.npmjs.com/package/@mr-mkz/axon">
-        <img alt="NPM Version" src="https://img.shields.io/npm/v/%40mr-mkz%2Faxon?label=NPM%20release&color=%2304dba9">
+        <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/%40axonlabs%2Fcore">
     </a>
 </p>
 
