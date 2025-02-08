@@ -14,8 +14,8 @@ Latest change:
 - **New**: Improved config system using external config files.  
 - **Breaking**: Removed `core.loadConfig` – migrate to the new config file setup.  
 
-
-### [warn] @mr-mkz/axon deprecated and transferred to @axonlabs/core
+> [!WARNING]
+> @mr-mkz/axon deprecated and transferred to @axonlabs/core
 
 ## Installation
 
