@@ -7,11 +7,11 @@ import { Key, pathToRegexp, Keys } from "path-to-regexp";
 import { logger } from "./utils/coreLogger";
 import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
+import { getVersion } from "./utils/updateChecker";
 
 // Types
 import type { Request, Response } from "..";
 import type { AxonPlugin } from "../types/PluginTypes";
-import type { AxonCorsConfig } from "../types/CoreTypes";
 import type { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes";
 import type { AxonConfig } from "../types/ConfigTypes";
 
@@ -34,18 +34,11 @@ const defaultResponses = {
     methodNotAllowed: "Method {method} not allowed"
 }
 
-const defaultCors: AxonCorsConfig = {
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false
-}
-
 export default class AxonCore {
     private routes: HttpMethods;
     private globalMiddlewares: Middleware[];
     private config: AxonConfig;
     private configsLoaded: boolean;
-    // private passConfig: boolean;
     private passRoutes: boolean;
     private routesLoaded: boolean;
 
