@@ -9,24 +9,28 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Mr-MKZ/AxonJs.git"
+    "url": "git+https://github.com/AxonJsLabs/AxonJs.git"
   },
   "keywords": [
     "http-router",
     "http",
     "backend",
-    "nodejs",
-    "javascript",
-    "npm",
     "restapi",
     "rest-api",
     "AxonJs",
-    "Axon"
+    "Axon",
+    "framework",
+    "web",
+    "rest",
+    "restful",
+    "router",
+    "app",
+    "api"
   ],
   "bugs": {
-    "url": "https://github.com/Mr-MKZ/AxonJs/issues"
+    "url": "https://github.com/AxonJsLabs/AxonJs/issues"
   },
-  "homepage": "https://github.com/Mr-MKZ/AxonJs#readme",
+  "homepage": "https://github.com/AxonJsLabs/AxonJs#readme",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
