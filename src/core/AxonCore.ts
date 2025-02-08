@@ -7,6 +7,7 @@ import { Key, pathToRegexp, Keys } from "path-to-regexp";
 import { logger } from "./utils/coreLogger";
 import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
+import { getVersion } from "./utils/updateChecker";
 
 // Types
 import type { Request, Response } from "..";
