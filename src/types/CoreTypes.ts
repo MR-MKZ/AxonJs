@@ -1,4 +1,6 @@
 import { ServerOptions } from "https";
+import AxonRouter from "../Router/AxonRouter";
+import {HttpMethods} from "./GlobalTypes";
 
 type AxonHttpsConfig = ServerOptions
 
@@ -105,8 +107,15 @@ interface AxonResponseMessage {
     [key: string]: string | undefined;
 }
 
+interface UnloadRouteParams {
+    router?: AxonRouter;
+    method?: keyof HttpMethods;
+    route?: string;
+}
+
 export {
     AxonResponseMessage,
     AxonCorsConfig,
-    AxonHttpsConfig
+    AxonHttpsConfig,
+    UnloadRouteParams
 }

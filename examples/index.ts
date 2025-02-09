@@ -21,7 +21,7 @@ core.globalMiddleware(testMid);
 core.loadRoute(v1Routes)
 core.loadRoute(v2Routes, "/api/v1")
 
-// using plugins for more flexible code and also using ready codes to develope faster than past.
+// using plugins for more flexible code and also using ready codes to develop faster than past.
 // you can make your own plugins with AxonPlugin interface.
 core.loadPlugin(new LogPluginTest());
 

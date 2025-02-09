@@ -9,7 +9,7 @@ export class LogPluginTest implements AxonPlugin {
     name: string = "Pretty Logger";
     version: string = "1.2.0-beta";
     
-    init(core: AxonCore): void {
+    async init(core: AxonCore): Promise<void> {
         const router = Router();
 
         router.get('/log', async (req, res) => {

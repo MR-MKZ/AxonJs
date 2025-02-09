@@ -1,31 +1,32 @@
 import * as http from "http";
 import * as https from "https";
-import { colors } from "@spacingbat3/kolor"
-import { Key, pathToRegexp, Keys } from "path-to-regexp";
+import {colors} from "@spacingbat3/kolor"
+import {Key, Keys, pathToRegexp} from "path-to-regexp";
 
 // Utils
-import { logger } from "./utils/coreLogger";
+import {logger} from "./utils/coreLogger";
 import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
-import { getVersion } from "./utils/updateChecker";
 
 // Types
-import type { Request, Response } from "..";
-import type { AxonPlugin } from "../types/PluginTypes";
-import type { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes";
-import type { AxonConfig } from "../types/ConfigTypes";
+import type {Request, Response} from "..";
+import type {AxonPlugin} from "../types/PluginTypes";
+import type {Controller, HttpMethods, JsonResponse, Middleware} from "../types/GlobalTypes";
+import type {AxonConfig} from "../types/ConfigTypes";
+import type { UnloadRouteParams } from "../types/CoreTypes";
 
 // Exceptions
-import { routeDuplicateException } from "./exceptions/CoreExceptions";
+import {routeDuplicateException} from "./exceptions/CoreExceptions";
 
 // Instances
 import Router from "../Router/AxonRouter";
 
 // Features
-import { PLuginLoader } from "./plugin/PluginLoader";
+import {PluginLoader} from "./plugin/PluginLoader";
 import AxonResponse from "./response/AxonResponse";
 import AxonCors from "./cors/AxonCors";
-import { resolveConfig } from "./config/AxonConfig";
+import {resolveConfig} from "./config/AxonConfig";
+import {unloadRouteService, unloadRoutesService} from "./services/unloadRoutesService";
 
 // Default values
 const defaultResponses = {
@@ -42,7 +43,7 @@ export default class AxonCore {
     private passRoutes: boolean;
     private routesLoaded: boolean;
 
-    private pluginLoader: PLuginLoader = new PLuginLoader();
+    private pluginLoader: PluginLoader = new PluginLoader();
 
     constructor() {
         this.routes = {
@@ -55,7 +56,7 @@ export default class AxonCore {
         }
 
         this.globalMiddlewares = [];
-        
+
         this.config = {};
         this.configsLoaded = false;
         this.passRoutes = true;
@@ -71,10 +72,10 @@ export default class AxonCore {
      * class MyPlugin implements AxonPlugin {
      *      name = "plugin"
      *      version = "1.0.0"
-     * 
+     *
      *      init(core) {}
      * }
-     * 
+     *
      * core.loadPlugin(new MyPlugin())
      */
     async loadPlugin(plugin: AxonPlugin) {
@@ -87,24 +88,23 @@ export default class AxonCore {
 
     /**
      * A method to load core configs
-     * 
+     *
      */
     async #loadConfig() {
-        const config = await resolveConfig();
-
-        this.config = config;
+        this.config = await resolveConfig();
 
         this.configsLoaded = true;
     }
 
     /**
      * loads created routes
-     * @param router instance of Router which routes setted with it.
+     * @param router instance of Router which routes set with it.
+     * @param prefix
      * @example
      * const router = Router()
-     * 
+     *
      * router.get('/', async (req, res) => {});
-     * 
+     *
      * core.loadRoute(router) // without prefix
      * core.loadRoute(router, '/api/v1') // with prefix
      */
@@ -144,11 +144,54 @@ export default class AxonCore {
     }
 
     /**
+     * unload routes based on entered parameters
+     * @param route
+     * @param method
+     * @param router
+     * @example
+     * // this one unloads a route with path `/api/v1/user`.
+     * core.unloadRoute({
+     *     route: '/api/v1/user'
+     * });
+     *
+     * // this one unloads all  routes with method `GET`
+     * core.unloadRoute({
+     *     method: 'GET'
+     * });
+     *
+     * const userRouter = Router();
+     *
+     * // this one unloads all routes of userRouter.
+     * core.unloadRoute({
+     *     router: userRouter
+     * });
+     *
+     * // this one unloads a route with path `/api/v1/user`, all routes with method `GET` and all routes of userRouter.
+     * core.unloadRoute({
+     *     route: '/api/v1/user',
+     *     method: "GET",
+     *     router: userRouter
+     * })
+     */
+    async unloadRoute({ route, method, router }: UnloadRouteParams) {
+        await unloadRouteService({ _routes: this.routes, route, router, method });
+    }
+
+    /**
+     * unload all routes
+     * @example
+     * core.unloadRoutes();
+     */
+    async unloadRoutes() {
+        await unloadRoutesService(this.routes)
+    }
+
+    /**
      * You can set one or many middlewares in global scope with this method.
-     * @param middleware
      * @example
      * core.globalMiddleware(authMiddleware)
-     * core.globalMiddleware([uploadMiddleware, useMiddleware])
+     * core.globalMiddleware([uploadMiddleware, userMiddleware])
+     * @param fn
      */
     async globalMiddleware(fn: Middleware | Middleware[]) {
         if (typeof fn === "function") {
@@ -170,14 +213,10 @@ export default class AxonCore {
      * Http request main handler
      * @param req incoming request
      * @param res server response
-     * @returns 
+     * @returns
      */
     async #handleRequest(req: Request, res: Response) {
         res.status = (code: number) => {
-            if (typeof code !== "number") {
-                throw new TypeError("response code must be number");
-            }
-
             res.statusCode = code
 
             return new AxonResponse(res);
@@ -194,7 +233,7 @@ export default class AxonCore {
 
         const method = req.method as keyof HttpMethods
 
-        let findedRoute = false;
+        let foundRoute = false;
 
         if (Object.keys(this.routes[method]).length === 0) {
             return this.response(req, res, {
@@ -205,7 +244,8 @@ export default class AxonCore {
             })
         }
 
-        Object.keys(this.routes[method]).forEach(async (path, index) => {
+        for (const path of Object.keys(this.routes[method])) {
+            const index = Object.keys(this.routes[method]).indexOf(path);
             let keys: Keys;
             const regexp = pathToRegexp(path);
             keys = regexp.keys
@@ -218,8 +258,8 @@ export default class AxonCore {
 
             if (match) {
                 try {
-                    if (!findedRoute) {
-                        findedRoute = true
+                    if (!foundRoute) {
+                        foundRoute = true
 
                         const params: Record<string, string | undefined> = {};
 
@@ -260,38 +300,38 @@ export default class AxonCore {
                         }
 
                     } else {
-                        return;
+                        continue;
                     }
                 } catch (error) {
                     logger.error(error)
 
-                    return this.response(req, res, {
+                    this.response(req, res, {
                         body: {
                             message: this.config.RESPONSE_MESSAGES?.serverError || defaultResponses.serverError
                         },
                         responseCode: 500
-                    })
+                    });
                 }
             }
 
-            if (!findedRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
-                return this.response(req, res, {
+            if (!foundRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
+                this.response(req, res, {
                     body: {
                         message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) || defaultResponses.notFound?.replace("{path}", (req.url as string))
                     },
                     responseCode: 404
-                })
+                });
             }
 
-        })
+        }
     }
 
     /**
-     * 
-     * @param req 
-     * @param res 
-     * @param next 
-     * @param middlewares 
+     *
+     * @param req
+     * @param res
+     * @param next
+     * @param middlewares
      */
     private async handleMiddleware(
         req: Request,
@@ -321,10 +361,6 @@ export default class AxonCore {
 
         if (typeof data.body !== "object") {
             throw new TypeError(`Response body can't be ${typeof data.body}`)
-        }
-
-        if (typeof data.responseCode !== "number") {
-            throw new TypeError(`Response code can't be ${typeof data.responseCode}`);
         }
 
         res.statusCode = data.responseCode
@@ -368,7 +404,6 @@ export default class AxonCore {
      * })
      */
     async listen(host: string = "127.0.0.1", port: number | { https: number, http: number } = 8000, callback?: (mode?: string) => void) {
-
         // Wait until some necessary items are loaded before starting the server
         const corePreloader = async (): Promise<void> => {
             return new Promise((resolve) => {
@@ -386,7 +421,7 @@ export default class AxonCore {
         };
 
         await this.#loadConfig();
-        
+
         await this.#initializePlugins();
 
         // Wait for necessary items to be loaded
@@ -406,7 +441,7 @@ export default class AxonCore {
             switch (mode) {
                 case "http":
                     if (typeof port === "object") {
-                        return port.http 
+                        return port.http
                     } else {
                         return port
                     }

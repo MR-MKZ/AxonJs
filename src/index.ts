@@ -8,7 +8,7 @@ import AxonRouter from "./Router/AxonRouter";
 // Types
 import AxonResponse from "./core/response/AxonResponse";
 import type { Controller, Middleware , nextFn} from "./types/GlobalTypes";
-import type { AxonResponseMessage, AxonCorsConfig, AxonHttpsConfig } from "./types/CoreTypes";
+import type { AxonResponseMessage, AxonCorsConfig, AxonHttpsConfig, UnloadRouteParams } from "./types/CoreTypes";
 import type { AxonConfig } from "./types/ConfigTypes";
 import type { AxonPlugin } from "./types/PluginTypes";
 
@@ -50,9 +50,9 @@ declare module 'http' {
   }
 }
 
-interface Request extends http.IncomingMessage {};
-interface Response extends http.ServerResponse {};
-interface Headers extends http.OutgoingHttpHeaders {};
+interface Request extends http.IncomingMessage {}
+interface Response extends http.ServerResponse {}
+interface Headers extends http.OutgoingHttpHeaders {}
 
 export {
   AxonCore,
@@ -63,6 +63,7 @@ export {
   AxonResponseMessage,
   AxonCorsConfig,
   AxonHttpsConfig,
+  UnloadRouteParams,
   Request,
   Response,
   Headers,
