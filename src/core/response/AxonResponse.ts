@@ -11,10 +11,6 @@ class AxonResponse {
      * to add custom response message
      */
     public message(message: string) {
-        if (typeof message !== "string") {
-            throw new TypeError("Message must be string");
-        }
-
         this.res.statusMessage = message;
 
         return new Proxy(this, {

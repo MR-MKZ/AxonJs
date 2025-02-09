@@ -13,6 +13,7 @@ import type {Request, Response} from "..";
 import type {AxonPlugin} from "../types/PluginTypes";
 import type {Controller, HttpMethods, JsonResponse, Middleware} from "../types/GlobalTypes";
 import type {AxonConfig} from "../types/ConfigTypes";
+import type { UnloadRouteParams } from "../types/CoreTypes";
 
 // Exceptions
 import {routeDuplicateException} from "./exceptions/CoreExceptions";
@@ -25,6 +26,7 @@ import {PluginLoader} from "./plugin/PluginLoader";
 import AxonResponse from "./response/AxonResponse";
 import AxonCors from "./cors/AxonCors";
 import {resolveConfig} from "./config/AxonConfig";
+import {unloadRouteService, unloadRoutesService} from "./services/unloadRoutesService";
 
 // Default values
 const defaultResponses = {
@@ -54,7 +56,7 @@ export default class AxonCore {
         }
 
         this.globalMiddlewares = [];
-        
+
         this.config = {};
         this.configsLoaded = false;
         this.passRoutes = true;
@@ -70,10 +72,10 @@ export default class AxonCore {
      * class MyPlugin implements AxonPlugin {
      *      name = "plugin"
      *      version = "1.0.0"
-     * 
+     *
      *      init(core) {}
      * }
-     * 
+     *
      * core.loadPlugin(new MyPlugin())
      */
     async loadPlugin(plugin: AxonPlugin) {
@@ -86,7 +88,7 @@ export default class AxonCore {
 
     /**
      * A method to load core configs
-     * 
+     *
      */
     async #loadConfig() {
         this.config = await resolveConfig();
@@ -142,10 +144,53 @@ export default class AxonCore {
     }
 
     /**
+     * unload routes based on entered parameters
+     * @param route
+     * @param method
+     * @param router
+     * @example
+     * // this one unloads a route with path `/api/v1/user`.
+     * core.unloadRoute({
+     *     route: '/api/v1/user'
+     * });
+     *
+     * // this one unloads all  routes with method `GET`
+     * core.unloadRoute({
+     *     method: 'GET'
+     * });
+     *
+     * const userRouter = Router();
+     *
+     * // this one unloads all routes of userRouter.
+     * core.unloadRoute({
+     *     router: userRouter
+     * });
+     *
+     * // this one unloads a route with path `/api/v1/user`, all routes with method `GET` and all routes of userRouter.
+     * core.unloadRoute({
+     *     route: '/api/v1/user',
+     *     method: "GET",
+     *     router: userRouter
+     * })
+     */
+    async unloadRoute({ route, method, router }: UnloadRouteParams) {
+        await unloadRouteService({ _routes: this.routes, route, router, method });
+    }
+
+    /**
+     * unload all routes
+     * @example
+     * core.unloadRoutes();
+     */
+    async unloadRoutes() {
+        await unloadRoutesService(this.routes)
+    }
+
+    /**
      * You can set one or many middlewares in global scope with this method.
      * @example
      * core.globalMiddleware(authMiddleware)
-     * core.globalMiddleware([uploadMiddleware, useMiddleware])
+     * core.globalMiddleware([uploadMiddleware, userMiddleware])
      * @param fn
      */
     async globalMiddleware(fn: Middleware | Middleware[]) {
@@ -168,7 +213,7 @@ export default class AxonCore {
      * Http request main handler
      * @param req incoming request
      * @param res server response
-     * @returns 
+     * @returns
      */
     async #handleRequest(req: Request, res: Response) {
         res.status = (code: number) => {
@@ -282,11 +327,11 @@ export default class AxonCore {
     }
 
     /**
-     * 
-     * @param req 
-     * @param res 
-     * @param next 
-     * @param middlewares 
+     *
+     * @param req
+     * @param res
+     * @param next
+     * @param middlewares
      */
     private async handleMiddleware(
         req: Request,
@@ -359,7 +404,6 @@ export default class AxonCore {
      * })
      */
     async listen(host: string = "127.0.0.1", port: number | { https: number, http: number } = 8000, callback?: (mode?: string) => void) {
-
         // Wait until some necessary items are loaded before starting the server
         const corePreloader = async (): Promise<void> => {
             return new Promise((resolve) => {
@@ -377,7 +421,7 @@ export default class AxonCore {
         };
 
         await this.#loadConfig();
-        
+
         await this.#initializePlugins();
 
         // Wait for necessary items to be loaded
@@ -397,7 +441,7 @@ export default class AxonCore {
             switch (mode) {
                 case "http":
                     if (typeof port === "object") {
-                        return port.http 
+                        return port.http
                     } else {
                         return port
                     }
