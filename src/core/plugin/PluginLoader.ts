@@ -2,7 +2,7 @@ import { AxonPlugin } from "../../types/PluginTypes";
 import AxonCore from "../AxonCore";
 import { logger } from "../utils/coreLogger";
 
-export class PLuginLoader {
+export class PluginLoader {
     private plugins: AxonPlugin[] = [];
 
     async loadPlugin(plugin: AxonPlugin) {
@@ -13,8 +13,8 @@ export class PLuginLoader {
     }
 
     async initializePlugins(core: AxonCore) {
-        this.plugins.forEach(plugin => {
-            plugin.init(core);
+        this.plugins.forEach(async (plugin) => {
+            await plugin.init(core);
             logger.info(`Plugin ${plugin.name} (${plugin.version}) initialized`)
         })
     }

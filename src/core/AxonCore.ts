@@ -1,31 +1,30 @@
 import * as http from "http";
 import * as https from "https";
-import { colors } from "@spacingbat3/kolor"
-import { Key, pathToRegexp, Keys } from "path-to-regexp";
+import {colors} from "@spacingbat3/kolor"
+import {Key, Keys, pathToRegexp} from "path-to-regexp";
 
 // Utils
-import { logger } from "./utils/coreLogger";
+import {logger} from "./utils/coreLogger";
 import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
-import { getVersion } from "./utils/updateChecker";
 
 // Types
-import type { Request, Response } from "..";
-import type { AxonPlugin } from "../types/PluginTypes";
-import type { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes";
-import type { AxonConfig } from "../types/ConfigTypes";
+import type {Request, Response} from "..";
+import type {AxonPlugin} from "../types/PluginTypes";
+import type {Controller, HttpMethods, JsonResponse, Middleware} from "../types/GlobalTypes";
+import type {AxonConfig} from "../types/ConfigTypes";
 
 // Exceptions
-import { routeDuplicateException } from "./exceptions/CoreExceptions";
+import {routeDuplicateException} from "./exceptions/CoreExceptions";
 
 // Instances
 import Router from "../Router/AxonRouter";
 
 // Features
-import { PLuginLoader } from "./plugin/PluginLoader";
+import {PluginLoader} from "./plugin/PluginLoader";
 import AxonResponse from "./response/AxonResponse";
 import AxonCors from "./cors/AxonCors";
-import { resolveConfig } from "./config/AxonConfig";
+import {resolveConfig} from "./config/AxonConfig";
 
 // Default values
 const defaultResponses = {
@@ -42,7 +41,7 @@ export default class AxonCore {
     private passRoutes: boolean;
     private routesLoaded: boolean;
 
-    private pluginLoader: PLuginLoader = new PLuginLoader();
+    private pluginLoader: PluginLoader = new PluginLoader();
 
     constructor() {
         this.routes = {
@@ -90,21 +89,20 @@ export default class AxonCore {
      * 
      */
     async #loadConfig() {
-        const config = await resolveConfig();
-
-        this.config = config;
+        this.config = await resolveConfig();
 
         this.configsLoaded = true;
     }
 
     /**
      * loads created routes
-     * @param router instance of Router which routes setted with it.
+     * @param router instance of Router which routes set with it.
+     * @param prefix
      * @example
      * const router = Router()
-     * 
+     *
      * router.get('/', async (req, res) => {});
-     * 
+     *
      * core.loadRoute(router) // without prefix
      * core.loadRoute(router, '/api/v1') // with prefix
      */
@@ -145,10 +143,10 @@ export default class AxonCore {
 
     /**
      * You can set one or many middlewares in global scope with this method.
-     * @param middleware
      * @example
      * core.globalMiddleware(authMiddleware)
      * core.globalMiddleware([uploadMiddleware, useMiddleware])
+     * @param fn
      */
     async globalMiddleware(fn: Middleware | Middleware[]) {
         if (typeof fn === "function") {
