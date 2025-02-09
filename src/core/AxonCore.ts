@@ -172,10 +172,6 @@ export default class AxonCore {
      */
     async #handleRequest(req: Request, res: Response) {
         res.status = (code: number) => {
-            if (typeof code !== "number") {
-                throw new TypeError("response code must be number");
-            }
-
             res.statusCode = code
 
             return new AxonResponse(res);
@@ -192,7 +188,7 @@ export default class AxonCore {
 
         const method = req.method as keyof HttpMethods
 
-        let findedRoute = false;
+        let foundRoute = false;
 
         if (Object.keys(this.routes[method]).length === 0) {
             return this.response(req, res, {
@@ -203,7 +199,8 @@ export default class AxonCore {
             })
         }
 
-        Object.keys(this.routes[method]).forEach(async (path, index) => {
+        for (const path of Object.keys(this.routes[method])) {
+            const index = Object.keys(this.routes[method]).indexOf(path);
             let keys: Keys;
             const regexp = pathToRegexp(path);
             keys = regexp.keys
@@ -216,8 +213,8 @@ export default class AxonCore {
 
             if (match) {
                 try {
-                    if (!findedRoute) {
-                        findedRoute = true
+                    if (!foundRoute) {
+                        foundRoute = true
 
                         const params: Record<string, string | undefined> = {};
 
@@ -258,30 +255,30 @@ export default class AxonCore {
                         }
 
                     } else {
-                        return;
+                        continue;
                     }
                 } catch (error) {
                     logger.error(error)
 
-                    return this.response(req, res, {
+                    this.response(req, res, {
                         body: {
                             message: this.config.RESPONSE_MESSAGES?.serverError || defaultResponses.serverError
                         },
                         responseCode: 500
-                    })
+                    });
                 }
             }
 
-            if (!findedRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
-                return this.response(req, res, {
+            if (!foundRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
+                this.response(req, res, {
                     body: {
                         message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) || defaultResponses.notFound?.replace("{path}", (req.url as string))
                     },
                     responseCode: 404
-                })
+                });
             }
 
-        })
+        }
     }
 
     /**
@@ -319,10 +316,6 @@ export default class AxonCore {
 
         if (typeof data.body !== "object") {
             throw new TypeError(`Response body can't be ${typeof data.body}`)
-        }
-
-        if (typeof data.responseCode !== "number") {
-            throw new TypeError(`Response code can't be ${typeof data.responseCode}`);
         }
 
         res.statusCode = data.responseCode
