@@ -1,13 +1,13 @@
 import RouterException from "./exceptions/RouterException";
 import { Controller, HttpMethods, Middleware } from "../types/GlobalTypes";
 
-const duplicateError = (path: string) => {
+const duplicateError = (path: string, method: keyof HttpMethods) => {
     throw new RouterException({
         msg: "Duplicated route!",
         name: "RouterError -> DUPLICATED_ROUTE",
         meta: {
             type: "DUPLICATED_ROUTE",
-            description: `route "GET ${path}" is duplicated`
+            description: `route "${method} ${path}" is duplicated`
         }
     })
 }
@@ -62,7 +62,7 @@ class AxonRouter {
      */
     public get(path: string, controller: Controller) {
         if (this.routes.GET[path]) {
-            duplicateError(path)
+            duplicateError(path, "GET")
         }
         
         const handler = new AxonRouteHandler(controller);
@@ -85,7 +85,7 @@ class AxonRouter {
      */
     public post(path: string, controller: Controller) {
         if (this.routes.POST[path]) {
-            duplicateError(path)
+            duplicateError(path, "POST")
         }
 
         const handler = new AxonRouteHandler(controller);
@@ -103,7 +103,7 @@ class AxonRouter {
      */
     public put(path: string, controller: Controller) {
         if (this.routes.PUT[path]) {
-            duplicateError(path)
+            duplicateError(path, "PUT")
         }
 
         const handler = new AxonRouteHandler(controller);
@@ -121,7 +121,7 @@ class AxonRouter {
      */
     public patch(path: string, controller: Controller) {
         if (this.routes.PATCH[path]) {
-            duplicateError(path)
+            duplicateError(path, "PATCH")
         }
 
         const handler = new AxonRouteHandler(controller);
@@ -139,7 +139,7 @@ class AxonRouter {
      */
     public delete(path: string, controller: Controller) {
         if (this.routes.DELETE[path]) {
-            duplicateError(path)
+            duplicateError(path, "DELETE")
         }
 
         const handler = new AxonRouteHandler(controller);
@@ -157,7 +157,7 @@ class AxonRouter {
      */
     public options(path: string, controller: Controller) {
         if (this.routes.OPTIONS[path]) {
-            duplicateError(path)
+            duplicateError(path, "OPTIONS")
         }
 
         const handler = new AxonRouteHandler(controller);

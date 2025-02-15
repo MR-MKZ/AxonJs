@@ -1,32 +1,32 @@
 import * as http from "http";
 import * as https from "https";
-import {colors} from "@spacingbat3/kolor"
-import {Key, Keys, pathToRegexp} from "path-to-regexp";
+import { colors } from "@spacingbat3/kolor"
+import { Key, Keys, pathToRegexp } from "path-to-regexp";
 
 // Utils
-import {logger} from "./utils/coreLogger";
+import { logger } from "./utils/coreLogger";
 import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
 
 // Types
-import type {Request, Response} from "..";
-import type {AxonPlugin} from "../types/PluginTypes";
-import type {Controller, HttpMethods, JsonResponse, Middleware} from "../types/GlobalTypes";
-import type {AxonConfig} from "../types/ConfigTypes";
+import type { Request, Response } from "..";
+import type { AxonPlugin } from "../types/PluginTypes";
+import type { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes";
+import type { AxonConfig } from "../types/ConfigTypes";
 import type { UnloadRouteParams } from "../types/CoreTypes";
 
 // Exceptions
-import {routeDuplicateException} from "./exceptions/CoreExceptions";
+import { routeDuplicateException } from "./exceptions/CoreExceptions";
 
 // Instances
 import Router from "../Router/AxonRouter";
 
 // Features
-import {PluginLoader} from "./plugin/PluginLoader";
+import { PluginLoader } from "./plugin/PluginLoader";
 import AxonResponse from "./response/AxonResponse";
 import AxonCors from "./cors/AxonCors";
-import {resolveConfig} from "./config/AxonConfig";
-import {unloadRouteService, unloadRoutesService} from "./services/unloadRoutesService";
+import { resolveConfig } from "./config/AxonConfig";
+import { unloadRouteService, unloadRoutesService } from "./services/unloadRoutesService";
 
 // Default values
 const defaultResponses = {
