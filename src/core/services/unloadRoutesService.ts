@@ -1,6 +1,6 @@
 import AxonRouter from "../../Router/AxonRouter";
-import {HttpMethods} from "../../types/GlobalTypes";
-import {logger} from "../utils/coreLogger";
+import { HttpMethods } from "../../types/GlobalTypes";
+import { logger } from "../utils/coreLogger";
 
 interface UnloadRouteParams {
     router?: AxonRouter;
@@ -9,7 +9,7 @@ interface UnloadRouteParams {
     _routes: HttpMethods;
 }
 
-export type UnloadRoute = ({}: UnloadRouteParams) => Promise<void>;
+export type UnloadRoute = ({ }: UnloadRouteParams) => Promise<void>;
 
 export const unloadRouteService: UnloadRoute = async ({ route, method, router, _routes }) => {
     if (router) {
@@ -57,14 +57,9 @@ export const unloadRouteService: UnloadRoute = async ({ route, method, router, _
 }
 
 export const unloadRoutesService = async (_routes: HttpMethods) => {
-    _routes = {
-        GET: {},
-        POST: {},
-        PUT: {},
-        PATCH: {},
-        DELETE: {},
-        OPTIONS: {}
-    }
+    (Object.keys(_routes) as Array<keyof HttpMethods>).forEach(method => {
+        _routes[method] = {};
+    });
 
     logger.debug("all routes unloaded")
 
