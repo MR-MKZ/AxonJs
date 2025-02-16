@@ -238,7 +238,8 @@ export default class AxonCore {
         if (Object.keys(this.routes[method]).length === 0) {
             return this.response(req, res, {
                 body: {
-                    message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) || defaultResponses.notFound?.replace("{path}", (req.url as string))
+                    message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) ||
+                    defaultResponses.notFound?.replace("{path}", (req.url as string))
                 },
                 responseCode: 404
             })
@@ -251,6 +252,19 @@ export default class AxonCore {
             keys = regexp.keys
 
             // Using the WHATWG URL API to get the pathname because url.parse is deprecated and this way is more secure.
+            const urlRegex = /^\/{2,}$/;
+
+            if (urlRegex.test(req.url as string)) {
+                this.response(req, res, {
+                    body: {
+                        message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) ||
+                        defaultResponses.notFound?.replace("{path}", (req.url as string))
+                    },
+                    responseCode: 404
+                })
+                break;
+            }
+
             const url = new URL(req.url as string, `http://${req.headers.host}`);
             const pathname = url.pathname;
 
@@ -307,7 +321,8 @@ export default class AxonCore {
 
                     this.response(req, res, {
                         body: {
-                            message: this.config.RESPONSE_MESSAGES?.serverError || defaultResponses.serverError
+                            message: this.config.RESPONSE_MESSAGES?.serverError ||
+                            defaultResponses.serverError
                         },
                         responseCode: 500
                     });
@@ -317,7 +332,8 @@ export default class AxonCore {
             if (!foundRoute && (Object.keys(this.routes[method]).length == (index + 1))) {
                 this.response(req, res, {
                     body: {
-                        message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) || defaultResponses.notFound?.replace("{path}", (req.url as string))
+                        message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) ||
+                        defaultResponses.notFound?.replace("{path}", (req.url as string))
                     },
                     responseCode: 404
                 });
