@@ -75,7 +75,7 @@ const generateValidationMiddleware = async (schema: validationSchema, options: v
     } else {
         throw new Error("Validation schema is not valid", {
             cause: {
-                message: "You have to use on of these libraries for validation: Yup, Joi, Zod"
+                message: "You have to use one of these libraries for validation: Yup, Joi, Zod"
             }
         });
     }
