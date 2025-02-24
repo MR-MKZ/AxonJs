@@ -11,8 +11,7 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 [Axon telegram channel](https://t.me/axonjs)
 
 Latest change: 
-- **New**: Improved config system using external config files.  
-- **Breaking**: Removed `core.loadConfig` – migrate to the new config file setup.  
+- **New**: Changed router prefix from `core.loadRoute(router, 'prefix')` to `Router('prefix')` or `new AxonRouter('prefix')`
 
 > [!WARNING]
 > @mr-mkz/axon deprecated and transferred to @axonlabs/core
@@ -76,7 +75,6 @@ You can checkout Axon benchmarks document and results from below link.
 
 ## Roadmap (still thinking)
 
-- Support controllers better than now.
 - Some changes in response structure.
 - Response meta generator.
 - Auto error detector (maybe)
@@ -107,7 +105,10 @@ You can access and create routes with just a few steps.
 1. creating a variable with a optional name and put `Router()` function in it.
 2. define your routes with methods which you want and controller.
     - ```js
-        const router = Router()
+        // route prefix is optional
+        const router = Router('prefix') // easier and newer method
+        // or
+        // const router = new AxonRouter('prefix');
 
         router.get(path, controller(req, res))
         ```
@@ -177,6 +178,8 @@ AxonJs has some types which can help you in developing your applications for aut
 - `nextFn`: Type of next function param in middleware.
 - `Controller`: Type of controller function.
 - `Middleware`: Type of middleware function.
+- `HttpMethods`: Type of router http methods.
+- `RouterExceptionError`: Type of router exceptions.
 
 ### Axon Core config
 

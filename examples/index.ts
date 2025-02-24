@@ -19,7 +19,7 @@ const testMid = async (req: Request, res: Response, next: nextFn) => {
 core.globalMiddleware(testMid);
 
 core.loadRoute(v1Routes)
-core.loadRoute(v2Routes, "/api/v1")
+core.loadRoute(v2Routes)
 
 // using plugins for more flexible code and also using ready codes to develop faster than past.
 // you can make your own plugins with AxonPlugin interface.

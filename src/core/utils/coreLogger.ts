@@ -14,9 +14,9 @@ const prettyStream = pretty({
     coreDebug: 33, // Core debug messages
     info: 30,
     debug: 20,
-    trace: 10
+    plugin: 10
   },
-  customColors: 'fatal:red,error:red,core:magenta,coreDebug:blue,request:cyan,info:green,debug:yellow,trace:white',
+  customColors: 'fatal:red,error:red,core:magenta,coreDebug:blue,request:cyan,info:green,debug:yellow,plugin:white',
 });
 
 const logger = pino(
@@ -31,7 +31,7 @@ const logger = pino(
       coreDebug: 33,
       info: 30,
       debug: 20,
-      trace: 10
+      plugin: 10
     },
     useOnlyCustomLevels: false
   },

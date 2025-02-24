@@ -7,16 +7,20 @@ import AxonRouter from "./Router/AxonRouter";
 
 // Types
 import AxonResponse from "./core/response/AxonResponse";
-import type { Controller, Middleware , nextFn} from "./types/GlobalTypes";
+import type { Controller, Middleware , nextFn, HttpMethods, RouterExceptionError } from "./types/GlobalTypes";
 import type { AxonResponseMessage, AxonCorsConfig, AxonHttpsConfig, UnloadRouteParams } from "./types/CoreTypes";
 import type { AxonConfig } from "./types/ConfigTypes";
 import type { AxonPlugin } from "./types/PluginTypes";
 
 /**
  * Instance of AxonRouter for easier usage
+ * @param prefix prefix for all routes in this router
  * @returns {AxonRouter} returns an instance of AxonRouter
+ * @example
+ * const router = Router(); // without prefix
+ * const router2 = Router("/api/v1"); // with prefix
  */
-const Router = (): AxonRouter => new AxonRouter();
+const Router = (prefix?: string): AxonRouter => new AxonRouter(prefix);
 
 /**
  * Instance of AxonCore for easier usage
@@ -70,5 +74,7 @@ export {
   nextFn,
   AxonPlugin,
   Controller,
-  Middleware
+  Middleware,
+  HttpMethods,
+  RouterExceptionError
 }
