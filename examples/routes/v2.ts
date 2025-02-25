@@ -1,6 +1,7 @@
 import { Router } from "../../src";
 
-const router = Router()
+// you can set route prefix in Router
+const router = Router("/api/v1")
 
 router.get('/hello', async (req, res) => {
     

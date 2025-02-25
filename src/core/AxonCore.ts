@@ -101,14 +101,14 @@ export default class AxonCore {
      * @param router instance of Router which routes set with it.
      * @param prefix
      * @example
-     * const router = Router()
+     * const router = Router(); // without prefix
+     * const router2 = Router("/api/v1"); // with prefix
      *
      * router.get('/', async (req, res) => {});
      *
-     * core.loadRoute(router) // without prefix
-     * core.loadRoute(router, '/api/v1') // with prefix
+     * core.loadRoute(router);
      */
-    async loadRoute(router: Router, prefix?: string) {
+    async loadRoute(router: Router) {
         this.passRoutes = false;
 
         const routerRoutes: HttpMethods = router.exportRoutes();
@@ -117,20 +117,8 @@ export default class AxonCore {
             if (Object.keys(routerRoutes[method]).length > 0) {
                 Object.keys(routerRoutes[method]).forEach((route) => {
                     if (!this.routes[method][route]) {
-                        const originalRoute = route
-
-                        if (prefix) {
-                            route = addRoutePrefix(route, prefix)
-                        }
-
-                        if (route[0] !== "/")
-                            route = `/${route}`
-
-                        if (route[route.length - 1] === "/")
-                            route = route.slice(0, -1)
-
-                        this.routes[method][route] = routerRoutes[method][originalRoute]
-                        this.routes['OPTIONS'][route] = routerRoutes[method][originalRoute];
+                        this.routes[method][route] = routerRoutes[method][route];
+                        this.routes['OPTIONS'][route] = routerRoutes[method][route];
 
                         logger.debug(`loaded route ${method} ${route}`)
                     } else {
@@ -489,6 +477,7 @@ export default class AxonCore {
                 } else if (mode === "http") {
                     logger.core(colors.whiteBright(`Server started on http://${host}:${portHandler("http")}`));
                 }
+                logger.level = "plugin"
             }
         }
 

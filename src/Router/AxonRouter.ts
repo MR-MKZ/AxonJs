@@ -1,5 +1,6 @@
 import RouterException from "./exceptions/RouterException";
 import { Controller, HttpMethods, Middleware } from "../types/GlobalTypes";
+import addRoutePrefix from "../core/utils/routePrefixHandler";
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {
     throw new RouterException({
@@ -37,7 +38,11 @@ export class AxonRouteHandler {
 
 class AxonRouter {
     private routes: HttpMethods;
-    constructor() {
+    public prefix: string | undefined;
+
+    constructor(prefix?: string) {
+        this.prefix = prefix;
+        
         this.routes = {
             GET: {},
             POST: {},
@@ -64,6 +69,8 @@ class AxonRouter {
         if (this.routes.GET[path]) {
             duplicateError(path, "GET")
         }
+
+        path = this.handleRoutePrefix(path);
         
         const handler = new AxonRouteHandler(controller);
         this.routes.GET[path] = handler
@@ -88,6 +95,8 @@ class AxonRouter {
             duplicateError(path, "POST")
         }
 
+        path = this.handleRoutePrefix(path);
+
         const handler = new AxonRouteHandler(controller);
         this.routes.POST[path] = handler
 
@@ -105,6 +114,8 @@ class AxonRouter {
         if (this.routes.PUT[path]) {
             duplicateError(path, "PUT")
         }
+
+        path = this.handleRoutePrefix(path);
 
         const handler = new AxonRouteHandler(controller);
         this.routes.PUT[path] = handler
@@ -124,6 +135,8 @@ class AxonRouter {
             duplicateError(path, "PATCH")
         }
 
+        path = this.handleRoutePrefix(path);
+
         const handler = new AxonRouteHandler(controller);
         this.routes.PATCH[path] = handler
 
@@ -141,6 +154,8 @@ class AxonRouter {
         if (this.routes.DELETE[path]) {
             duplicateError(path, "DELETE")
         }
+
+        path = this.handleRoutePrefix(path);
 
         const handler = new AxonRouteHandler(controller);
         this.routes.DELETE[path] = handler
@@ -160,14 +175,30 @@ class AxonRouter {
             duplicateError(path, "OPTIONS")
         }
 
+        path = this.handleRoutePrefix(path);
+
         const handler = new AxonRouteHandler(controller);
         this.routes.OPTIONS[path] = handler
 
         return handler;
     } 
 
-    exportRoutes() {
+    public exportRoutes() {
         return this.routes
+    }
+
+    private handleRoutePrefix(path: string) {
+        if (this.prefix) {
+            path = addRoutePrefix(path, this.prefix)
+        }
+
+        if (path[0] !== "/")
+            path = `/${path}`
+
+        if (path[path.length - 1] === "/")
+            path = path.slice(0, -1)
+
+        return path;
     }
 }
 
