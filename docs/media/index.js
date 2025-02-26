@@ -6,7 +6,7 @@ import { Axon, Router } from "../src";
 
 const core = Axon();
 
-const router = Router();
+const router = Router("/api/v1");
 
 /**
  * 
@@ -46,7 +46,7 @@ router.get('/', controller).middleware(async (req, res, next) => {
 core.globalMiddleware(testMid);
 
 // second parameter is route prefix which for example change your route from /hello to /api/v1/hello. (Route prefix is optional)
-core.loadRoute(router, '/api/v1');
+core.loadRoute(router);
 
 // callback function is optional and core has default log message for on start event
 // host default is 127.0.0.1 and port default is 8000
