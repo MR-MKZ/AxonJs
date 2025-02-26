@@ -12,6 +12,12 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 
 Latest change: 
 - **New**: Changed router prefix from `core.loadRoute(router, 'prefix')` to `Router('prefix')` or `new AxonRouter('prefix')`
+- **New**: Core logger instance exported and now you can use the logger of core in your code.
+    ```typescript
+    import { axonLogger } from "@axonlabs/core";
+    // or
+    const { axonLogger } = require("@axonlabs/core");
+    ```
 
 > [!WARNING]
 > @mr-mkz/axon deprecated and transferred to @axonlabs/core
@@ -180,6 +186,29 @@ AxonJs has some types which can help you in developing your applications for aut
 - `Middleware`: Type of middleware function.
 - `HttpMethods`: Type of router http methods.
 - `RouterExceptionError`: Type of router exceptions.
+
+### Axon Core logger (pino & pino-pretty)
+
+AxonJs use pino and pino-pretty for it's logger and you can use this instance of logger with importing it from `@axonlabs/core`.
+
+Logger configuration options will add to config file as soon as possible.
+
+**For more information about the pino logger read [official documentation](https://getpino.io/) of this library.**
+
+```typescript
+import { axonLogger } from "@axonlabs/core";
+// or
+const { axonLogger } = require("@axonlabs/core");
+```
+
+**Plugins must use plugin mode of logger.**
+
+Example:
+```typescript
+import { axonLogger } from "@axonlabs/core";
+
+axonLogger.plugin("Something to log");
+```
 
 ### Axon Core config
 

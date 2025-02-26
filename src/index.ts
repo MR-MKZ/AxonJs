@@ -4,6 +4,7 @@ import * as http from "http";
 // Instances
 import AxonCore from "./core/AxonCore";
 import AxonRouter from "./Router/AxonRouter";
+import { logger } from "./core/utils/coreLogger";
 
 // Types
 import AxonResponse from "./core/response/AxonResponse";
@@ -27,6 +28,11 @@ const Router = (prefix?: string): AxonRouter => new AxonRouter(prefix);
  * @returns {AxonCore} returns an instance of AxonCore
  */
 const Axon = (): AxonCore => new AxonCore();
+
+/**
+ * Instance of logger which used in core to use it in your code.
+ */
+const axonLogger = logger;
 
 declare module 'http' {
   interface IncomingMessage {
@@ -76,5 +82,6 @@ export {
   Controller,
   Middleware,
   HttpMethods,
-  RouterExceptionError
+  RouterExceptionError,
+  axonLogger
 }

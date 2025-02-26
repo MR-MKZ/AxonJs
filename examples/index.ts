@@ -2,7 +2,7 @@
  * Typescript simple example
  */
 
-import { Axon, Request, Response, nextFn } from "../src";
+import { Axon, Request, Response, nextFn, axonLogger} from "../src";
 import { v1Routes } from "./routes/v1";
 import { v2Routes } from "./routes/v2";
 import { LogPluginTest } from "./plugins/log";
@@ -27,4 +27,6 @@ core.loadPlugin(new LogPluginTest());
 
 // callback function is optional and core has default log message for on start event
 // host default is 127.0.0.1 and port default is 8000
-core.listen("127.0.0.1", 3000)
+core.listen("127.0.0.1", 3000, () => {
+    axonLogger.core("Axon app runned successfully :)")
+})
