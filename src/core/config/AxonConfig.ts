@@ -1,7 +1,6 @@
 // libs
 import { lilconfig } from 'lilconfig';
-import { transformSync } from 'esbuild';
-import { readFileSync } from 'fs';
+import esbuild from 'esbuild';
 import { pathToFileURL } from 'url';
 
 // utils
@@ -21,15 +20,17 @@ async function loadJSConfig(filePath: string) {
     return module.default || module;
 }
 
-function loadTSConfig(filePath: string) {
-    const content = readFileSync(filePath, 'utf8');
-    const { code } = transformSync(content, {
-        loader: 'ts',
-        target: 'es2020',
+async function loadTSConfig(filePath: string) {
+    const result = await esbuild.build({
+        entryPoints: [filePath],
+        bundle: true,
+        external: ["esbuild"],
+        platform: 'node',
         format: 'cjs',
+        target: 'es2020',
+        write: false,
     });
-
-    // Use the transformed code as CommonJS
+    const code = result.outputFiles[0].text;
     const module = { exports: {} };
     const fn = new Function('module', 'exports', 'require', code);
     fn(module, module.exports, require);
