@@ -2,14 +2,19 @@
  * Typescript simple example
  */
 
-import { Axon, Request, Response, nextFn, axonLogger} from "../src";
+import { Axon, Request, Response, nextFn, axonLogger, Middleware} from "../src";
 import { v1Routes } from "./routes/v1";
 import { v2Routes } from "./routes/v2";
 import { LogPluginTest } from "./plugins/log";
 
 const core = Axon()
 
-const testMid = async (req: Request, res: Response, next: nextFn) => {
+interface Params {
+    id?: string
+}
+
+const testMid: Middleware = async (req: Request<Params>, res: Response, next: nextFn) => {
+    req.params?.id
     next()
 }
 

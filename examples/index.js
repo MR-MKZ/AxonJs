@@ -9,11 +9,17 @@ const core = Axon();
 const router = Router("/api/v1");
 
 /**
+ * @typedef {Object} Params
+ * @property {string?} id 
+ */
+
+/**
  * 
- * @param {import("../src").Request} req 
+ * @param {import("../src").Request<Params>} req 
  * @param {import("../src").Response} res 
  */
 const controller = async (req, res) => {
+    req.params.id
     return res.status(200).body({
         message: "Hello, World"
     })

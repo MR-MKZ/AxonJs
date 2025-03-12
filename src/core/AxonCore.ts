@@ -5,7 +5,6 @@ import { Key, Keys, pathToRegexp } from "path-to-regexp";
 
 // Utils
 import { logger } from "./utils/coreLogger";
-import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
 
 // Types
@@ -19,7 +18,7 @@ import type { UnloadRouteParams } from "../types/CoreTypes";
 import { routeDuplicateException } from "./exceptions/CoreExceptions";
 
 // Instances
-import Router from "../Router/AxonRouter";
+import Router from "../Router/AxonRouter2";
 
 // Features
 import { PluginLoader } from "./plugin/PluginLoader";
@@ -110,6 +109,8 @@ export default class AxonCore {
      */
     async loadRoute(router: Router) {
         this.passRoutes = false;
+
+        // TODO: Add route regex in AxonRouter and remove path-to-regexp and also prevent string processing while checking user response to save more time for response.
 
         const routerRoutes: HttpMethods = router.exportRoutes();
 
@@ -477,7 +478,10 @@ export default class AxonCore {
                 } else if (mode === "http") {
                     logger.core(colors.whiteBright(`Server started on http://${host}:${portHandler("http")}`));
                 }
-                logger.level = "plugin"
+                
+                if (this.config.LOGGER) {
+                    logger.level = "plugin"
+                }
             }
         }
 

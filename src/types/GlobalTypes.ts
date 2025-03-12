@@ -1,5 +1,5 @@
 import { Request, Response, Headers } from "..";
-import { AxonRouteHandler } from "../Router/AxonRouter";
+import { AxonRouteHandler } from "../Router/AxonRouter2";
 
 interface Routes {
     [key: string]: AxonRouteHandler
