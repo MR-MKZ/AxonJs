@@ -477,7 +477,9 @@ export default class AxonCore {
                 } else if (mode === "http") {
                     logger.core(colors.whiteBright(`Server started on http://${host}:${portHandler("http")}`));
                 }
-                logger.level = "plugin"
+                if (this.config.LOGGER) {
+                    logger.level = "plugin"
+                }
             }
         }
 
