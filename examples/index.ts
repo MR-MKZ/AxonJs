@@ -2,7 +2,7 @@
  * Typescript simple example
  */
 
-import { Axon, Request, Response, nextFn, axonLogger, Middleware} from "../src";
+import { Axon, Request, Response, NextFunc, axonLogger, Middleware} from "../src";
 import { v1Routes } from "./routes/v1";
 import { v2Routes } from "./routes/v2";
 import { LogPluginTest } from "./plugins/log";
@@ -13,7 +13,7 @@ interface Params {
     id?: string
 }
 
-const testMid: Middleware = async (req: Request<Params>, res: Response, next: nextFn) => {
+const testMid: Middleware = async (req: Request<Params>, res: Response, next: NextFunc ) => {
     req.params?.id
     next()
 }

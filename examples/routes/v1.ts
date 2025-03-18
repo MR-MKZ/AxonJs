@@ -15,7 +15,7 @@ const testController: FuncController = async (req: Request<Params>, res) => {
 // example: router.get().middleware().middleware()
 router.get('/user/{name}', async (req, res) => {
     req.params?.name
-    return res.status(201).body({ message: `Hello ${req.params.name}` })
+    return res.status(201).body({ message: `Hello ${req.params?.name}` })
 }).middleware(async (req, res, next) => {
     next()
 })

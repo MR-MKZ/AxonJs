@@ -11,6 +11,8 @@ const router = Router("/api/v1");
 /**
  * @typedef {Object} Params
  * @property {string?} id 
+ * 
+ * if you want type defenition for req.params you can add this part but if you don't need it you can remove it and req.paramss will be any type.
  */
 
 /**
