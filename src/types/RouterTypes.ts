@@ -1,19 +1,17 @@
-import { AxonRouteHandler } from "../Router/AxonRouter2";
+import { IncomingMessage, ServerResponse } from "http";
+import AxonResponse from "../core/response/AxonResponse";
+import { AxonRouteHandler } from "../Router/AxonRouter";
 
-export interface Request<P> {
+export interface Request<P> extends IncomingMessage {
     method: string;
     path: string;
     params?: P;
     query?: { [key: string]: string | undefined };
     body?: any;
-    // Extend with additional properties as needed.
 }
 
-export interface Response {
-    statusCode: number;
-    send: (body: any) => void;
-    json: (body: any) => void;
-    // Extend with additional helper methods if needed.
+export interface Response extends ServerResponse {
+    status: (code: number) => AxonResponse;
 }
 
 /**

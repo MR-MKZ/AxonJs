@@ -1,16 +1,16 @@
 import * as http from "http";
 import * as https from "https";
 import { colors } from "@spacingbat3/kolor"
-import { Key, Keys, pathToRegexp } from "path-to-regexp";
+// import { Key, Keys, pathToRegexp } from "path-to-regexp";
 
 // Utils
 import { logger } from "./utils/coreLogger";
 import getRequestBody from "./utils/getRequestBody";
 
 // Types
-import type { Request, Response } from "..";
+import type { FuncController, Request, Response, Middleware, HttpMethods } from "..";
 import type { AxonPlugin } from "../types/PluginTypes";
-import type { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes";
+import type { JsonResponse } from "../types/GlobalTypes";
 import type { AxonConfig } from "../types/ConfigTypes";
 import type { UnloadRouteParams } from "../types/CoreTypes";
 
@@ -18,7 +18,7 @@ import type { UnloadRouteParams } from "../types/CoreTypes";
 import { routeDuplicateException } from "./exceptions/CoreExceptions";
 
 // Instances
-import Router from "../Router/AxonRouter2";
+import Router from "../Router/AxonRouter";
 
 // Features
 import { PluginLoader } from "./plugin/PluginLoader";
@@ -35,13 +35,44 @@ const defaultResponses = {
 }
 
 export default class AxonCore {
+    /**
+     * @description The routes object that contains all the routes for the server.
+     */
     private routes: HttpMethods;
+
+    /**
+     * @description The global middlewares that will be applied to all the routes.
+     */
     private globalMiddlewares: Middleware[];
+
+    /**
+     * @description The config object that contains all the config for the server.
+     */
     private config: AxonConfig;
+
+    /**
+     * @description Whether the configs are loaded or not.
+     */
     private configsLoaded: boolean;
+
+    /**
+     * @description Whether the routes are passed or not.
+     */
     private passRoutes: boolean;
+
+    /**
+     * @description Whether the routes are loaded or not.
+     */
     private routesLoaded: boolean;
 
+    /**
+     * @description The regex for the query params.
+     */
+    private queryParamsRegex: RegExp;
+
+    /**
+     * @description The plugin loader instance.
+     */
     private pluginLoader: PluginLoader = new PluginLoader();
 
     constructor() {
@@ -60,6 +91,8 @@ export default class AxonCore {
         this.configsLoaded = false;
         this.passRoutes = true;
         this.routesLoaded = false;
+
+        this.queryParamsRegex = /[?&]([^=]+)=([^&]+)/g;
     }
 
     /**
@@ -113,6 +146,12 @@ export default class AxonCore {
         // TODO: Add route regex in AxonRouter and remove path-to-regexp and also prevent string processing while checking user response to save more time for response.
 
         const routerRoutes: HttpMethods = router.exportRoutes();
+
+        // this.routes = routerRoutes;
+
+        // if (this.config.DEBUG) {
+        //     logger.debug(routerRoutes)
+        // }
 
         (Object.keys(routerRoutes) as Array<keyof HttpMethods>).forEach((method) => {
             if (Object.keys(routerRoutes[method]).length > 0) {
@@ -204,7 +243,7 @@ export default class AxonCore {
      * @param res server response
      * @returns
      */
-    async #handleRequest(req: Request, res: Response) {
+    async #handleRequest(req: Request<any>, res: Response) {
         res.status = (code: number) => {
             res.statusCode = code
 
@@ -214,12 +253,14 @@ export default class AxonCore {
         if (!Object.keys(this.routes).includes(req.method as keyof HttpMethods)) {
             return this.response(req, res, {
                 body: {
-                    message: this.config.RESPONSE_MESSAGES?.methodNotAllowed?.replace("{method}", (req.method as string)) || defaultResponses.methodNotAllowed?.replace("{method}", (req.method as string))
+                    message: 
+                        this.config.RESPONSE_MESSAGES?.methodNotAllowed?.replace("{method}", (req.method as string))
+                        || defaultResponses.methodNotAllowed?.replace("{method}", (req.method as string))
                 },
                 responseCode: 405
             })
         }
-
+        
         const method = req.method as keyof HttpMethods
 
         let foundRoute = false;
@@ -227,8 +268,9 @@ export default class AxonCore {
         if (Object.keys(this.routes[method]).length === 0) {
             return this.response(req, res, {
                 body: {
-                    message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) ||
-                    defaultResponses.notFound?.replace("{path}", (req.url as string))
+                    message: 
+                        this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) 
+                        || defaultResponses.notFound?.replace("{path}", (req.url as string))
                 },
                 responseCode: 404
             })
@@ -236,47 +278,44 @@ export default class AxonCore {
 
         for (const path of Object.keys(this.routes[method])) {
             const index = Object.keys(this.routes[method]).indexOf(path);
-            let keys: Keys;
-            const regexp = pathToRegexp(path);
-            keys = regexp.keys
 
-            // Using the WHATWG URL API to get the pathname because url.parse is deprecated and this way is more secure.
-            const urlRegex = /^\/{2,}$/;
+            // convert request url from string | undefined to string
+            const pathname = req.url as string;
 
-            if (urlRegex.test(req.url as string)) {
-                this.response(req, res, {
-                    body: {
-                        message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) ||
-                        defaultResponses.notFound?.replace("{path}", (req.url as string))
-                    },
-                    responseCode: 404
-                })
-                break;
-            }
+            // Strip query parameters from pathname before matching
+            const pathnameWithoutQuery = pathname.split('?')[0];
 
-            const url = new URL(req.url as string, `http://${req.headers.host}`);
-            const pathname = url.pathname;
-
-            const match: RegExpExecArray | null = regexp.regexp.exec(pathname);
+            const match = this.routes[method][path]["regex"].exec(pathnameWithoutQuery);
 
             if (match) {
                 try {
                     if (!foundRoute) {
                         foundRoute = true
 
-                        const params: Record<string, string | undefined> = {};
+                        const route = this.routes[method][path];
 
-                        keys.forEach((key: Key, index: number) => {
-                            params[key.name] = match[index + 1];
+                        // logger.coreDebug([path, pathname, req.url, this.routes[method][path]["paramNames"]]);
+
+                        const params: Record<string, string | undefined> = {};
+                        const queryParams: Record<string, string | undefined> = {};
+
+                        route["paramNames"].forEach((key: string, index: number) => {
+                            params[key] = match[index + 1];
                         });
 
+                        let queryParamsMatch: RegExpExecArray | null;
+
+                        while ((queryParamsMatch = this.queryParamsRegex.exec(pathname)) !== null) {
+                            const [_, key, value] = queryParamsMatch;
+                            queryParams[decodeURIComponent(key)] = decodeURIComponent(value);
+                        }
+
                         req.params = params;
+                        req.query = queryParams;
 
-                        const route = this.routes[method][path]
+                        const middlewares: Middleware[] = route["handler"]["_middlewares"];
 
-                        const middlewares: Middleware[] = route.getMiddlewares();
-
-                        const controller: Controller = route.getController();
+                        const controller: FuncController = route["handler"]["_controller"];
 
                         const axonCors = await AxonCors.middlewareWrapper(this.config.CORS);
 
@@ -339,7 +378,7 @@ export default class AxonCore {
      * @param middlewares
      */
     private async handleMiddleware(
-        req: Request,
+        req: Request<any>,
         res: Response,
         next: () => Promise<void>,
         middlewares: Middleware[]
@@ -359,7 +398,7 @@ export default class AxonCore {
         await executeMiddleware();
     }
 
-    private response(req: Request, res: Response, data: JsonResponse) {
+    private response(req: Request<any>, res: Response, data: JsonResponse) {
         if (data.responseMessage) {
             res.statusMessage = data.responseMessage
         }
@@ -434,9 +473,9 @@ export default class AxonCore {
 
         const httpHandler = async (req: http.IncomingMessage, res: http.ServerResponse) => {
             try {
-                await getRequestBody(req)
+                await getRequestBody(req as Request<any>);
 
-                this.#handleRequest(req, res)
+                this.#handleRequest(req as Request<any>, res as Response)
             } catch (error) {
                 logger.error(error, "Unexpected core error")
             }

@@ -1,5 +1,6 @@
 import assign from "object-assign";
-import { nextFn, Request, Response } from "../..";
+// import { nextFn, Request, Response } from "../..";
+import { NextFunc, Request, Response } from "../../types/RouterTypes";
 import vary from "vary";
 
 const defaults = {
@@ -30,7 +31,7 @@ const isOriginAllowed = async (origin: any, allowedOrigin: any) => {
     }
 }
 
-const configureOrigin = async (options: any, req: Request) => {
+const configureOrigin = async (options: any, req: Request<any>) => {
     let requestOrigin = req.headers.origin,
         headers = [],
         isAllowed;
@@ -88,7 +89,7 @@ const configureCredentials = async (options: any) => {
     return null;
 }
 
-const configureAllowedHeaders = async (options: any, req: Request) => {
+const configureAllowedHeaders = async (options: any, req: Request<any>) => {
     let allowedHeaders = options.allowedHeaders || options.headers;
     const headers = [];
 
@@ -153,7 +154,7 @@ const applyHeaders = async (headers: any, res: Response) => {
     }
 }
 
-const cors = async (options: any, req: Request, res: Response, next: nextFn) => {
+const cors = async (options: any, req: Request<any>, res: Response, next: NextFunc) => {
     const headers = [],
         method = req.method && req.method.toUpperCase && req.method.toUpperCase();
 
@@ -188,16 +189,16 @@ const cors = async (options: any, req: Request, res: Response, next: nextFn) => 
 
 const middlewareWrapper = async (o?: any) => {
     // if options are static (either via defaults or custom options passed in), wrap in a function
-    let optionsCallback: (req: Request, cb: any) => Promise<void>;
+    let optionsCallback: (req: Request<any>, cb: any) => Promise<void>;
     if (typeof o === 'function') {
         optionsCallback = o;
     } else {
-        optionsCallback = async (req: Request, cb: any) => {
+        optionsCallback = async (req: Request<any>, cb: any) => {
             await cb(null, o);
         };
     }
 
-    return async (req: Request, res: Response, next: nextFn) => {
+    return async (req: Request<any>, res: Response, next: NextFunc) => {
         await optionsCallback(req, async (err: any, options: any) => {
             if (err) {
                 return res.status(500).body({
