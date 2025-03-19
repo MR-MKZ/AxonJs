@@ -1,6 +1,8 @@
 import RouterException from "./exceptions/RouterException";
-import { Controller, HttpMethods, Middleware } from "../types/GlobalTypes";
 import addRoutePrefix from "../core/utils/routePrefixHandler";
+import { FuncController, Middleware, RouteParams, HttpMethods, MiddlewareStorage } from "../types/RouterTypes";
+import { logger } from "../core/utils/coreLogger";
+import { resolveConfig } from "../core/config/AxonConfig";
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {
     throw new RouterException({
@@ -13,28 +15,29 @@ const duplicateError = (path: string, method: keyof HttpMethods) => {
     })
 }
 
-export class AxonRouteHandler {  
-    private controller: Controller;  
-    private middlewares: Middleware[];  
+let MIDDLEWARE_TIMEOUT: number; 
 
-    constructor(controller: Controller) {  
-        this.controller = controller;  
-        this.middlewares = [];  
-    }  
+resolveConfig(false).then(config => MIDDLEWARE_TIMEOUT = config.MIDDLEWARE_TIMEOUT || 10000);
 
-    middleware(fn: Middleware) {  
-        this.middlewares.push(fn);
+export class AxonRouteHandler<P = {}> {
+    public _controller: FuncController<P>;
+    public _middlewares: MiddlewareStorage[];
+
+    constructor(controller: FuncController<P>) {
+        this._controller = controller;
+        this._middlewares = [];
+    }
+
+    middleware(fn: Middleware, timeout?: number, critical: boolean = false) {
+        this._middlewares.push({
+            timeout: timeout || MIDDLEWARE_TIMEOUT,
+            middleware: fn,
+            critical
+        });
+
         return this;
-    }  
-
-    getController() {  
-        return this.controller;  
-    }  
-
-    getMiddlewares() {  
-        return this.middlewares;  
-    }  
-}  
+    }
+}
 
 class AxonRouter {
     private routes: HttpMethods;
@@ -42,7 +45,7 @@ class AxonRouter {
 
     constructor(prefix?: string) {
         this.prefix = prefix;
-        
+
         this.routes = {
             GET: {},
             POST: {},
@@ -64,16 +67,28 @@ class AxonRouter {
      * - An XML file.
      * @param path route path
      * @param controller route request controller
+     * 
+     * @example
+     * 
+     * router.get("/user/{param}(regex)", (req: Request<{ param: string }>, res: Response) => {
+     *  res.send("Hello World");
+     * });
      */
-    public get(path: string, controller: Controller) {
+    public get<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>) {
         if (this.routes.GET[path]) {
             duplicateError(path, "GET")
         }
 
-        path = this.handleRoutePrefix(path);
-        
+        path = this.handleRoutePrefix(path) as Path;
+
         const handler = new AxonRouteHandler(controller);
-        this.routes.GET[path] = handler
+        const { regex, paramNames } = this.parsePath(path);
+
+        this.routes.GET[path] = {
+            handler,
+            paramNames,
+            regex
+        }
 
         return handler;
     }
@@ -89,16 +104,28 @@ class AxonRouter {
      * - Text data from query parameters.
      * @param path route path
      * @param controller route request controller
+     * 
+     * @example
+     * 
+     * router.post("/user/{param}(regex)", (req: Request<{ param: string }>, res: Response) => {
+     *  res.send("Hello World");
+     * });
      */
-    public post(path: string, controller: Controller) {
+    public post<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>) {
         if (this.routes.POST[path]) {
             duplicateError(path, "POST")
         }
 
-        path = this.handleRoutePrefix(path);
+        path = this.handleRoutePrefix(path) as Path;
 
         const handler = new AxonRouteHandler(controller);
-        this.routes.POST[path] = handler
+        const { regex, paramNames } = this.parsePath(path);
+
+        this.routes.POST[path] = {
+            handler,
+            paramNames,
+            regex
+        }
 
         return handler;
     }
@@ -109,16 +136,28 @@ class AxonRouter {
      * The PUT HTTP request method sends data to the server for replacing and changing full state.
      * @param path route path
      * @param controller route request controller
+     * 
+     * @example
+     * 
+     * router.put("/user/{param}(regex)", (req: Request<{ param: string }>, res: Response) => {
+     *  res.send("Hello World");
+     * });
      */
-    public put(path: string, controller: Controller) {
+    public put<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>) {
         if (this.routes.PUT[path]) {
             duplicateError(path, "PUT")
         }
 
-        path = this.handleRoutePrefix(path);
+        path = this.handleRoutePrefix(path) as Path;
 
         const handler = new AxonRouteHandler(controller);
-        this.routes.PUT[path] = handler
+        const { regex, paramNames } = this.parsePath(path);
+
+        this.routes.PUT[path] = {
+            handler,
+            paramNames,
+            regex
+        }
 
         return handler;
     }
@@ -129,16 +168,28 @@ class AxonRouter {
      * The PATCH HTTP request method sends data to the server for editing part of a data.
      * @param path route path
      * @param controller route request controller
+     * 
+     * @example
+     * 
+     * router.patch("/user/{param}(regex)", (req: Request<{ param: string }>, res: Response) => {
+     *  res.send("Hello World");
+     * });
      */
-    public patch(path: string, controller: Controller) {
+    public patch<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>) {
         if (this.routes.PATCH[path]) {
             duplicateError(path, "PATCH")
         }
 
-        path = this.handleRoutePrefix(path);
+        path = this.handleRoutePrefix(path) as Path;
 
         const handler = new AxonRouteHandler(controller);
-        this.routes.PATCH[path] = handler
+        const { regex, paramNames } = this.parsePath(path);
+
+        this.routes.PATCH[path] = {
+            handler,
+            paramNames,
+            regex
+        }
 
         return handler;
     }
@@ -149,16 +200,28 @@ class AxonRouter {
      * The DELETE HTTP request method sends data to the server for deleting a data.
      * @param path route path
      * @param controller route request controller
+     * 
+     * @example
+     * 
+     * router.delete("/user/{param}(regex)", (req: Request<{ param: string }>, res: Response) => {
+     *  res.send("Hello World");
+     * });
      */
-    public delete(path: string, controller: Controller) {
+    public delete<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>) {
         if (this.routes.DELETE[path]) {
             duplicateError(path, "DELETE")
         }
 
-        path = this.handleRoutePrefix(path);
+        path = this.handleRoutePrefix(path) as Path;
 
         const handler = new AxonRouteHandler(controller);
-        this.routes.DELETE[path] = handler
+        const { regex, paramNames } = this.parsePath(path);
+
+        this.routes.DELETE[path] = {
+            handler,
+            paramNames,
+            regex
+        }
 
         return handler;
     }
@@ -169,22 +232,93 @@ class AxonRouter {
      * The HTTP OPTIONS method returns a listing of which HTTP methods are supported and allowed.
      * @param path route path
      * @param controller route request controller
+     * 
+     * @example
+     * 
+     * router.options("/user/{param}(regex)", (req: Request<{ param: string }>, res: Response) => {
+     *  res.send("Hello World");
+     * });
      */
-    public options(path: string, controller: Controller) {
+    public options<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>) {
         if (this.routes.OPTIONS[path]) {
             duplicateError(path, "OPTIONS")
         }
 
-        path = this.handleRoutePrefix(path);
+        path = this.handleRoutePrefix(path) as Path;
 
         const handler = new AxonRouteHandler(controller);
-        this.routes.OPTIONS[path] = handler
+        const { regex, paramNames } = this.parsePath(path);
+
+        this.routes.OPTIONS[path] = {
+            handler,
+            paramNames,
+            regex
+        }
 
         return handler;
-    } 
+    }
 
     public exportRoutes() {
         return this.routes
+    }
+
+    /**
+     * Manually parses the route path.
+     *
+     * Supports dynamic segments in two formats:
+     *
+     *  - {name} for a default dynamic segment (matches anything except '/')
+     *  - {name}(regex) to specify a custom regex pattern
+     *
+     * Example routes:
+     *
+     *   - /api/v1/{name}(\\d+)/user/{id}(\\d+)  → req.params is { name: string; id: string }
+     *   - /api/v1/{name}(\\d+)/user/{id}          → req.params is { name: string; id: string }
+     *   - /api/v1/{name}/user/{id}(\\d+)           → req.params is { name: string; id: string }
+     */
+    private parsePath(path: string): { regex: RegExp; paramNames: string[] } {
+        let regexString = '^';
+        const paramNames: string[] = [];
+        let i = 0;
+        while (i < path.length) {
+            if (path[i] === '{') {
+                
+                const endBrace = path.indexOf('}', i);
+                if (endBrace === -1) {
+                    throw new Error("Unclosed parameter brace in route: " + path);
+                }
+                
+                const paramName = path.slice(i + 1, endBrace);
+                paramNames.push(paramName);
+                i = endBrace + 1;
+                
+                if (i < path.length && path[i] === '(') {
+                    const endParen = path.indexOf(')', i);
+                    if (endParen === -1) {
+                        throw new Error("Unclosed custom regex in route: " + path);
+                    }
+                    const customRegex = path.slice(i + 1, endParen);
+                    regexString += `(${customRegex})`;
+                    i = endParen + 1;
+                } else {
+                    
+                    regexString += '([^/]+)';
+                }
+            } else {
+                
+                const nextBrace = path.indexOf('{', i);
+                const literal = nextBrace === -1 ? path.slice(i) : path.slice(i, nextBrace);
+                regexString += this.escapeRegExp(literal);
+                i = nextBrace === -1 ? path.length : nextBrace;
+            }
+        }
+        regexString += '/?$'; // Make trailing slash optional
+        return { regex: new RegExp(regexString), paramNames };
+    }
+
+    private escapeRegExp(text: string): string {
+        
+        return text.replace(/([.+*?=^!:${}()[\]|\/\\])/g, '\\$1');
     }
 
     private handleRoutePrefix(path: string) {
@@ -197,6 +331,10 @@ class AxonRouter {
 
         if (path[path.length - 1] === "/")
             path = path.slice(0, -1)
+
+        if (path.includes("//")) {
+            logger.warn(`Route path "${path}" contains multiple consecutive slashes. This is not recommended and may cause issues.`);
+        }
 
         return path;
     }

@@ -7,9 +7,9 @@ import AxonRouter from "./Router/AxonRouter";
 import { logger } from "./core/utils/coreLogger";
 
 // Types
-import AxonResponse from "./core/response/AxonResponse";
-import type { Controller, Middleware , nextFn, HttpMethods, RouterExceptionError } from "./types/GlobalTypes";
+import type { RouterExceptionError } from "./types/GlobalTypes";
 import type { AxonResponseMessage, AxonCorsConfig, AxonHttpsConfig, UnloadRouteParams } from "./types/CoreTypes";
+import type { Request, Response, Middleware, NextFunc, FuncController, HttpMethods } from "./types/RouterTypes";
 import type { AxonConfig } from "./types/ConfigTypes";
 import type { AxonPlugin } from "./types/PluginTypes";
 
@@ -34,35 +34,7 @@ const Axon = (): AxonCore => new AxonCore();
  */
 const axonLogger = logger;
 
-declare module 'http' {
-  interface IncomingMessage {
-    /**
-     * the body of request which sent from client
-     */
-    body?: string | Record<string, string | undefined> | undefined;
-    /**
-     * incoming request parameters in request path
-     * 
-     * example: 
-     * - route: `/api/v1/user/:id`
-     * - path: `/api/v1/user/12`
-     * - params: { "id": 12 }
-     */
-    params: Record<string, string | undefined>;
-  }
-
-  interface ServerResponse {
-    /**
-     * to add http response code for client.
-     * @param code http response code
-     */
-    status: (code: number) => AxonResponse;
-  }
-}
-
-interface Request extends http.IncomingMessage {}
-interface Response extends http.ServerResponse {}
-interface Headers extends http.OutgoingHttpHeaders {}
+interface Headers extends http.OutgoingHttpHeaders { }
 
 export {
   AxonCore,
@@ -77,9 +49,9 @@ export {
   Request,
   Response,
   Headers,
-  nextFn,
+  NextFunc,
   AxonPlugin,
-  Controller,
+  FuncController,
   Middleware,
   HttpMethods,
   RouterExceptionError,

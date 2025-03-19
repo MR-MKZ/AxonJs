@@ -3,7 +3,7 @@ import pretty from 'pino-pretty';
 
 const prettyStream = pretty({
   colorize: true,
-  translateTime: 'HH:MM:ss.l',
+  translateTime: 'SYS:HH:MM:ss.l',
   ignore: 'pid,hostname',
   customLevels: {
     fatal: 60,
@@ -16,7 +16,7 @@ const prettyStream = pretty({
     debug: 20,
     plugin: 10
   },
-  customColors: 'fatal:red,error:red,core:magenta,coreDebug:blue,request:cyan,info:green,debug:yellow,plugin:white',
+  customColors: 'fatal:red,error:red,core:magenta,coreDebug:blue,request:cyan,info:green,debug:black,plugin:white,warn:yellow',
 });
 
 const logger = pino(

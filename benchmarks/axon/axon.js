@@ -1,13 +1,6 @@
-const axon = require("@mr-mkz/axon")
-var app = new axon.AxonCore();
+const axon = require("@axonlabs/core")
+var app = axon.Axon();
 let router = axon.Router();
-
-/**
- * @typedef {import("@mr-mkz/axon").AxonCoreConfig}
- */
-app.loadConfig({
-  LOGGER: false
-})
 
 // number of middleware
 

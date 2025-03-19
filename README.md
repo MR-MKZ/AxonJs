@@ -11,13 +11,65 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 [Axon telegram channel](https://t.me/axonjs)
 
 Latest change: 
-- **New**: Changed router prefix from `core.loadRoute(router, 'prefix')` to `Router('prefix')` or `new AxonRouter('prefix')`
-- **New**: Core logger instance exported and now you can use the logger of core in your code.
-    ```typescript
-    import { axonLogger } from "@axonlabs/core";
-    // or
-    const { axonLogger } = require("@axonlabs/core");
-    ```
+- Router core refactored and some new feature added.
+    - **Update**: Set params synatax changed from `/:id` to `/{id}`
+    - **New**: Now params support regex. `/{param}(regex)` => `/{id}(\\d+)`
+    - **New**: Now core support query parameters
+    - **New**: Route params type safed. 
+        ```ts
+        router.get('/{name}', async (req, res) => {
+            console.log(req.params?.name) // type: Request<{ name: string }>
+        });
+
+        // or 
+        interface Params {
+            name: string
+        }
+
+        const handler = async (req: Request<Params>, res: Response) => {
+            console.log(req.params?.name) // type: Request<{ name: string }>
+        }
+
+        router.get('/{name}', handler);
+        ```
+    - **Remove**: path-to-regexp removed from dependencies
+    - **New**: `close` method added to core for closing a server programmetically.
+        ```ts
+        core.close(); // close all servers
+        core.close("http"); // close http server
+        core.close("https"): // close https server
+        ```
+    - **New**: `getServers` method added to core for getting web server instances which using by core.
+        ```ts
+        interface AxonServers {
+            http: http.Server | null;
+            https: https.Server | null;
+        }
+
+        const servers: AxonServers = core.getServers();
+        servers.http.on('request', () => {
+            // something to do
+        });
+        ```
+    - **New**: `getConfig` method added to core got getting loaded config which using by core.
+    - **New**: Middleware chain logic has been improved, and now middlewares support a timeout when the process takes too long or if the next function isn't called while the user  connection remains open. You can set a global timeout in the config using a specific key `MIDDLEWARE_TIMEOUT`.
+        ```ts
+        // set timeout of middleware to 2000ms and set middleware mode to critical.
+        router.get('/', async (req, res) => {})
+            .middleware(
+                async (req, res, next) => {},
+                timeout = 2000,
+                critical = true
+            );
+
+        // also in global middlewares
+        core.globalMiddleware(
+            async (req, res, next) => {},
+            timeout = 2000,
+            critical = true
+        );
+        ```
+        When you set critical to `true`, the middleware is marked as critical; if it encounters an error or returns a timeout error, the request chain will break, resulting in an internal server error (500) sent to the client, and the request will close. Additionally, the error will be logged in the console. If the middleware is non-critical (`false`), the core will skip it and continue processing the response to the client, logging a warning in the console afterward.
 
 > [!WARNING]
 > @mr-mkz/axon deprecated and transferred to @axonlabs/core
@@ -81,7 +133,6 @@ You can checkout Axon benchmarks document and results from below link.
 
 ## Roadmap (still thinking)
 
-- Some changes in response structure.
 - Response meta generator.
 - Auto error detector (maybe)
 - Default schemas.
@@ -158,15 +209,17 @@ middleware is a function which runs before running controller for validations or
 1. adding a middleware for special route
     - Example:
         ```js
-            router.get('/', controller).middleware(async (req, res, next) => next());
+            router.get('/', controller).middleware(async (req, res, next) => next(), timeout = 2000, critical = true);
         ```
         you can also use multiple middlewares for a route by repeating middleware function and middlewares will run in order.
 2. loading middleware as a global middleware in Axon core.
     - Example:
         ```js
-            core.globalMiddleware(async (req, res, next) => next());
+            core.globalMiddleware(async (req, res, next) => next(), timeout = 2000, critical = true);
         ```
         you can also use multiple middlewares in this way by adding middleware functions into an array (suggested method) or repeating this line of code.
+
+Middlewares support a timeout when the process takes too long or if the next function isn't called while the useconnection remains open. You can set a global timeout in the config using a specific key `MIDDLEWARE_TIMEOUT`. When you set critical to `true`, the middleware is marked as critical; if iencounters an error or returns a timeout error, the request chain will break, resulting in an internal server error (500) sent to the client, and the request will closeAdditionally, the error will be logged in the console. If the middleware is non-critical (`false`), the core will skip it and continue processing the response to thclient, logging a warning in the console afterward.
 
 ### Types
 
@@ -178,10 +231,10 @@ AxonJs has some types which can help you in developing your applications for aut
 - `AxonResponseMessage`: Type of core config option RESPONSE_MESSAGES.
 - `AxonCorsConfig`: Type of core config option CORS.
 - `AxonHttpsConfig`: Type of core config option HTTPS.
-- `Request`: Type of controller request param. (IncomingMessage)
+- `Request<Params>`: Type of controller request param. (IncomingMessage)
 - `Response`: Type of controller response param. (ServerResponse)
 - `Headers`: Type of response headers. (OutgoingHeaders)
-- `nextFn`: Type of next function param in middleware.
+- `NextFunc`: Type of next function param in middleware.
 - `Controller`: Type of controller function.
 - `Middleware`: Type of middleware function.
 - `HttpMethods`: Type of router http methods.
@@ -208,6 +261,7 @@ Example:
 import { axonLogger } from "@axonlabs/core";
 
 axonLogger.plugin("Something to log");
+axonLogger.info("Something to log");
 ```
 
 ### Axon Core config
@@ -230,6 +284,7 @@ Configs:
 - `RESPONSE_MESSAGES`: object to change default value of some core responses. (type: AxonResponseMessage)
 - `CORS`: object to change core cors settings. (type: AxonCorsConfig)
 - `HTTPS`: object to config server for https. (type: AxonHttpsConfig)
+- `MIDDLEWARE_TIMEOUT`: variable to set global timeout of waiting for middleware to response or call next function. (ms, default 10000ms)
 
 ### Running server
 
@@ -254,6 +309,16 @@ HTTPS: {
 core.listen("0.0.0.0", 80, () => {
     console.log("server is running on port 80")
 });
+```
+
+### Closing/Stopping server
+
+`close` method closes your webserver.
+
+```js
+core.close(); // close all servers
+core.close("http"); // close http server
+core.close("https"); // close https server
 ```
 
 ## Contributing

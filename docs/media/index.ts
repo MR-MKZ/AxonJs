@@ -2,21 +2,26 @@
  * Typescript simple example
  */
 
-import { Axon, Request, Response, nextFn, axonLogger} from "../src";
+import { Axon, Request, Response, NextFunc, axonLogger, Middleware} from "../src";
 import { v1Routes } from "./routes/v1";
 import { v2Routes } from "./routes/v2";
-import { LogPluginTest } from "./plugins/log";
+import { LogPluginTest } from "./plugins/log"
 
 const core = Axon()
 
-const testMid = async (req: Request, res: Response, next: nextFn) => {
+interface Params {
+    id?: string
+}
+
+const testMid: Middleware = async (req: Request<Params>, res: Response, next: NextFunc ) => {
+    axonLogger.info(`Params: ${JSON.stringify(req.params)}`);
     next()
 }
 
 // also you can load multiple global middlewares by putting them in array or set one by one.
 // example:
 // core.globalMiddleware([testMid, testMid2])
-core.globalMiddleware(testMid);
+core.globalMiddleware(testMid, 500, true);
 
 core.loadRoute(v1Routes)
 core.loadRoute(v2Routes)
@@ -29,4 +34,4 @@ core.loadPlugin(new LogPluginTest());
 // host default is 127.0.0.1 and port default is 8000
 core.listen("127.0.0.1", 3000, () => {
     axonLogger.core("Axon app runned successfully :)")
-})
+});

@@ -1,10 +1,9 @@
-import { IncomingMessage } from "http";
+import { Request } from "../../types/RouterTypes";
 
-const getRequestBody = async (req: IncomingMessage): Promise<string | Record<string, string | undefined> | undefined> => {
+const getRequestBody = async (req: Request<any>): Promise<string | Record<string, string | undefined> | undefined> => {
     return new Promise((resolve, reject) => {
         let body = '';
 
-        // Listen for data events
         req.on('data', (chunk) => {
             body += chunk.toString();
         });

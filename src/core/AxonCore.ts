@@ -1,17 +1,16 @@
 import * as http from "http";
 import * as https from "https";
 import { colors } from "@spacingbat3/kolor"
-import { Key, Keys, pathToRegexp } from "path-to-regexp";
+import { performance } from "perf_hooks";
 
 // Utils
 import { logger } from "./utils/coreLogger";
-import addRoutePrefix from "./utils/routePrefixHandler";
 import getRequestBody from "./utils/getRequestBody";
 
 // Types
-import type { Request, Response } from "..";
+import type { FuncController, Request, Response, Middleware, HttpMethods } from "..";
 import type { AxonPlugin } from "../types/PluginTypes";
-import type { Controller, HttpMethods, JsonResponse, Middleware } from "../types/GlobalTypes";
+import type { JsonResponse } from "../types/GlobalTypes";
 import type { AxonConfig } from "../types/ConfigTypes";
 import type { UnloadRouteParams } from "../types/CoreTypes";
 
@@ -22,11 +21,12 @@ import { routeDuplicateException } from "./exceptions/CoreExceptions";
 import Router from "../Router/AxonRouter";
 
 // Features
-import { PluginLoader } from "./plugin/PluginLoader";
 import AxonResponse from "./response/AxonResponse";
 import AxonCors from "./cors/AxonCors";
+import { PluginLoader } from "./plugin/PluginLoader";
 import { resolveConfig } from "./config/AxonConfig";
 import { unloadRouteService, unloadRoutesService } from "./services/unloadRoutesService";
+import { MiddlewareStorage } from "../types/RouterTypes";
 
 // Default values
 const defaultResponses = {
@@ -36,16 +36,57 @@ const defaultResponses = {
 }
 
 export default class AxonCore {
+    private servers: {
+        http: http.Server | null,
+        https: https.Server | null
+    };
+
+    /**
+     * @description The routes object that contains all the routes for the server.
+     */
     private routes: HttpMethods;
-    private globalMiddlewares: Middleware[];
+
+    /**
+     * @description The global middlewares that will be applied to all the routes.
+     */
+    private globalMiddlewares: MiddlewareStorage[];
+
+    /**
+     * @description The config object that contains all the config for the server.
+     */
     private config: AxonConfig;
+
+    /**
+     * @description Whether the configs are loaded or not.
+     */
     private configsLoaded: boolean;
+
+    /**
+     * @description Whether the routes are passed or not.
+     */
     private passRoutes: boolean;
+
+    /**
+     * @description Whether the routes are loaded or not.
+     */
     private routesLoaded: boolean;
 
+    /**
+     * @description The regex for the query params.
+     */
+    private queryParamsRegex: RegExp;
+
+    /**
+     * @description The plugin loader instance.
+     */
     private pluginLoader: PluginLoader = new PluginLoader();
 
     constructor() {
+        this.servers = {
+            http: null,
+            https: null
+        }
+
         this.routes = {
             GET: {},
             POST: {},
@@ -61,6 +102,8 @@ export default class AxonCore {
         this.configsLoaded = false;
         this.passRoutes = true;
         this.routesLoaded = false;
+
+        this.queryParamsRegex = /[?&]([^=]+)=([^&]+)/g;
     }
 
     /**
@@ -82,18 +125,30 @@ export default class AxonCore {
         await this.pluginLoader.loadPlugin(plugin);
     }
 
-    async #initializePlugins() {
+    private async initializePlugins() {
+        const startTime = performance.now();
+
         await this.pluginLoader.initializePlugins(this);
+
+        const endTime = performance.now();
+
+        logger.debug(`Plugins loaded in ${(endTime - startTime).toFixed(2)}ms`);
     }
 
     /**
      * A method to load core configs
      *
      */
-    async #loadConfig() {
+    private async loadConfig() {
+        const startTime = performance.now();
+
         this.config = await resolveConfig();
 
         this.configsLoaded = true;
+
+        const endTime = performance.now();
+
+        logger.debug(`Core config loaded in ${(endTime - startTime).toFixed(2)}ms`);
     }
 
     /**
@@ -109,6 +164,8 @@ export default class AxonCore {
      * core.loadRoute(router);
      */
     async loadRoute(router: Router) {
+        const startTime = performance.now();
+
         this.passRoutes = false;
 
         const routerRoutes: HttpMethods = router.exportRoutes();
@@ -129,6 +186,10 @@ export default class AxonCore {
         })
 
         this.routesLoaded = true;
+
+        const endTime = performance.now();
+
+        logger.debug(`Routes loaded in ${(endTime - startTime).toFixed(2)}ms`);
     }
 
     /**
@@ -177,24 +238,49 @@ export default class AxonCore {
     /**
      * You can set one or many middlewares in global scope with this method.
      * @example
-     * core.globalMiddleware(authMiddleware)
-     * core.globalMiddleware([uploadMiddleware, userMiddleware])
-     * @param fn
+     * core.globalMiddleware(authMiddleware, 5000, true) // critical middleware with 5s timeout
+     * core.globalMiddleware([uploadMiddleware, userMiddleware], 10000, false) // optional middlewares with 10s timeout
+     * @param fn middleware function or array of middleware functions
+     * @param timeout timeout in milliseconds
+     * @param critical whether the middleware is critical (defaults to false)
      */
-    async globalMiddleware(fn: Middleware | Middleware[]) {
+    async globalMiddleware(fn: Middleware | Middleware[], timeout?: number, critical: boolean = false) {
+        const startTime = performance.now();
+
+        timeout = timeout || this.config.MIDDLEWARE_TIMEOUT || 10000;
+
         if (typeof fn === "function") {
-            this.globalMiddlewares.push(fn)
+            this.globalMiddlewares.push({
+                timeout: timeout,
+                middleware: fn,
+                critical
+            })
         }
 
         if (typeof fn === "object") {
             for (const middleware of fn) {
                 if (typeof middleware === "function") {
-                    this.globalMiddlewares.push(middleware);
+                    this.globalMiddlewares.push({
+                        timeout: timeout,
+                        middleware: middleware,
+                        critical
+                    });
                 }
             }
         }
 
         logger.debug("global middlewares loaded")
+
+        const endTime = performance.now();
+
+        logger.debug(`Global middlewares loaded in ${(endTime - startTime).toFixed(2)}ms`);
+    }
+
+    /**
+     * Clears all the global middlewares
+     */
+    clearGlobalMiddlewares() {
+        this.globalMiddlewares = [];
     }
 
     /**
@@ -203,7 +289,7 @@ export default class AxonCore {
      * @param res server response
      * @returns
      */
-    async #handleRequest(req: Request, res: Response) {
+    async #handleRequest(req: Request<any>, res: Response) {
         res.status = (code: number) => {
             res.statusCode = code
 
@@ -213,7 +299,9 @@ export default class AxonCore {
         if (!Object.keys(this.routes).includes(req.method as keyof HttpMethods)) {
             return this.response(req, res, {
                 body: {
-                    message: this.config.RESPONSE_MESSAGES?.methodNotAllowed?.replace("{method}", (req.method as string)) || defaultResponses.methodNotAllowed?.replace("{method}", (req.method as string))
+                    message:
+                        this.config.RESPONSE_MESSAGES?.methodNotAllowed?.replace("{method}", (req.method as string))
+                        || defaultResponses.methodNotAllowed?.replace("{method}", (req.method as string))
                 },
                 responseCode: 405
             })
@@ -226,8 +314,9 @@ export default class AxonCore {
         if (Object.keys(this.routes[method]).length === 0) {
             return this.response(req, res, {
                 body: {
-                    message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) ||
-                    defaultResponses.notFound?.replace("{path}", (req.url as string))
+                    message:
+                        this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string))
+                        || defaultResponses.notFound?.replace("{path}", (req.url as string))
                 },
                 responseCode: 404
             })
@@ -235,71 +324,74 @@ export default class AxonCore {
 
         for (const path of Object.keys(this.routes[method])) {
             const index = Object.keys(this.routes[method]).indexOf(path);
-            let keys: Keys;
-            const regexp = pathToRegexp(path);
-            keys = regexp.keys
 
-            // Using the WHATWG URL API to get the pathname because url.parse is deprecated and this way is more secure.
-            const urlRegex = /^\/{2,}$/;
+            // convert request url from string | undefined to string
+            const pathname = req.url as string;
 
-            if (urlRegex.test(req.url as string)) {
-                this.response(req, res, {
-                    body: {
-                        message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) ||
-                        defaultResponses.notFound?.replace("{path}", (req.url as string))
-                    },
-                    responseCode: 404
-                })
-                break;
-            }
+            // Strip query parameters from pathname before matching
+            const pathnameWithoutQuery = pathname.split('?')[0];
 
-            const url = new URL(req.url as string, `http://${req.headers.host}`);
-            const pathname = url.pathname;
-
-            const match: RegExpExecArray | null = regexp.regexp.exec(pathname);
+            const match = this.routes[method][path]["regex"].exec(pathnameWithoutQuery);
 
             if (match) {
                 try {
                     if (!foundRoute) {
                         foundRoute = true
 
-                        const params: Record<string, string | undefined> = {};
+                        const route = this.routes[method][path];
 
-                        keys.forEach((key: Key, index: number) => {
-                            params[key.name] = match[index + 1];
+                        // logger.coreDebug([path, pathname, req.url, this.routes[method][path]["paramNames"]]);
+
+                        const params: Record<string, string | undefined> = {};
+                        const queryParams: Record<string, string | undefined> = {};
+
+                        route["paramNames"].forEach((key: string, index: number) => {
+                            params[key] = match[index + 1];
                         });
 
+                        let queryParamsMatch: RegExpExecArray | null;
+
+                        while ((queryParamsMatch = this.queryParamsRegex.exec(pathname)) !== null) {
+                            const [_, key, value] = queryParamsMatch;
+                            queryParams[decodeURIComponent(key)] = decodeURIComponent(value);
+                        }
+
                         req.params = params;
+                        req.query = queryParams;
 
-                        const route = this.routes[method][path]
+                        const middlewares: MiddlewareStorage[] = route["handler"]["_middlewares"];
 
-                        const middlewares: Middleware[] = route.getMiddlewares();
-
-                        const controller: Controller = route.getController();
+                        const controller: FuncController = route["handler"]["_controller"];
 
                         const axonCors = await AxonCors.middlewareWrapper(this.config.CORS);
 
+                        const AxonCorsMiddleware: MiddlewareStorage = {
+                            timeout: this.config.MIDDLEWARE_TIMEOUT || 10000,
+                            middleware: axonCors
+                        };
+
+                        // Handle CORS first, then global middlewares, then route-specific middlewares, and finally the controller
                         await this.handleMiddleware(req, res, async () => {
                             await this.handleMiddleware(req, res, async () => {
                                 await this.handleMiddleware(req, res, async () => {
                                     await controller(req, res);
+
+                                    // log incoming requests
+                                    if (this.config.LOGGER_VERBOSE) {
+                                        logger.request({
+                                            ip: req.socket.remoteAddress,
+                                            url: req.url,
+                                            method: req.method,
+                                            headers: req.headers,
+                                            body: req.body,
+                                            code: res.statusCode
+                                        }, "new http request")
+                                    } else {
+                                        logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
+                                    }
                                 }, middlewares);
                             }, this.globalMiddlewares);
-                        }, [axonCors]);
-
-                        // log incoming requests
-                        if (this.config.LOGGER_VERBOSE) {
-                            logger.request({
-                                ip: req.socket.remoteAddress,
-                                url: req.url,
-                                method: req.method,
-                                headers: req.headers,
-                                body: req.body,
-                                code: res.statusCode
-                            }, "new http request")
-                        } else {
-                            logger.request(`${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers["user-agent"]}`)
-                        }
+                        }, [AxonCorsMiddleware]);
 
                     } else {
                         continue;
@@ -310,7 +402,7 @@ export default class AxonCore {
                     this.response(req, res, {
                         body: {
                             message: this.config.RESPONSE_MESSAGES?.serverError ||
-                            defaultResponses.serverError
+                                defaultResponses.serverError
                         },
                         responseCode: 500
                     });
@@ -321,7 +413,7 @@ export default class AxonCore {
                 this.response(req, res, {
                     body: {
                         message: this.config.RESPONSE_MESSAGES?.notFound?.replace("{path}", (req.url as string)) ||
-                        defaultResponses.notFound?.replace("{path}", (req.url as string))
+                            defaultResponses.notFound?.replace("{path}", (req.url as string))
                     },
                     responseCode: 404
                 });
@@ -338,19 +430,80 @@ export default class AxonCore {
      * @param middlewares
      */
     private async handleMiddleware(
-        req: Request,
+        req: Request<any>,
         res: Response,
         next: () => Promise<void>,
-        middlewares: Middleware[]
+        middlewares: MiddlewareStorage[]
     ) {
         let index = 0;
+        let hasResponded = false;
 
         const executeMiddleware = async () => {
             if (index < middlewares.length) {
                 const middleware = middlewares[index++];
+                let nextCalled = false;
+                let timeoutId: NodeJS.Timeout | undefined;
 
-                await middleware(req, res, executeMiddleware);
-            } else {
+                try {
+                    // Create a promise that resolves when next() is called
+                    const nextPromise = new Promise<void>((resolve) => {
+                        const wrappedNext = async () => {
+                            nextCalled = true;
+                            if (timeoutId) {
+                                clearTimeout(timeoutId);
+                            }
+                            resolve();
+                            await executeMiddleware();
+                        };
+                        middleware.middleware(req, res, wrappedNext);
+                    });
+
+                    // Race between next() being called and timeout
+                    await Promise.race([
+                        nextPromise,
+                        new Promise<void>((_, reject) => {
+                            timeoutId = setTimeout(() => {
+                                if (!nextCalled && !hasResponded) {
+                                    reject(new Error(`Middleware timeout exceeded after ${middleware.timeout}ms`));
+                                }
+                            }, middleware.timeout);
+                        })
+                    ]);
+                } catch (err) {
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+                    
+                    if (middleware.critical) {
+                        // For critical middleware, return 500 error and stop processing
+                        if (!hasResponded) {
+                            hasResponded = true;
+                            logger.error({
+                                message: this.config.RESPONSE_MESSAGES?.serverError ||
+                                    defaultResponses.serverError,
+                                error: err instanceof Error ? err.message : "Unknown error",
+                                critical: true
+                            }, "Critical middleware timeout exceeded");
+
+                            return this.response(req, res, {
+                                body: {
+                                    message: this.config.RESPONSE_MESSAGES?.serverError ||
+                                        defaultResponses.serverError,
+                                    error: err instanceof Error ? err.message : "Unknown error",
+                                    critical: true
+                                },
+                                responseCode: 500
+                            });
+                        }
+                    } else {
+                        // For optional middleware, log warning and continue
+                        logger.warn(`NonCritical middleware timeout: ${err instanceof Error ? err.message : "Unknown error"}`);
+                        if (!hasResponded) {
+                            await executeMiddleware();
+                        }
+                    }
+                }
+            } else if (!hasResponded) {
                 await next();
             }
         };
@@ -358,7 +511,7 @@ export default class AxonCore {
         await executeMiddleware();
     }
 
-    private response(req: Request, res: Response, data: JsonResponse) {
+    private response(req: Request<any>, res: Response, data: JsonResponse) {
         if (data.responseMessage) {
             res.statusMessage = data.responseMessage
         }
@@ -407,7 +560,7 @@ export default class AxonCore {
      *      http: 80
      * })
      */
-    async listen(host: string = "127.0.0.1", port: number | { https: number, http: number } = 8000, callback?: (mode?: string) => void) {
+    listen(host: string = "127.0.0.1", port: number | { https: number, http: number } = 8000, callback?: (mode?: string) => void) {
         // Wait until some necessary items are loaded before starting the server
         const corePreloader = async (): Promise<void> => {
             return new Promise((resolve) => {
@@ -424,23 +577,55 @@ export default class AxonCore {
             });
         };
 
-        await this.#loadConfig();
+        // load core dependencies
 
-        await this.#initializePlugins();
+        // load config
+        this.loadConfig().then(() => {
 
-        // Wait for necessary items to be loaded
-        await corePreloader();
+            // initialize plugins
+            this.initializePlugins().then(() => {
 
+                // preloader
+                corePreloader().then(() => {
+
+                    // start server
+                    this.startServer(host, port, callback);
+                
+                }).catch((error) => {
+                    logger.error(error, "Unexpected core error, Code: 1001");
+                    process.exit(-1);
+                });
+
+            }).catch((error) => {
+                logger.error(error, "Unexpected core error, Code: 1002");
+                process.exit(-1);
+            });
+
+        }).catch((error) => {
+            logger.error(error, "Unexpected core error, Code: 1003");
+            process.exit(-1);
+        });
+    }
+
+    /**
+     * Starts the webservers
+     * @param host server host address
+     * @param port server port
+     * @param callback callback a function to run after starting to listen
+     */
+    private startServer(host: string, port: number | { https: number, http: number }, callback?: (mode?: string) => void) {
+        // http request handler
         const httpHandler = async (req: http.IncomingMessage, res: http.ServerResponse) => {
             try {
-                await getRequestBody(req)
+                await getRequestBody(req as Request<any>);
 
-                this.#handleRequest(req, res)
+                this.#handleRequest(req as Request<any>, res as Response)
             } catch (error) {
                 logger.error(error, "Unexpected core error")
             }
         }
 
+        // port handler
         const portHandler = (mode: string) => {
             switch (mode) {
                 case "http":
@@ -461,13 +646,15 @@ export default class AxonCore {
         }
 
         const isHttpsActive = () => Object.keys(this.config.HTTPS || {}).length > 0;
-        let httpsServer;
 
+        // initialize https and http server
         if (isHttpsActive()) {
-            httpsServer = https.createServer(this.config.HTTPS || {}, httpHandler);
+            this.servers.https = https.createServer(this.config.HTTPS || {}, httpHandler);
         }
-        const httpServer = http.createServer(httpHandler)
 
+        this.servers.http = http.createServer(httpHandler)
+
+        // handle callback function
         if (!callback) {
             callback = (mode?: string) => {
                 if (mode === "https") {
@@ -477,24 +664,80 @@ export default class AxonCore {
                 } else if (mode === "http") {
                     logger.core(colors.whiteBright(`Server started on http://${host}:${portHandler("http")}`));
                 }
-                if (this.config.LOGGER) {
-                    logger.level = "plugin"
-                }
             }
         }
 
         // running web servers
-        httpsServer?.listen(portHandler("https"), host, () => callback("https"));
-        httpServer.listen(portHandler("http"), host, () => callback("http"));
+        this.servers.https?.listen(portHandler("https"), host, () => callback("https"));
+        this.servers.http?.listen(portHandler("http"), host, () => callback("http"));
 
-        httpsServer?.on('error', (e) => {
+        this.servers.https?.on('error', (e) => {
             logger.error(e, `Starting server failed`)
             process.exit(-1)
         });
 
-        httpServer.on('error', (e) => {
+        this.servers.http?.on('error', (e) => {
             logger.error(e, `Starting server failed`)
             process.exit(-1)
         });
+    }
+
+    /**
+     * Closes the web servers
+     * @param {string} [server] server to close
+     * @example
+     * core.close() // closes both http and https servers
+     * core.close("http") // closes only http server
+     * core.close("https") // closes only https server
+     */
+    close(server?: "http" | "https") {
+        if (!server) {
+            if (this.servers.http) {
+                this.servers.http.close();
+                logger.core("Http server closed");
+            }
+
+            if (this.servers.https) {
+                this.servers.https.close();
+                logger.core("Https server closed");
+            }
+
+            return true;
+        }
+
+        if (this.servers[server]) {
+            this.servers[server].close();
+            logger.core(`${server} server closed`);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the server object
+     * @returns {Object} server object
+     * @example
+     * const servers = core.getServers();
+     * servers.http.on("request", () => {
+     *     // something here
+     * });
+     */
+    getServers(): {
+        http: http.Server | null,
+        https: https.Server | null
+    } {
+        return this.servers;
+    }
+
+    /**
+     * Returns the core config
+     * @returns {AxonConfig} core config
+     * @example
+     * const config = core.getConfig();
+     * console.log(config);
+     */
+    getConfig(): AxonConfig {
+        return this.config;
     }
 }

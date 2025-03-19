@@ -9,11 +9,19 @@ const core = Axon();
 const router = Router("/api/v1");
 
 /**
+ * @typedef {Object} Params
+ * @property {string?} id 
  * 
- * @param {import("../src").Request} req 
+ * if you want type defenition for req.params you can add this part but if you don't need it you can remove it and req.paramss will be any type.
+ */
+
+/**
+ * 
+ * @param {import("../src").Request<Params>} req 
  * @param {import("../src").Response} res 
  */
 const controller = async (req, res) => {
+    req.params.id
     return res.status(200).body({
         message: "Hello, World"
     })
