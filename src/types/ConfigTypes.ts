@@ -30,6 +30,13 @@ interface AxonConfig {
      * Https configuration for AxonCore.
      */
     HTTPS?: AxonHttpsConfig;
+
+    /**
+     * A global variable to set default middleware timeout for all routes before breaking the middleware chain.
+     * 
+     * Default: 10000ms | 10s
+     */
+    MIDDLEWARE_TIMEOUT?: number;
 }
 
 export default AxonConfig;

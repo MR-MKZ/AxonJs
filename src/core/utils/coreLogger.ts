@@ -16,7 +16,7 @@ const prettyStream = pretty({
     debug: 20,
     plugin: 10
   },
-  customColors: 'fatal:red,error:red,core:magenta,coreDebug:blue,request:cyan,info:green,debug:yellow,plugin:white,warn:yellow',
+  customColors: 'fatal:red,error:red,core:magenta,coreDebug:blue,request:cyan,info:green,debug:black,plugin:white,warn:yellow',
 });
 
 const logger = pino(

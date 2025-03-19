@@ -33,6 +33,12 @@ export type FuncController<P = {}> = (
 
 // Controller will be type of class base controllers.
 
+export interface MiddlewareStorage {
+    timeout: number;
+    middleware: Middleware;
+    critical?: boolean;
+}
+
 export type Middleware<P = {}> = (
     request: Request<P>,
     response: Response,

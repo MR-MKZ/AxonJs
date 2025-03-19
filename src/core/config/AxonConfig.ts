@@ -37,7 +37,7 @@ async function loadTSConfig(filePath: string) {
     return module.exports;
 }
 
-export async function resolveConfig(): Promise<AxonConfig> {
+export async function resolveConfig(log: boolean = true): Promise<AxonConfig> {
     const explorer = lilconfig('axon', {
         searchPlaces: [
             'axon.config.ts',
@@ -69,7 +69,7 @@ export async function resolveConfig(): Promise<AxonConfig> {
         logger.level = "silent"
     }
 
-    logger.debug(config, "Loaded config");
+    if (log) logger.debug(config, "Config loaded");
 
     return config;
 }

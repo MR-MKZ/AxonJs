@@ -1,4 +1,4 @@
-import { AxonCore, AxonPlugin, Router } from "../../../src";
+import { AxonCore, axonLogger, AxonPlugin, Router } from "../../../src";
 export class LogPluginTest implements AxonPlugin {
     private logs: number;
 
@@ -14,6 +14,8 @@ export class LogPluginTest implements AxonPlugin {
 
         router.get('/log', async (req, res) => {
             this.logs++;
+
+            axonLogger.plugin(`[${this.name}] logs: ${this.logs}`);
             
             return res.status(200).body({
                 message: "This is the fist plugin of AxonJs",

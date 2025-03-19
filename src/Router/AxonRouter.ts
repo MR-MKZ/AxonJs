@@ -1,8 +1,8 @@
 import RouterException from "./exceptions/RouterException";
-// import { HttpMethods } from "../types/GlobalTypes";
 import addRoutePrefix from "../core/utils/routePrefixHandler";
-import { FuncController, Middleware, RouteParams, HttpMethods, Route } from "../types/RouterTypes";
+import { FuncController, Middleware, RouteParams, HttpMethods, MiddlewareStorage } from "../types/RouterTypes";
 import { logger } from "../core/utils/coreLogger";
+import { resolveConfig } from "../core/config/AxonConfig";
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {
     throw new RouterException({
@@ -15,17 +15,26 @@ const duplicateError = (path: string, method: keyof HttpMethods) => {
     })
 }
 
+let MIDDLEWARE_TIMEOUT: number; 
+
+resolveConfig(false).then(config => MIDDLEWARE_TIMEOUT = config.MIDDLEWARE_TIMEOUT || 10000);
+
 export class AxonRouteHandler<P = {}> {
     public _controller: FuncController<P>;
-    public _middlewares: Middleware[];
+    public _middlewares: MiddlewareStorage[];
 
     constructor(controller: FuncController<P>) {
         this._controller = controller;
         this._middlewares = [];
     }
 
-    middleware(fn: Middleware) {
-        this._middlewares.push(fn);
+    middleware(fn: Middleware, timeout?: number, critical: boolean = false) {
+        this._middlewares.push({
+            timeout: timeout || MIDDLEWARE_TIMEOUT,
+            middleware: fn,
+            critical
+        });
+
         return this;
     }
 }
