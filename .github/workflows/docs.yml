@@ -27,10 +27,22 @@ jobs:
       - name: Build documentation
         run: npm run doc
 
+      - name: Clean up and prepare docs
+        run: |
+          # Create a temporary directory
+          mkdir -p temp_docs
+          # Copy only the built documentation
+          cp -r docs/* temp_docs/
+          # Remove all other files
+          rm -rf *
+          # Move the documentation back
+          mv temp_docs/* .
+          rm -rf temp_docs
+
       - name: Deploy to docs branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.NPM_GITHUB_TOKEN }}
           publish_dir: ./
           publish_branch: docs
-          commit_message: ${{ github.event.head_commit.message }} 
+          commit_message: "docs: update documentation" 
