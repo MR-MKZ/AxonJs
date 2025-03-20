@@ -30,14 +30,14 @@ jobs:
       - name: Clean up and prepare docs
         run: |
           # Create a temporary directory
-          mkdir -p temp_docs
+          mkdir -p /tmp/temp_docs
           # Copy only the built documentation
-          cp -r docs/* temp_docs/
+          cp -r docs/* /tmp/temp_docs/
           # Remove all other files
           rm -rf *
           # Move the documentation back
-          mv temp_docs/* .
-          rm -rf temp_docs
+          mv /tmp/temp_docs/* .
+          rm -rf /tmp/temp_docs
 
       - name: Deploy to docs branch
         uses: peaceiris/actions-gh-pages@v3
