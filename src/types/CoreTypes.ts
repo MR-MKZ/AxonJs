@@ -108,8 +108,30 @@ interface AxonResponseMessage {
 }
 
 interface UnloadRouteParams {
+    /**
+     * [Optional]
+     * 
+     * Instance of router which you want to remove it's routes from backend core.
+     */
     router?: AxonRouter;
+
+    /**
+     * [Optional]
+     * 
+     * Name of http method which you want to remove it's children routes from backend core.
+     * 
+     * - GET
+     * - POST
+     * - PUT
+     * - PATCH
+     * - DELETE
+     * - OPTIONS
+     */
     method?: keyof HttpMethods;
+
+    /**
+     * A specific route which you want to remove it from backend core.
+     */
     route?: string;
 }
 

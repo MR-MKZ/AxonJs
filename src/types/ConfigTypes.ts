@@ -34,9 +34,16 @@ interface AxonConfig {
     /**
      * A global variable to set default middleware timeout for all routes before breaking the middleware chain.
      * 
-     * Default: 10000ms | 10s
+     * @default 10000ms | 10s
      */
     MIDDLEWARE_TIMEOUT?: number;
+
+    /**
+     * Project environment type to manage features more secure and automatically in AxonCore.
+     * 
+     * @default development
+     */
+    PROJECT_ENV?: "development" | "production";
 }
 
 export default AxonConfig;
