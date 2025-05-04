@@ -11,7 +11,7 @@ import type { RouterExceptionError } from "./types/GlobalTypes";
 import type { AxonResponseMessage, AxonCorsConfig, AxonHttpsConfig, UnloadRouteParams } from "./types/CoreTypes";
 import type { Request, Response, Middleware, NextFunc, FuncController, HttpMethods } from "./types/RouterTypes";
 import type { AxonConfig } from "./types/ConfigTypes";
-import type { AxonPlugin } from "./types/PluginTypes";
+import type { AxonPlugin, PluginMode } from "./types/PluginTypes";
 
 /**
  * Instance of AxonRouter for easier usage
@@ -51,6 +51,7 @@ export {
   Headers,
   NextFunc,
   AxonPlugin,
+  PluginMode,
   FuncController,
   Middleware,
   HttpMethods,

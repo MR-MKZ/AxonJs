@@ -1,4 +1,5 @@
 import { AxonCore, axonLogger, AxonPlugin, Router } from "../../../src";
+import { PluginMode } from "../../../src/types/PluginTypes";
 export class LogPluginTest implements AxonPlugin {
     private logs: number;
 
@@ -8,6 +9,7 @@ export class LogPluginTest implements AxonPlugin {
 
     name: string = "Pretty Logger";
     version: string = "1.2.0-beta";
+    mode: PluginMode = "both";
     
     async init(core: AxonCore): Promise<void> {
         const router = Router("/pretty-logger");
