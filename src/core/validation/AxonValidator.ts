@@ -1,86 +1,67 @@
-// // ! This code is under constructing and currently didn't add to core.
+import * as yup from "yup";
+import joi from "joi";
+import { ZodSchema, z } from "zod";
 
-// import * as yup from "yup";
-// import joi from "joi";
-// import { ZodSchema, z } from "zod";
+import { Middleware } from "../../types/RouterTypes";
 
-// import { Middleware } from "../../types/GlobalTypes";
-// import { logger } from "../utils/coreLogger";
+import type {
+    ValidationConfig,
+    ValidationSchema,
+    ValidationTargets
+} from "../../types/ValidatorTypes";
 
-// type validationSchema = joi.Schema | ZodSchema | yup.Schema;
-// type validationConfig = joi.ValidationOptions | z.ParseParams | yup.ValidateOptions;
+export class AxonValidator {
+    static validate(schema: ValidationSchema, options?: ValidationConfig, target: ValidationTargets = "body"): Middleware {
+        return async (req, res, next) => {
+            try {
+                const dataToValidate = target === "body" ? req.body : target === "query" ? req.query : req.params
 
-// const generateValidationMiddleware = async (schema: validationSchema, options: validationConfig): Promise<Middleware> => {
-//     if (schema instanceof yup.Schema) {
+                if (schema instanceof yup.Schema) {
 
-//         // TODO: How can Core detect which parameter needs validation.
-//         // TODO: Check the other validation schema passing ways.
-//         // TODO: Test validate method for Axon Route Handler.
-//         const middleware: Middleware = async (req, res, next) => {
-//             try {
-//                 await schema.validate({}, (options as yup.ValidateOptions));
+                    await schema.validate(dataToValidate, options as yup.ValidateOptions);
 
-//                 return await next();
-//             } catch (error) {
-//                 if (error instanceof yup.ValidationError) {
-//                     return res.status(400).body({
-//                         message: error.message,
-//                         errors: error.errors
-//                     });
-//                 }
+                } else if (schema instanceof ZodSchema) {
 
-//                 logger.error(error);
+                    await schema.parseAsync(dataToValidate, options as z.ParseParams);
 
-//                 return res.status(500).body({
-//                     message: "Internal server error"
-//                 });
-//             }
-//         }
+                } else if (joi.isSchema(schema)) {
 
-//         return middleware;
-//     } else if (schema instanceof ZodSchema) {
-//         const middleware: Middleware = async (req, res, next) => {
-//             try {
-//                 // await schema.validate({}, (options as yup.ValidateOptions));
+                    const { error } = schema.validate(dataToValidate, options as joi.ValidationOptions);
 
-//                 return await next();
-//             } catch (error) {
-//                 if (error instanceof yup.ValidationError) {
-//                     return res.status(400).body({
-//                         message: error.message,
-//                         errors: error.errors
-//                     });
-//                 }
-//             }
-//         }
+                    if (error) throw error;
 
-//         return middleware;
-//     } else if (joi.isSchema(schema)) {
-//         const middleware: Middleware = async (req, res, next) => {
-//             try {
-//                 // await schema.validate({}, (options as yup.ValidateOptions));
+                } else {
+                    throw new Error("Unsupported validation schema");
+                }
 
-//                 return await next();
-//             } catch (error) {
-//                 if (error instanceof yup.ValidationError) {
-//                     return res.status(400).body({
-//                         message: error.message,
-//                         errors: error.errors
-//                     });
-//                 }
-//             }
-//         }
+                return next();
+            } catch (error) {
+                // logger.debug(error);
+                let errorMessage;
 
-//         return middleware;
-//     } else {
-//         throw new Error("Validation schema is not valid", {
-//             cause: {
-//                 message: "You have to use one of these libraries for validation: Yup, Joi, Zod"
-//             }
-//         });
-//     }
-// }
+                if (error instanceof yup.ValidationError) {
+                    errorMessage = error.errors
+                } else if (error instanceof joi.ValidationError) {
+                    errorMessage = error.details.map(element => `${element.message} | path: ${element.path.join(", ")}`);
+                } else if (error instanceof z.ZodError) {
+                    errorMessage = error.issues.map(element => `${element.message} | path: ${element.path.join(", ")}`);
+                } else {
+                    try {
+                        if (error instanceof Error) {
+                            errorMessage = JSON.parse(error.message);
+                        }
+                    } catch (e) {
+                        if (error instanceof Error) {
+                            errorMessage = error.message
+                        }
+                    }
+                }
 
-// export default {
-//     generateValidationMiddleware
-// }
+                return res.status(400).body({
+                    message: "Validation error",
+                    errors: error instanceof Error ? errorMessage : "Unknown validation error"
+                });
+            }
+        }
+    }
+}
