@@ -434,81 +434,74 @@ export default class AxonCore {
         res: Response,
         next: () => Promise<void>,
         middlewares: MiddlewareStorage[]
-    ) {
-        let index = 0;
-        let hasResponded = false;
-
-        const executeMiddleware = async () => {
-            if (index < middlewares.length) {
-                const middleware = middlewares[index++];
-                let nextCalled = false;
-                let timeoutId: NodeJS.Timeout | undefined;
-
-                try {
-                    // Create a promise that resolves when next() is called
-                    const nextPromise = new Promise<void>((resolve) => {
-                        const wrappedNext = async () => {
-                            nextCalled = true;
-                            if (timeoutId) {
-                                clearTimeout(timeoutId);
+    ) {    
+        for (const { middleware, timeout, critical } of middlewares) {
+            if (res.headersSent) return;
+    
+            const ms = timeout;
+            let nextCalled = false;
+    
+            try {
+                // Execute middleware with optional timeout
+                await new Promise<void>((resolve, reject) => {
+                    let timer: NodeJS.Timeout | undefined;
+                    if (ms > 0) {
+                        timer = setTimeout(() => {
+                            reject(new Error(`Middleware timeout exceeded after ${ms}ms`));
+                        }, ms);
+                    }
+    
+                    // Wrap next() to signal completion and clear timer
+                    const wrappedNext = () => {
+                        nextCalled = true;
+                        if (timer) clearTimeout(timer);
+                        resolve();
+                    };
+    
+                    // Call the middleware
+                    Promise.resolve(middleware(req, res, wrappedNext))
+                        .then(() => {
+                            if (!nextCalled && res.headersSent) {
+                                if (timer) clearTimeout(timer);
+                                resolve();
                             }
-                            resolve();
-                            await executeMiddleware();
-                        };
-                        middleware.middleware(req, res, wrappedNext);
-                    });
-
-                    // Race between next() being called and timeout
-                    await Promise.race([
-                        nextPromise,
-                        new Promise<void>((_, reject) => {
-                            timeoutId = setTimeout(() => {
-                                if (!nextCalled && !hasResponded) {
-                                    reject(new Error(`Middleware timeout exceeded after ${middleware.timeout}ms`));
-                                }
-                            }, middleware.timeout);
                         })
-                    ]);
-                } catch (err) {
-                    if (timeoutId) {
-                        clearTimeout(timeoutId);
-                    }
-                    
-                    if (middleware.critical) {
-                        // For critical middleware, return 500 error and stop processing
-                        if (!hasResponded) {
-                            hasResponded = true;
-                            logger.error({
-                                message: this.config.RESPONSE_MESSAGES?.serverError ||
-                                    defaultResponses.serverError,
-                                error: err instanceof Error ? err.message : "Unknown error",
-                                critical: true
-                            }, "Critical middleware timeout exceeded");
-
-                            return this.response(req, res, {
-                                body: {
-                                    message: this.config.RESPONSE_MESSAGES?.serverError ||
-                                        defaultResponses.serverError,
-                                    error: err instanceof Error ? err.message : "Unknown error",
-                                    critical: true
-                                },
-                                responseCode: 500
-                            });
-                        }
-                    } else {
-                        // For optional middleware, log warning and continue
-                        logger.warn(`NonCritical middleware timeout: ${err instanceof Error ? err.message : "Unknown error"}`);
-                        if (!hasResponded) {
-                            await executeMiddleware();
-                        }
-                    }
+                        .catch(err => {
+                            if (timer) clearTimeout(timer);
+                            reject(err);
+                        });
+                });
+            } catch (err) {
+                if (res.headersSent) return;
+    
+                const errMsg = err instanceof Error ? err.message : String(err);
+                if (critical) {
+                    logger.error({
+                        message: this.config.RESPONSE_MESSAGES?.serverError ?? defaultResponses.serverError,
+                        error: errMsg,
+                        critical: true
+                    }, "Critical middleware failure");
+    
+                    return this.response(req, res, {
+                        body: {
+                            message: this.config.RESPONSE_MESSAGES?.serverError ?? defaultResponses.serverError,
+                            error: errMsg,
+                            critical: true
+                        },
+                        responseCode: 500
+                    });
+                } else {
+                    logger.warn(`Non-critical middleware error or timeout: ${errMsg}`);
+                    continue;
                 }
-            } else if (!hasResponded) {
-                await next();
             }
-        };
-
-        await executeMiddleware();
+    
+            if (nextCalled) continue;
+        }
+    
+        if (!res.headersSent) {
+            await next();
+        }
     }
 
     private response(req: Request<any>, res: Response, data: JsonResponse) {
@@ -590,7 +583,7 @@ export default class AxonCore {
 
                     // start server
                     this.startServer(host, port, callback);
-                
+
                 }).catch((error) => {
                     logger.error(error, "Unexpected core error, Code: 1001");
                     process.exit(-1);
