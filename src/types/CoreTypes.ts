@@ -1,6 +1,6 @@
 import { ServerOptions } from "https";
-import AxonRouter from "../Router/AxonRouter";
-import { HttpMethods } from "./RouterTypes";
+import AxonRouter from "@/Router/AxonRouter";
+import { HttpMethods } from "@/types/RouterTypes";
 
 type AxonHttpsConfig = ServerOptions
 
@@ -107,6 +107,9 @@ interface AxonResponseMessage {
     [key: string]: string | undefined;
 }
 
+/**
+ * Type of input object of unloadRoute method.
+ */
 interface UnloadRouteParams {
     /**
      * [Optional]

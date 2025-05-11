@@ -2,16 +2,34 @@
 import * as http from "http";
 
 // Instances
-import AxonCore from "./core/AxonCore";
-import AxonRouter from "./Router/AxonRouter";
-import { logger } from "./core/utils/coreLogger";
+import AxonCore from "@/core/AxonCore";
+import AxonRouter from "@/Router/AxonRouter";
+import { logger } from "@/core/utils/coreLogger";
 
 // Types
-import type { RouterExceptionError } from "./types/GlobalTypes";
-import type { AxonResponseMessage, AxonCorsConfig, AxonHttpsConfig, UnloadRouteParams } from "./types/CoreTypes";
-import type { Request, Response, Middleware, NextFunc, FuncController, HttpMethods } from "./types/RouterTypes";
-import type { AxonConfig } from "./types/ConfigTypes";
-import type { AxonPlugin, PluginMode } from "./types/PluginTypes";
+import type { RouterExceptionError } from "@/types/GlobalTypes";
+import type { 
+  AxonResponseMessage, 
+  AxonCorsConfig, 
+  AxonHttpsConfig, 
+  UnloadRouteParams 
+} from "@/types/CoreTypes";
+import type {
+  Request,
+  Response,
+  Middleware,
+  NextFunc,
+  FuncController,
+  HttpMethods,
+  ValidationObj
+} from "@/types/RouterTypes";
+import type { AxonConfig } from "@/types/ConfigTypes";
+import type { AxonPlugin, PluginMode } from "@/types/PluginTypes";
+import type {
+  ValidationConfig,
+  ValidationSchema,
+  ValidationTargets
+} from "@/types/ValidatorTypes";
 
 /**
  * Instance of AxonRouter for easier usage
@@ -30,31 +48,59 @@ const Router = (prefix?: string): AxonRouter => new AxonRouter(prefix);
 const Axon = (): AxonCore => new AxonCore();
 
 /**
- * Instance of logger which used in core to use it in your code.
+ * Pino logger instance used in Axon core and exposed for external use.
  */
 const axonLogger = logger;
 
-interface Headers extends http.OutgoingHttpHeaders { }
+// interface Headers extends http.OutgoingHttpHeaders { }
+type Headers = http.OutgoingHttpHeaders;
 
 export {
+  // Cores - Router and Main core
   AxonCore,
   AxonRouter,
+
+  // Core instance generators
   Axon,
   Router,
+
+  // Core config
   AxonConfig,
+
+  // Configs - configuration feature
   AxonResponseMessage,
   AxonCorsConfig,
   AxonHttpsConfig,
+
+  // Main core
   UnloadRouteParams,
+  
+  // Router
+  HttpMethods,
+  ValidationObj,
+
+  // Request life cycle
   Request,
   Response,
   Headers,
   NextFunc,
+
+  // Plugin
   AxonPlugin,
   PluginMode,
+
+  // Handlers
   FuncController,
   Middleware,
-  HttpMethods,
+
+  // Errors
   RouterExceptionError,
-  axonLogger
+
+  // Pino logger - Logger feature
+  axonLogger,
+
+  // Axon Validator - Validation feature
+  ValidationConfig,
+  ValidationSchema,
+  ValidationTargets
 }

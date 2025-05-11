@@ -4,13 +4,13 @@ import esbuild from 'esbuild';
 import { pathToFileURL } from 'url';
 
 // utils
-import { logger } from '../utils/coreLogger';
+import { logger } from '@/core/utils/coreLogger';
 
 // types
-import type { AxonConfig } from "../../types/ConfigTypes";
+import type { AxonConfig } from "@/types/ConfigTypes";
 
 // default items
-import defaultConfig from './defaultConfig';
+import defaultConfig from '@/core/config/defaultConfig';
 
 const dynamicImport = new Function('file', 'return import(file)');
 

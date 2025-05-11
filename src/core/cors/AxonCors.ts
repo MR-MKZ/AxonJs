@@ -1,6 +1,6 @@
 import assign from "object-assign";
 // import { nextFn, Request, Response } from "../..";
-import { NextFunc, Request, Response } from "../../types/RouterTypes";
+import { NextFunc, Request, Response } from "@/types/RouterTypes";
 import vary from "vary";
 
 const defaults = {
