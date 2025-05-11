@@ -1,10 +1,10 @@
-import RouterException from "./exceptions/RouterException";
-import addRoutePrefix from "../core/utils/routePrefixHandler";
-import { FuncController, Middleware, RouteParams, HttpMethods, MiddlewareStorage } from "../types/RouterTypes";
-import { logger } from "../core/utils/coreLogger";
-import { resolveConfig } from "../core/config/AxonConfig";
-import { AxonValidator } from "../core/validation/AxonValidator";
-import { ValidationConfig, ValidationSchema, ValidationTargets } from "../types/ValidatorTypes";
+import RouterException from "@/Router/exceptions/RouterException";
+import addRoutePrefix from "@/core/utils/routePrefixHandler";
+import { FuncController, Middleware, RouteParams, HttpMethods, MiddlewareStorage } from "@/types/RouterTypes";
+import { logger } from "@/core/utils/coreLogger";
+import { resolveConfig } from "@/core/config/AxonConfig";
+import { AxonValidator } from "@/core/validation/AxonValidator";
+import type { ValidationObj } from "@/types/RouterTypes";
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {
     throw new RouterException({
@@ -20,37 +20,6 @@ const duplicateError = (path: string, method: keyof HttpMethods) => {
 let MIDDLEWARE_TIMEOUT: number; 
 
 resolveConfig(false).then(config => MIDDLEWARE_TIMEOUT = config.MIDDLEWARE_TIMEOUT || 10000);
-
-interface ValidateObj {
-    /**
-     * Validation schema created with Joi, Zod or Yup.
-     * 
-     * NOTE: Be carefull, query, params and body for validation is always type of object.
-     */
-    schema: ValidationSchema;
-
-    /**
-     * Options of your validation part for this schema. 
-     * 
-     * To prevent errors while adding options, use 'as <type>' to set type of object.
-     * 
-     * @example
-     * 
-     * options: {} as Joi.ValidationOptions
-     * options: {} as Yup.ValidateOptions
-     * options: {} as z.ParseParams
-     */
-    options?: ValidationConfig;
-
-    /**
-     * Target of your validator middleware.
-     * 
-     * - body
-     * - params (path parameters - /user/12)
-     * - query (query parameters - ?limit=12)
-     */
-    target?: ValidationTargets | "body";
-}
 
 export class AxonRouteHandler<P = {}> {
     public _controller: FuncController<P>;
@@ -117,7 +86,7 @@ class AxonRouter {
      *      }
      * ])
      */
-    public get<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidateObj[]) {
+    public get<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
         if (this.routes.GET[path]) {
             duplicateError(path, "GET")
         }
@@ -168,7 +137,7 @@ class AxonRouter {
      *      }
      * ])
      */
-    public post<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidateObj[]) {
+    public post<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
         if (this.routes.POST[path]) {
             duplicateError(path, "POST")
         }
@@ -214,7 +183,7 @@ class AxonRouter {
      *      }
      * ])
      */
-    public put<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidateObj[]) {
+    public put<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
         if (this.routes.PUT[path]) {
             duplicateError(path, "PUT")
         }
@@ -264,7 +233,7 @@ class AxonRouter {
      *      }
      * ])
      */
-    public patch<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidateObj[]) {
+    public patch<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
         if (this.routes.PATCH[path]) {
             duplicateError(path, "PATCH")
         }
@@ -311,7 +280,7 @@ class AxonRouter {
      *      }
      * ])
      */
-    public delete<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidateObj[]) {
+    public delete<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
         if (this.routes.DELETE[path]) {
             duplicateError(path, "DELETE")
         }
@@ -347,7 +316,7 @@ class AxonRouter {
      *  res.send("Hello World");
      * });
      */
-    public options<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidateObj[]) {
+    public options<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
         if (this.routes.OPTIONS[path]) {
             duplicateError(path, "OPTIONS")
         }
@@ -451,7 +420,7 @@ class AxonRouter {
         return path;
     }
 
-    private registerValidationMiddlewares(validations: ValidateObj[], handler: AxonRouteHandler<any>) {
+    private registerValidationMiddlewares(validations: ValidationObj[], handler: AxonRouteHandler<any>) {
         for (const validator of validations) {
             handler.middleware(AxonValidator.validate(validator.schema, validator.options, validator.target), undefined, true);
         }

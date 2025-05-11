@@ -1,4 +1,4 @@
-import { Headers } from "..";
+import { Headers } from "@/.";
 
 export interface JsonResponse {
     body: object;

@@ -1,4 +1,4 @@
-import AxonCore from "../core/AxonCore";
+import AxonCore from "@/core/AxonCore";
 
 /**
  * This type is about the mode of project environment that your plugin built for it.

@@ -1,4 +1,4 @@
-import { Response } from "../..";
+import { Response } from "@/.";
 
 class AxonResponse {
     private res: Response;
