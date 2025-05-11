@@ -1,7 +1,7 @@
-# Axon.js
+# <img src="https://avatars.githubusercontent.com/u/198393404?s=200&v=4" width="45px" style="position: relative; top: 10px; border-radius: 20%"> Axon.js
 
 
-**like the brain's powerful neural pathways, simple yet strong.**
+**like the brain's powerful neural pathways, simple yet strong. 🧠**
 
 Axon is a backend library that aims to be simple and powerfull.
 
@@ -10,71 +10,15 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 
 [Axon telegram channel](https://t.me/axonjs)
 
-Latest change: 
-- Router core refactored and some new feature added.
-    - **Update**: Set params synatax changed from `/:id` to `/{id}`
-    - **New**: Now params support regex. `/{param}(regex)` => `/{id}(\\d+)`
-    - **New**: Now core support query parameters
-    - **New**: Route params type safed. 
-        ```ts
-        router.get('/{name}', async (req, res) => {
-            console.log(req.params?.name) // type: Request<{ name: string }>
-        });
-
-        // or 
-        interface Params {
-            name: string
-        }
-
-        const handler = async (req: Request<Params>, res: Response) => {
-            console.log(req.params?.name) // type: Request<{ name: string }>
-        }
-
-        router.get('/{name}', handler);
-        ```
-    - **Remove**: path-to-regexp removed from dependencies
-    - **New**: `close` method added to core for closing a server programmetically.
-        ```ts
-        core.close(); // close all servers
-        core.close("http"); // close http server
-        core.close("https"): // close https server
-        ```
-    - **New**: `getServers` method added to core for getting web server instances which using by core.
-        ```ts
-        interface AxonServers {
-            http: http.Server | null;
-            https: https.Server | null;
-        }
-
-        const servers: AxonServers = core.getServers();
-        servers.http.on('request', () => {
-            // something to do
-        });
-        ```
-    - **New**: `getConfig` method added to core got getting loaded config which using by core.
-    - **New**: Middleware chain logic has been improved, and now middlewares support a timeout when the process takes too long or if the next function isn't called while the user  connection remains open. You can set a global timeout in the config using a specific key `MIDDLEWARE_TIMEOUT`.
-        ```ts
-        // set timeout of middleware to 2000ms and set middleware mode to critical.
-        router.get('/', async (req, res) => {})
-            .middleware(
-                async (req, res, next) => {},
-                timeout = 2000,
-                critical = true
-            );
-
-        // also in global middlewares
-        core.globalMiddleware(
-            async (req, res, next) => {},
-            timeout = 2000,
-            critical = true
-        );
-        ```
-        When you set critical to `true`, the middleware is marked as critical; if it encounters an error or returns a timeout error, the request chain will break, resulting in an internal server error (500) sent to the client, and the request will close. Additionally, the error will be logged in the console. If the middleware is non-critical (`false`), the core will skip it and continue processing the response to the client, logging a warning in the console afterward.
+Latest change: (v0.9.0)
+- Plugin system updated.
+- Project environment state added to core config.
+- Validation system added to router.
 
 > [!WARNING]
 > @mr-mkz/axon deprecated and transferred to @axonlabs/core
 
-## Installation
+## Installation 📥
 
 Install Axon.js with npm
 
@@ -82,13 +26,13 @@ Install Axon.js with npm
   npm install @axonlabs/core
 ```
 
-## Benchmarks
+## Benchmarks 🧪
 
 You can checkout Axon benchmarks document and results from below link.
 
 [Axon Benchmarks](./benchmarks/README.md)
     
-## Badges
+## Badges 📛
 
 <p align="center">
     <a href="https://www.npmjs.com/package/@axonlabs/core">
@@ -117,7 +61,7 @@ You can checkout Axon benchmarks document and results from below link.
     </a>
 </p>
 
-## Features
+## Features 💡
 
 - Simple routing system
 - Support methods: GET, POST, PUT, PATCH, DELETE, OPTIONS.
@@ -131,14 +75,19 @@ You can checkout Axon benchmarks document and results from below link.
 
 **More features soon...**
 
-## Roadmap (still thinking)
+## Roadmap (still thinking) 🚦
 
 - Response meta generator.
 - Auto error detector (maybe)
 - Default schemas.
 - Default database connection methods.
+- Improve plugin system
+  - Core versioning
+  - Plugin dependencies
+- Improve AxonCore
+  - Cleaner code
 
-## Documentation
+## Documentation 📚
 
 Currently Axon has a main core and a router class which you can make instance from router class every where you want and then gave the router instance to core to load routes.
 
@@ -146,7 +95,9 @@ More complete examples:
 - [Typescript Example](./examples/index.ts)
 - [Javascript Example](./examples/index.js)
 
-### Router
+### Router 🧭
+
+#### Methods 
 
 Router is stil under constructing and it's not a stable version yet but currently it support this methods:
 
@@ -157,17 +108,65 @@ Router is stil under constructing and it's not a stable version yet but currentl
 - DELETE
 - OPTIONS
 
+#### Validation system
+One on the new features of Axon Router is auto validation system.
+This feature works with Joi, Yup and Zod schema to create validation middlewares automatically without any additional code.
+Target of this system is speeding up programmers and also using validation systems in middleware instead of controller to prevent additional requests and code in controller.
+
+```ts
+const authFormSchema = Joi.object({
+    username: Joi.string().min(3).required(),
+    age: Joi.number().integer().min(0).required()
+});
+
+// You can register your validation schema with your options for any target and then
+// register it to route after controller
+// Also you can write this code directly in route function but it's not really clean.
+const validation: ValidationObj[] = [
+    {
+        schema: authFormSchema, // must be schema of yup, joi or zod
+        options: { // must be options of yup, joi or zod based on your schema
+            abortEarly: false
+        } as Joi.ValidationOptions,
+        target: "body" // your validation schema target (body, params, query)
+    }
+];
+```
+
+Registering validations:
+```ts
+router.post("/users/login", controller, validation);
+// or
+router.post("/users/login", controller, [
+    {
+        // your validation config
+    }
+]);
+```
+
+#### Router usage example
+
 You can access and create routes with just a few steps.
 
 1. creating a variable with a optional name and put `Router()` function in it.
 2. define your routes with methods which you want and controller.
-    - ```js
+    - ```ts
         // route prefix is optional
-        const router = Router('prefix') // easier and newer method
+        const router = Router('prefix'); // easier and newer method
         // or
         // const router = new AxonRouter('prefix');
 
-        router.get(path, controller(req, res))
+        const validation: ValidationObj[] = [
+            {
+                schema: authFormSchema,
+                options: {
+                    abortEarly: false
+                } as Joi.ValidationOptions,
+                target: "body"
+            }
+        ];
+
+        router.get(path, controller(req, res), validation);
         ```
 3. load your routes in core with `loadRoute()` function;
     - ```js
@@ -175,10 +174,10 @@ You can access and create routes with just a few steps.
         // or
         // const core = new AxonCore();
 
-        core.loadRoute(router)
+        core.loadRoute(router);
 4. Done, you created your routes successfully :D
 
-### Controller
+### Controller 🛂
 
 you have to pass your controller to your route, compute and do your jobs in controller and when you want to response to user (each response, error and success) you must return res with some options which example and description for each option is below.
 
@@ -202,7 +201,7 @@ const controller = async (req, res) => {
 }
 ```
 
-### Middleware
+### Middleware 🚓
 
 middleware is a function which runs before running controller for validations or some actions like this and you can use it in two ways.
 
@@ -219,7 +218,7 @@ middleware is a function which runs before running controller for validations or
         ```
         you can also use multiple middlewares in this way by adding middleware functions into an array (suggested method) or repeating this line of code.
 
-Middlewares support a timeout when the process takes too long or if the next function isn't called while the useconnection remains open. You can set a global timeout in the config using a specific key `MIDDLEWARE_TIMEOUT`. When you set critical to `true`, the middleware is marked as critical; if iencounters an error or returns a timeout error, the request chain will break, resulting in an internal server error (500) sent to the client, and the request will closeAdditionally, the error will be logged in the console. If the middleware is non-critical (`false`), the core will skip it and continue processing the response to thclient, logging a warning in the console afterward.
+Middlewares support a timeout when the process takes too long. You can set a global timeout in the config using a specific key `MIDDLEWARE_TIMEOUT`. When you set critical to `true`, the middleware is marked as critical; if encounters an error or returns a timeout error, the request chain will break, resulting in an internal server error (500) sent to the client, and the request will closeAdditionally, the error will be logged in the console. If the middleware is non-critical (`false`), the core will skip it and continue processing the response to the client, logging a warning in the console afterward.
 
 ### Types
 
@@ -239,6 +238,10 @@ AxonJs has some types which can help you in developing your applications for aut
 - `Middleware`: Type of middleware function.
 - `HttpMethods`: Type of router http methods.
 - `RouterExceptionError`: Type of router exceptions.
+- `ValidationObj`: Required object for router auto validation process.
+- `ValidationConfig`: Config type of AxonValidator. (including joi, yup and zod config options)
+- `ValidationSchema`: Schema type of AxonValidator.
+- `ValidationTargets`: Target list of AxonValidator.
 
 ### Axon Core logger (pino & pino-pretty)
 
@@ -286,7 +289,7 @@ Configs:
 - `HTTPS`: object to config server for https. (type: AxonHttpsConfig)
 - `MIDDLEWARE_TIMEOUT`: variable to set global timeout of waiting for middleware to response or call next function. (ms, default 10000ms)
 
-### Running server
+### Running server 🔑
 
 `listen` method runs your webserver.
 
@@ -311,7 +314,7 @@ core.listen("0.0.0.0", 80, () => {
 });
 ```
 
-### Closing/Stopping server
+### Closing/Stopping server 🛑
 
 `close` method closes your webserver.
 
