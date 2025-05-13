@@ -1,10 +1,10 @@
-import RouterException from "@/Router/exceptions/RouterException";
-import addRoutePrefix from "@/core/utils/routePrefixHandler";
-import { FuncController, Middleware, RouteParams, HttpMethods, MiddlewareStorage } from "@/types/RouterTypes";
-import { logger } from "@/core/utils/coreLogger";
-import { resolveConfig } from "@/core/config/AxonConfig";
-import { AxonValidator } from "@/core/validation/AxonValidator";
-import type { ValidationObj } from "@/types/RouterTypes";
+import RouterException from "./exceptions/RouterException";
+import addRoutePrefix from "../core/utils/routePrefixHandler";
+import { FuncController, Middleware, RouteParams, HttpMethods, MiddlewareStorage } from "../types/RouterTypes";
+import { logger } from "../core/utils/coreLogger";
+import { resolveConfig } from "../core/config/AxonConfig";
+import { AxonValidator } from "../core/validation/AxonValidator";
+import type { ValidationObj } from "../types/RouterTypes";
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {
     throw new RouterException({
