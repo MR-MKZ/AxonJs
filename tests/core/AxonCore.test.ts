@@ -1,4 +1,4 @@
-import { Axon, Router } from '@/.';
+import { Axon, Router } from '../../src';
 import * as http from 'http';
 
 describe('AxonCore Integration Tests (v0.0.1)', () => {
