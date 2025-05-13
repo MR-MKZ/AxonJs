@@ -10,7 +10,20 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 
 [Axon telegram channel](https://t.me/axonjs)
 
-Latest change: (v0.9.0)
+Latest change: (v0.10.0) 
+- Cookie manager added to Axon.
+    You can access cookie manager by importing AxonCookie class in your code.
+    AxonCookie has some static methods for managing cookies easily.
+    Example:
+    ```ts
+    import { AxonCookie } from "@axonlabs/core";
+
+    AxonCookie.set(res, name, value, options);
+    AxonCookie.parse(req);
+    AxonCookie.clear(res, name, options);
+    ```
+
+Past changes: (v0.9.0)
 - Plugin system updated.
 - Project environment state added to core config.
 - Validation system added to router.
@@ -78,6 +91,7 @@ You can checkout Axon benchmarks document and results from below link.
 - Controllers and Middlewares
 - Default cors configuration method
 - Support https server
+- Auto validation handler (Yup, Zod, Joi)
 
 **More features soon...**
 
