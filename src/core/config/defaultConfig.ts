@@ -1,5 +1,5 @@
 // types
-import type { AxonConfig } from "@/types/ConfigTypes";
+import type { AxonConfig } from "../../types/ConfigTypes";
 
 export default {
     PROJECT_ENV: "development",

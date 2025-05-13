@@ -6,12 +6,6 @@
             "./src/types"
         ],
         "module": "commonjs",
-        "baseUrl": "./",
-        "paths": {
-            "@/*": [
-                "src/*"
-            ]
-        },
         "types": [
             "node",
             "jest"

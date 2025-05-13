@@ -1,4 +1,4 @@
-import { Request } from "@/types/RouterTypes";
+import { Request } from "../../types/RouterTypes";
 
 const getRequestBody = async (req: Request<any>): Promise<string | Record<string, string | undefined> | undefined> => {
     return new Promise((resolve, reject) => {

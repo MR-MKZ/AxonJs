@@ -2,7 +2,7 @@ import type {
     AxonResponseMessage, 
     AxonCorsConfig, 
     AxonHttpsConfig 
-} from "@/types/CoreTypes";
+} from "./CoreTypes";
 
 interface AxonConfig {
     /**

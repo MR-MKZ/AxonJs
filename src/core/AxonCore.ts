@@ -4,29 +4,29 @@ import { colors } from "@spacingbat3/kolor"
 import { performance } from "perf_hooks";
 
 // Utils
-import { logger } from "@/core/utils/coreLogger";
-import getRequestBody from "@/core/utils/getRequestBody";
+import { logger } from "./utils/coreLogger";
+import getRequestBody from "./utils/getRequestBody";
 
 // Types
-import type { FuncController, Request, Response, Middleware, HttpMethods } from "@/.";
-import type { AxonPlugin } from "@/types/PluginTypes";
-import type { JsonResponse } from "@/types/GlobalTypes";
-import type { AxonConfig } from "@/types/ConfigTypes";
-import type { UnloadRouteParams } from "@/types/CoreTypes";
+import type { FuncController, Request, Response, Middleware, HttpMethods } from "..";
+import type { AxonPlugin } from "../types/PluginTypes";
+import type { JsonResponse } from "../types/GlobalTypes";
+import type { AxonConfig } from "../types/ConfigTypes";
+import type { UnloadRouteParams } from "../types/CoreTypes";
 
 // Exceptions
-import { routeDuplicateException } from "@/core/exceptions/CoreExceptions";
+import { routeDuplicateException } from "./exceptions/CoreExceptions";
 
 // Instances
-import Router from "@/Router/AxonRouter";
+import Router from "../Router/AxonRouter";
 
 // Features
-import AxonResponse from "@/core/response/AxonResponse";
-import AxonCors from "@/core/cors/AxonCors";
-import { PluginLoader } from "@/core/plugin/PluginLoader";
-import { resolveConfig } from "@/core/config/AxonConfig";
-import { unloadRouteService, unloadRoutesService } from "@/core/services/unloadRoutesService";
-import { MiddlewareStorage } from "@/types/RouterTypes";
+import AxonResponse from "./response/AxonResponse";
+import AxonCors from "./cors/AxonCors";
+import { PluginLoader } from "./plugin/PluginLoader";
+import { resolveConfig } from "./config/AxonConfig";
+import { unloadRouteService, unloadRoutesService } from "./services/unloadRoutesService";
+import { MiddlewareStorage } from "../types/RouterTypes";
 
 // Default values
 const defaultResponses = {

@@ -2,7 +2,7 @@ import * as yup from "yup";
 import joi from "joi";
 import { ZodSchema, z } from "zod";
 
-import { Middleware } from "@/types/RouterTypes";
+import { Middleware } from "../../types/RouterTypes";
 
 import type {
     ValidationConfig,
