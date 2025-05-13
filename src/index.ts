@@ -2,18 +2,19 @@
 import * as http from "http";
 
 // Instances
-import AxonCore from "@/core/AxonCore";
-import AxonRouter from "@/Router/AxonRouter";
-import { logger } from "@/core/utils/coreLogger";
+import AxonCore from "./core/AxonCore";
+import AxonRouter from "./Router/AxonRouter";
+import { logger } from "./core/utils/coreLogger";
+import AxonCookie from "./core/cookie/AxonCookie";
 
 // Types
-import type { RouterExceptionError } from "@/types/GlobalTypes";
+import type { RouterExceptionError } from "./types/GlobalTypes";
 import type { 
   AxonResponseMessage, 
   AxonCorsConfig, 
   AxonHttpsConfig, 
   UnloadRouteParams 
-} from "@/types/CoreTypes";
+} from "./types/CoreTypes";
 import type {
   Request,
   Response,
@@ -22,14 +23,15 @@ import type {
   FuncController,
   HttpMethods,
   ValidationObj
-} from "@/types/RouterTypes";
-import type { AxonConfig } from "@/types/ConfigTypes";
-import type { AxonPlugin, PluginMode } from "@/types/PluginTypes";
+} from "./types/RouterTypes";
+import type { AxonConfig } from "./types/ConfigTypes";
+import type { AxonPlugin, PluginMode } from "./types/PluginTypes";
 import type {
   ValidationConfig,
   ValidationSchema,
   ValidationTargets
-} from "@/types/ValidatorTypes";
+} from "./types/ValidatorTypes";
+import type { CookieOptions } from "./types/CookieTypes";
 
 /**
  * Instance of AxonRouter for easier usage
@@ -102,5 +104,9 @@ export {
   // Axon Validator - Validation feature
   ValidationConfig,
   ValidationSchema,
-  ValidationTargets
+  ValidationTargets,
+
+  // Axon Cookie Manager
+  CookieOptions,
+  AxonCookie
 }
