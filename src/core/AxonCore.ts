@@ -6,6 +6,7 @@ import { performance } from "perf_hooks";
 // Utils
 import { logger } from "./utils/coreLogger";
 import getRequestBody from "./utils/getRequestBody";
+import { createClassHandler } from "./classController/ClassHandler";
 
 // Types
 import type { FuncController, Request, Response, Middleware, HttpMethods } from "..";
@@ -13,6 +14,7 @@ import type { AxonPlugin } from "../types/PluginTypes";
 import type { JsonResponse } from "../types/GlobalTypes";
 import type { AxonConfig } from "../types/ConfigTypes";
 import type { UnloadRouteParams } from "../types/CoreTypes";
+import { ClassController, MiddlewareStorage } from "../types/RouterTypes";
 
 // Exceptions
 import { routeDuplicateException } from "./exceptions/CoreExceptions";
@@ -26,7 +28,7 @@ import AxonCors from "./cors/AxonCors";
 import { PluginLoader } from "./plugin/PluginLoader";
 import { resolveConfig } from "./config/AxonConfig";
 import { unloadRouteService, unloadRoutesService } from "./services/unloadRoutesService";
-import { MiddlewareStorage } from "../types/RouterTypes";
+import { isAsync } from "./utils/helpers";
 
 // Default values
 const defaultResponses = {
@@ -361,7 +363,30 @@ export default class AxonCore {
 
                         const middlewares: MiddlewareStorage[] = route["handler"]["_middlewares"];
 
-                        const controller: FuncController = route["handler"]["_controller"];
+                        const controllerInstance: FuncController | ClassController<any, any> = route["handler"]["_controller"];
+
+                        let controller: FuncController;
+
+                        if (Array.isArray(controllerInstance)) {
+                            // --- Logic for ClassController [Controller, 'method'] ---
+                            // In this block, TypeScript knows controllerInstance is an array.
+                            // This is where you use the factory function we built.
+
+                            // The 'controllerInstance' is exactly what createClassHandler was designed for!
+                            controller = createClassHandler(controllerInstance);
+
+                        } else if (typeof controllerInstance === 'function') {
+                            // --- Logic for FuncController ---
+                            // If it's not an array, we check if it's a function.
+                            // In this block, TypeScript knows it's a function.
+
+                            controller = controllerInstance;
+
+                        } else {
+                            // --- Error Case ---
+                            // The definition is neither a valid array nor a function.
+                            throw new Error("Invalid handler definition. Expected an array [Controller, 'method'] or a function.");
+                        }
 
                         const axonCors = await AxonCors.middlewareWrapper(this.config.CORS);
 
@@ -374,7 +399,11 @@ export default class AxonCore {
                         await this.handleMiddleware(req, res, async () => {
                             await this.handleMiddleware(req, res, async () => {
                                 await this.handleMiddleware(req, res, async () => {
-                                    await controller(req, res);
+                                    if (isAsync(controller)) {
+                                        await controller(req, res);
+                                    } else {
+                                        controller(req, res);
+                                    }
 
                                     // log incoming requests
                                     if (this.config.LOGGER_VERBOSE) {

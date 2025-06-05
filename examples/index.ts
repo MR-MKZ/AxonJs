@@ -3,8 +3,8 @@
  */
 
 import { Axon, Request, Response, NextFunc, axonLogger, Middleware} from "../src";
-import { v1Routes } from "./routes/v1";
-import { v2Routes } from "./routes/v2";
+import { v1Routes } from "./routers/v1";
+import { v2Routes } from "./routers/v2";
 import { LogPluginTest } from "./plugins/log"
 
 const core = Axon()

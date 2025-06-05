@@ -1,6 +1,7 @@
 import { IncomingMessage, ServerResponse } from "http";
 import AxonResponse from "../core/response/AxonResponse";
 import { AxonRouteHandler } from "../Router/AxonRouter";
+import { BaseController } from "../core/classController";
 import type {
     ValidationConfig,
     ValidationSchema,
@@ -52,7 +53,10 @@ export type FuncController<P = {}> = (
     response: Response
 ) => Promise<void> | void;
 
-// Controller will be type of class base controllers.
+
+export type ClassController<C extends BaseController, M extends keyof C> = [new (...args: any[]) => C, M];
+
+export type ControllerConstructor<C extends BaseController = BaseController> = new (...args: any[]) => C;
 
 /** 
  * The `MiddlewareStorage` interface is defining a structure for storing middleware information. Here's

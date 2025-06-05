@@ -6,6 +6,7 @@ import AxonCore from "./core/AxonCore";
 import AxonRouter from "./Router/AxonRouter";
 import { logger } from "./core/utils/coreLogger";
 import AxonCookie from "./core/cookie/AxonCookie";
+import { BaseController } from "./core/classController";
 
 // Types
 import type { RouterExceptionError } from "./types/GlobalTypes";
@@ -93,6 +94,7 @@ export {
 
   // Handlers
   FuncController,
+  BaseController,
   Middleware,
 
   // Errors
