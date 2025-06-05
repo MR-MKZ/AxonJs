@@ -10,7 +10,37 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 
 [Axon telegram channel](https://t.me/axonjs)
 
-Latest change: (v0.10.0) 
+Latest change: (v0.11.0)
+- Class-Based Controllers
+    You can use the new generation of controllers in Axon.
+    In class-based controllers you can use state managing of classes in your application without any instance making.
+    More organized controllers!
+    ```ts
+    class UsersController extends BaseController {
+        async index(req: Request<any>, res: Response) {
+            return res.status(200).body({});
+        }
+    }
+
+    // [Class, Method]
+    router.get("/users", [UsersController, "index"]);
+    ```
+
+    Your controller class must extends from BaseController, Otherwise the router will throw error.
+    ```ts
+    class UsersController {
+        async index(req: Request<any>, res: Response) {
+            return res.status(200).body({});
+        }
+    }
+
+    router.get("/users", [UsersController, "index"]);
+
+    // Error: Controller class must extends from BaseController
+    ```
+
+Past changes: 
+#### (v0.10.0) 
 - Cookie manager added to Axon.
     You can access cookie manager by importing AxonCookie class in your code.
     AxonCookie has some static methods for managing cookies easily.
@@ -22,8 +52,7 @@ Latest change: (v0.10.0)
     AxonCookie.parse(req);
     AxonCookie.clear(res, name, options);
     ```
-
-Past changes: (v0.9.0)
+#### (v0.9.0)
 - Plugin system updated.
 - Project environment state added to core config.
 - Validation system added to router.

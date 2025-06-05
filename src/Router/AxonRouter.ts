@@ -491,7 +491,7 @@ class AxonRouter {
             const [ControllerClass, method] = controller;
 
             if (!(ControllerClass?.prototype instanceof BaseController)) {
-                throw new Error(`Controller class must extend BaseController`, {
+                throw new Error(`Controller class must extends from BaseController`, {
                     cause: ControllerClass
                 });
             }
