@@ -4,7 +4,8 @@ import { FuncController, Middleware, RouteParams, HttpMethods, MiddlewareStorage
 import { logger } from "../core/utils/coreLogger";
 import { resolveConfig } from "../core/config/AxonConfig";
 import { AxonValidator } from "../core/validation/AxonValidator";
-import type { ValidationObj } from "../types/RouterTypes";
+import type { ClassController, ValidationObj } from "../types/RouterTypes";
+import { BaseController } from "../core/classController";
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {
     throw new RouterException({
@@ -17,15 +18,15 @@ const duplicateError = (path: string, method: keyof HttpMethods) => {
     })
 }
 
-let MIDDLEWARE_TIMEOUT: number; 
+let MIDDLEWARE_TIMEOUT: number;
 
 resolveConfig(false).then(config => MIDDLEWARE_TIMEOUT = config.MIDDLEWARE_TIMEOUT || 10000);
 
 export class AxonRouteHandler<P = {}> {
-    public _controller: FuncController<P>;
+    public _controller: FuncController<P> | ClassController<any, any>;
     public _middlewares: MiddlewareStorage[];
 
-    constructor(controller: FuncController<P>) {
+    constructor(controller: FuncController<P> | ClassController<any, any>) {
         this._controller = controller;
         this._middlewares = [];
     }
@@ -40,6 +41,7 @@ export class AxonRouteHandler<P = {}> {
         return this;
     }
 }
+
 
 class AxonRouter {
     private routes: HttpMethods;
@@ -86,10 +88,19 @@ class AxonRouter {
      *      }
      * ])
      */
-    public get<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
+    public get<Path extends string, C extends BaseController, M extends keyof C>(
+            path: Path,
+            controller: (
+            FuncController<RouteParams<Path>>
+            | ClassController<C, M>),
+            validation?: ValidationObj[]
+        ) {
+
         if (this.routes.GET[path]) {
             duplicateError(path, "GET")
         }
+
+        this.validateController(controller);
 
         path = this.handleRoutePrefix(path) as Path;
 
@@ -137,10 +148,19 @@ class AxonRouter {
      *      }
      * ])
      */
-    public post<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
+    public post<Path extends string, C extends BaseController, M extends keyof C>(
+            path: Path,
+            controller: (
+            FuncController<RouteParams<Path>>
+            | ClassController<C, M>),
+            validation?: ValidationObj[]
+        ) {
+            
         if (this.routes.POST[path]) {
             duplicateError(path, "POST")
         }
+
+        this.validateController(controller);
 
         path = this.handleRoutePrefix(path) as Path;
 
@@ -183,10 +203,19 @@ class AxonRouter {
      *      }
      * ])
      */
-    public put<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
+    public put<Path extends string, C extends BaseController, M extends keyof C>(
+            path: Path,
+            controller: (
+            FuncController<RouteParams<Path>>
+            | ClassController<C, M>),
+            validation?: ValidationObj[]
+        ) {
+
         if (this.routes.PUT[path]) {
             duplicateError(path, "PUT")
         }
+
+        this.validateController(controller);
 
         path = this.handleRoutePrefix(path) as Path;
 
@@ -233,10 +262,19 @@ class AxonRouter {
      *      }
      * ])
      */
-    public patch<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
+    public patch<Path extends string, C extends BaseController, M extends keyof C>(
+            path: Path,
+            controller: (
+            FuncController<RouteParams<Path>>
+            | ClassController<C, M>),
+            validation?: ValidationObj[]
+        ) {
+
         if (this.routes.PATCH[path]) {
             duplicateError(path, "PATCH")
         }
+
+        this.validateController(controller);
 
         path = this.handleRoutePrefix(path) as Path;
 
@@ -280,10 +318,19 @@ class AxonRouter {
      *      }
      * ])
      */
-    public delete<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
+    public delete<Path extends string, C extends BaseController, M extends keyof C>(
+            path: Path,
+            controller: (
+            FuncController<RouteParams<Path>>
+            | ClassController<C, M>),
+            validation?: ValidationObj[]
+        ) {
+
         if (this.routes.DELETE[path]) {
             duplicateError(path, "DELETE")
         }
+
+        this.validateController(controller);
 
         path = this.handleRoutePrefix(path) as Path;
 
@@ -316,10 +363,19 @@ class AxonRouter {
      *  res.send("Hello World");
      * });
      */
-    public options<Path extends string>(path: Path, controller: FuncController<RouteParams<Path>>, validation?: ValidationObj[]) {
+    public options<Path extends string, C extends BaseController, M extends keyof C>(
+            path: Path,
+            controller: (
+            FuncController<RouteParams<Path>>
+            | ClassController<C, M>),
+            validation?: ValidationObj[]
+        ) {
+
         if (this.routes.OPTIONS[path]) {
             duplicateError(path, "OPTIONS")
         }
+
+        this.validateController(controller);
 
         path = this.handleRoutePrefix(path) as Path;
 
@@ -363,16 +419,16 @@ class AxonRouter {
         let i = 0;
         while (i < path.length) {
             if (path[i] === '{') {
-                
+
                 const endBrace = path.indexOf('}', i);
                 if (endBrace === -1) {
                     throw new Error("Unclosed parameter brace in route: " + path);
                 }
-                
+
                 const paramName = path.slice(i + 1, endBrace);
                 paramNames.push(paramName);
                 i = endBrace + 1;
-                
+
                 if (i < path.length && path[i] === '(') {
                     const endParen = path.indexOf(')', i);
                     if (endParen === -1) {
@@ -382,11 +438,11 @@ class AxonRouter {
                     regexString += `(${customRegex})`;
                     i = endParen + 1;
                 } else {
-                    
+
                     regexString += '([^/]+)';
                 }
             } else {
-                
+
                 const nextBrace = path.indexOf('{', i);
                 const literal = nextBrace === -1 ? path.slice(i) : path.slice(i, nextBrace);
                 regexString += this.escapeRegExp(literal);
@@ -398,7 +454,7 @@ class AxonRouter {
     }
 
     private escapeRegExp(text: string): string {
-        
+
         return text.replace(/([.+*?=^!:${}()[\]|\/\\])/g, '\\$1');
     }
 
@@ -423,6 +479,22 @@ class AxonRouter {
     private registerValidationMiddlewares(validations: ValidationObj[], handler: AxonRouteHandler<any>) {
         for (const validator of validations) {
             handler.middleware(AxonValidator.validate(validator.schema, validator.options, validator.target), undefined, true);
+        }
+    }
+
+    /**
+     * Check controller type and if it was class controller, it must be extends from BaseController.
+     * @param controller 
+     */
+    private validateController(controller: FuncController<any> | ClassController<any, any>) {
+        if (Array.isArray(controller)) {
+            const [ControllerClass, method] = controller;
+
+            if (!(ControllerClass?.prototype instanceof BaseController)) {
+                throw new Error(`Controller class must extends from BaseController`, {
+                    cause: ControllerClass
+                });
+            }
         }
     }
 }
