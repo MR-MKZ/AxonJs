@@ -50,9 +50,11 @@ export type RouteParams<Path extends string> =
  */
 export type FuncController<P = {}> = (
     request: Request<P>,
-    response: Response
+    response: Response,
+    ...args: any[]
 ) => Promise<void> | void;
-
+// ! Type of function controller must check and handle another time to find the best way to handle the dependency injection
+// ! and also handle some old features like auto type set for Request params. (<P = {}>)
 
 export type ClassController<C extends BaseController, M extends keyof C> = [new (...args: any[]) => C, M];
 
