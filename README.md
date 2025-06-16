@@ -1,7 +1,6 @@
-<img src="https://avatars.githubusercontent.com/u/198393404?s=200&v=4" width="80px" style="position: relative; top: 10px; left: 50%; transform: translateX(-50%); border-radius: 20%">
+<img src="https://github.com/user-attachments/assets/620caf8f-fc68-4d1c-bd9d-e200a033f579" width="100%" height="300px" style="max-width: 100%;object-fit: cover;">
 
 # Axon.js
-
 
 **like the brain's powerful neural pathways, simple yet strong. 🧠**
 
