@@ -2,6 +2,7 @@ import { ControllerRegistry } from "./ControllerRegistry";
 import { BaseController } from ".";
 import { ClassController, FuncController } from "../../types/RouterTypes";
 import { logger } from "../utils/coreLogger";
+import { extractArgs } from "../DI";
 
 
 /**
@@ -11,7 +12,7 @@ import { logger } from "../utils/coreLogger";
  * @param classRouteHandler A tuple [ControllerClass, 'methodName']
  * @returns An executable route handler function `(req, res) => ...`
  */
-export const createClassHandler = (controllerClassHandler: ClassController<any, any>): FuncController => {
+export const createClassHandler = (controllerClassHandler: ClassController<any, any>): [FuncController, string[]] => {
     const [ControllerClass, methodName] = controllerClassHandler;
 
      // Check if the controller class extends BaseController
@@ -23,8 +24,12 @@ export const createClassHandler = (controllerClassHandler: ClassController<any, 
 
     const instance = ControllerRegistry.getInstance(ControllerClass);
 
+    const unboundMethod = (ControllerClass.prototype as any)[methodName];
+
+    const args = extractArgs(unboundMethod);
+
     try {
-        return instance[methodName].bind(instance);
+        return [instance[methodName].bind(instance), args];
     } catch (error) {
         throw new Error(`Method ${methodName.toString()} is not bound to the instance`);
     }

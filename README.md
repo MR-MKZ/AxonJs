@@ -1,4 +1,6 @@
-# <img src="https://avatars.githubusercontent.com/u/198393404?s=200&v=4" width="45px" style="position: relative; top: 10px; border-radius: 20%"> Axon.js
+<img src="https://avatars.githubusercontent.com/u/198393404?s=200&v=4" width="80px" style="position: relative; top: 10px; left: 50%; transform: translateX(-50%); border-radius: 20%">
+
+# Axon.js
 
 
 **like the brain's powerful neural pathways, simple yet strong. 🧠**
@@ -10,7 +12,60 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 
 [Axon telegram channel](https://t.me/axonjs)
 
-Latest change: (v0.11.0)
+Latest change: (v0.12.0)
+- Dependency injection
+    Axon's new feature is dependency injection for class methods and controller functions.
+    support for class constructor and middlewar;es will add soon.
+    How to use:
+    1. Register your dependency into the Axon core:
+    
+        ```typescript
+        // class instance
+        core.registerDependency("dependencyName", new DependencyClass(arg1, arg2));
+
+        // class without instance (core will make instance automatically)
+        core.registerDependency("dependencyName2", DependencyClass);
+
+        // function
+        core.registerDependency("dependencyName3", dependencyFunction);
+
+        // Also you can register dependencies with name aliases
+        core.registerDependency(["depClass", "classDep", "DB"], new DependencyClass());
+        ```
+        
+    2. Use you dependency in controller
+    
+        ```typescript
+        // When you want to use dependencies, make sure you enter exact dependency name or alias
+        // in 3rd argument of controller method or function into the object.
+        interface IDependencies {
+            DB: DependencyClass;
+            dependencyName3: (...args: any[]) => any
+        }
+
+        class UserController extends BaseController {
+            async index(req: Request<any>, res: Response, { DB, dependencyName3 }: IDependencies) {
+                const result = dependencyName3();
+                const db = DB.get();
+            }
+        }
+
+        // Or functional controller:
+        const getUsers = async (
+            req: Request<any>,
+            res: Response, 
+            { DB, dependencyName3 }: IDependencies
+        ) => {
+            const result = dependencyName3();
+            const db = DB.get();
+        }
+
+        router.get("/users/class", [UserController, "index"]);
+        router.get("/users/function", getUsers);
+        ```
+
+Past changes: 
+#### (v0.11.0)
 - Class-Based Controllers
     You can use the new generation of controllers in Axon.
     In class-based controllers you can use state managing of classes in your application without any instance making.
@@ -38,8 +93,6 @@ Latest change: (v0.11.0)
 
     // Error: Controller class must extends from BaseController
     ```
-
-Past changes: 
 #### (v0.10.0) 
 - Cookie manager added to Axon.
     You can access cookie manager by importing AxonCookie class in your code.

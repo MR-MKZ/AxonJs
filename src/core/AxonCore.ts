@@ -14,7 +14,7 @@ import type { AxonPlugin } from "../types/PluginTypes";
 import type { JsonResponse } from "../types/GlobalTypes";
 import type { AxonConfig } from "../types/ConfigTypes";
 import type { UnloadRouteParams } from "../types/CoreTypes";
-import { ClassController, MiddlewareStorage } from "../types/RouterTypes";
+import type { ClassController, MiddlewareStorage } from "../types/RouterTypes";
 
 // Exceptions
 import { routeDuplicateException } from "./exceptions/CoreExceptions";
@@ -29,6 +29,7 @@ import { PluginLoader } from "./plugin/PluginLoader";
 import { resolveConfig } from "./config/AxonConfig";
 import { unloadRouteService, unloadRoutesService } from "./services/unloadRoutesService";
 import { isAsync } from "./utils/helpers";
+import { registerDependency as DIRegisterDependency, funcRunner, DependencyValue } from "./DI";
 
 // Default values
 const defaultResponses = {
@@ -237,6 +238,10 @@ export default class AxonCore {
         await unloadRoutesService(this.routes)
     }
 
+    async registerDependency(name: string | string[], dependency: DependencyValue) {
+        DIRegisterDependency(name, dependency);
+    }
+
     /**
      * You can set one or many middlewares in global scope with this method.
      * @example
@@ -366,6 +371,7 @@ export default class AxonCore {
                         const controllerInstance: FuncController | ClassController<any, any> = route["handler"]["_controller"];
 
                         let controller: FuncController;
+                        let manualArgs: string[];
 
                         if (Array.isArray(controllerInstance)) {
                             // --- Logic for ClassController [Controller, 'method'] ---
@@ -373,7 +379,9 @@ export default class AxonCore {
                             // This is where you use the factory function we built.
 
                             // The 'controllerInstance' is exactly what createClassHandler was designed for!
-                            controller = createClassHandler(controllerInstance);
+                            const [handler, args] = createClassHandler(controllerInstance);
+                            controller = handler;
+                            manualArgs = args;
 
                         } else if (typeof controllerInstance === 'function') {
                             // --- Logic for FuncController ---
@@ -399,10 +407,10 @@ export default class AxonCore {
                         await this.handleMiddleware(req, res, async () => {
                             await this.handleMiddleware(req, res, async () => {
                                 await this.handleMiddleware(req, res, async () => {
-                                    if (isAsync(controller)) {
-                                        await controller(req, res);
+                                    if (manualArgs) {
+                                        await funcRunner(controller, req, res, manualArgs);
                                     } else {
-                                        controller(req, res);
+                                        await funcRunner(controller, req, res);
                                     }
 
                                     // log incoming requests
