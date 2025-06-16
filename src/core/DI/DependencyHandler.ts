@@ -15,6 +15,10 @@ const registerDependency = async (name: string | string[], dependency: Dependenc
     const names = Array.isArray(name) ? name : [name];
     const [mainName, ...aliases] = names;
 
+    if (!isConstructor(dependency) && !isInstance(dependency) && !isFunction(dependency)) {
+        throw new Error(`Unsupported dependency type for '${mainName}'`);
+    }
+
     // Set main item, first name as main name.
     DependecyStorage.set(mainName, dependency);
 
