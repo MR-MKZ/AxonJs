@@ -73,11 +73,15 @@ describe('Dependency Injection tests', () => {
             return res.status(200).body({});
         });
 
+        router.get("/dep/notfound", async (req, res, { logger }) => {
+            return res.status(200).body({});
+        });
+
         await core.loadRoute(router);
 
         await core.registerDependency("classDep", new ClassDependency());
         await core.registerDependency("funcDep", functionDependency);
-        await core.registerDependency("class2Dep", ClassDependency);
+        await core.registerDependency(["class2Dep", "class3Dep"], ClassDependency);
 
         return new Promise((resolve) => {
             core.listen(TEST_HOST, TEST_PORT, () => {
@@ -134,5 +138,13 @@ describe('Dependency Injection tests', () => {
         const response = await makeRequest({ path: "/unknown/deps", userOptions });
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual({});
+    });
+
+    test('Should return dependency not found error', async () => {
+        const response = await makeRequest({ path: "/dep/notfound", userOptions });
+        expect(response.statusCode).toBe(500);
+        expect(response.body).toEqual({
+            message: "Internal server error"
+        });
     });
 });
