@@ -2,7 +2,7 @@ import { ControllerRegistry } from "./ControllerRegistry";
 import { BaseController } from ".";
 import { ClassController, FuncController } from "../../types/RouterTypes";
 import { logger } from "../utils/coreLogger";
-import { extractArgs } from "../DI";
+import { extractDestructuredThirdArgKeys } from "../DI";
 
 
 /**
@@ -26,7 +26,7 @@ export const createClassHandler = (controllerClassHandler: ClassController<any, 
 
     const unboundMethod = (ControllerClass.prototype as any)[methodName];
 
-    const args = extractArgs(unboundMethod);
+    const args = extractDestructuredThirdArgKeys(unboundMethod);
 
     try {
         return [instance[methodName].bind(instance), args];

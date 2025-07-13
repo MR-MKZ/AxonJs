@@ -1,12 +1,10 @@
 import type {
-    Constructor,
-    Func,
-    Instance,
     DependencyValue
-} from ".";
-import { isFunction, isConstructor, isInstance, extractArgs } from ".";
+} from "../../types/Dependency";
+import { isFunction, isConstructor, isInstance } from ".";
 import { Request, Response } from "../../types/RouterTypes";
 import { isAsync } from "../utils/helpers";
+import { extractDestructuredThirdArgKeys } from "./tokenizer";
 
 // TODO: Convert dependency extractor from regex detection to tokenizer system.
 
@@ -31,7 +29,7 @@ const registerDependency = async (name: string | string[], dependency: Dependenc
 }
 
 const funcRunner = async (func: Function, req: Request<any>, res: Response, manualArgs?: string[]) => {
-    let args = manualArgs || extractArgs(func);
+    let args = manualArgs || extractDestructuredThirdArgKeys(func);
 
     const dependencies: { [name: string]: any } = {};
 

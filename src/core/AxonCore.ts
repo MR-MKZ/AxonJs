@@ -15,6 +15,7 @@ import type { JsonResponse } from "../types/GlobalTypes";
 import type { AxonConfig } from "../types/ConfigTypes";
 import type { UnloadRouteParams } from "../types/CoreTypes";
 import type { ClassController, MiddlewareStorage } from "../types/RouterTypes";
+import type { DependencyValue } from "../types/Dependency";
 
 // Exceptions
 import { routeDuplicateException } from "./exceptions/CoreExceptions";
@@ -28,8 +29,7 @@ import AxonCors from "./cors/AxonCors";
 import { PluginLoader } from "./plugin/PluginLoader";
 import { resolveConfig } from "./config/AxonConfig";
 import { unloadRouteService, unloadRoutesService } from "./services/unloadRoutesService";
-import { isAsync } from "./utils/helpers";
-import { registerDependency as DIRegisterDependency, funcRunner, DependencyValue } from "./DI";
+import { registerDependency as DIRegisterDependency, funcRunner } from "./DI";
 
 // Default values
 const defaultResponses = {

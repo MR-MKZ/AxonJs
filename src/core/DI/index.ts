@@ -1,66 +1,48 @@
-import { logger } from "../utils/coreLogger";
+import { DependencyValue } from "../../types/Dependency";
+import {
+    isConstructor,
+    isFunction,
+    isInstance
+} from "./conditions";
 
-type Constructor = new (...args: any[]) => any;
-type Func = (...args: any[]) => any;
-type Instance = object & { constructor: Function }
-type DependencyValue = Constructor | Instance | Func;
+/**
+ * This is an experimental object to create and manage dependency containers.
+ */
+export class AxonDIContainer {
+    private DependencyStorage = new Map<string, any>();
+    private DependencyAliases = new Map<string, string>();
 
-/** Check if value is a class constructor */
-const isConstructor = (value: DependencyValue): value is Constructor => {
-    return typeof value === 'function' &&
-        !!value.prototype &&
-        !!value.prototype.constructor &&
-        value.prototype.constructor === value;
-}
+    public register<T>(keys: string | string[], value: T) {
+        const names = Array.isArray(keys) ? keys : [keys];
+        const [mainName, ...aliases] = names;
 
-/** Check if value is a n instance (object) */
-const isInstance = (value: DependencyValue): value is Instance => {
-    return typeof value === 'object' &&
-        value !== null &&
-        typeof (value as any).constructor === 'function' &&
-        (value as any).constructor.name !== 'Object';
-}
+        if (
+            !isConstructor(value as DependencyValue) &&
+            !isInstance(value as DependencyValue) &&
+            !isFunction(value as DependencyValue)
+        ) {
+            throw new Error(`Unsupported dependency type for '${mainName}'`);
+        }
 
-/** Check if value is a regular function (not a class) */
-const isFunction = (value: DependencyValue): value is Func => {
-    return typeof value === 'function' &&
-        (!value.prototype || value.prototype.constructor !== value);
-}
+        // Set main item, first name as main name.
+        this.DependencyStorage.set(mainName, value);
 
-/** Extract function arguments and return array of argument names */
-const extractArgs = (fn: Function): string[] => {
-    const fnStr = fn.toString().replace(/\/\/.*$|\/\*[\s\S]*?\*\//gm, '');
-    const match = fnStr.match(/\(([^)]*)\)/);
-    if (!match) return [];
+        // Map all aliases for dependency to main item.
+        for (const alias of aliases) {
+            this.DependencyAliases.set(alias, mainName);
+        }
+    }
 
-    const args = match[1]
-        .split(',')
-        .map(a => a.trim())
-        .filter(Boolean);
-
-    if (args.length < 3) return [];
-
-    const thirdArg = args[2];
-
-    // Match only if it's destructured like { db, logger }
-    const destructureMatch = thirdArg.match(/^\{([^}]+)\}$/);
-    if (!destructureMatch) return [];
-
-    return destructureMatch[1]
-        .split(',')
-        .map(k => k.trim().replace(/=.*$/, '')) // remove default values
-        .filter(Boolean);
+    public resolve<T>(key: string): T {
+        const mainKey = this.DependencyAliases.get(key) || key;
+        return this.DependencyStorage.get(mainKey);
+    }
 }
 
 export {
-    Func,
-    Constructor,
-    Instance,
     isFunction,
     isConstructor,
-    isInstance,
-    extractArgs,
-    DependencyValue
+    isInstance
 }
 
 export {
@@ -68,4 +50,6 @@ export {
     funcRunner,
     DependecyStorage,
     DependencyAliases
-} from "./DependencyHandler"
+} from "./DependencyHandler";
+
+export { extractDestructuredThirdArgKeys } from "./tokenizer";
