@@ -6,8 +6,6 @@ import { Request, Response } from "../../types/RouterTypes";
 import { isAsync } from "../utils/helpers";
 import { extractDestructuredThirdArgKeys } from "./tokenizer";
 
-// TODO: Convert dependency extractor from regex detection to tokenizer system.
-
 const DependecyStorage = new Map<string, DependencyValue>();
 const DependencyAliases = new Map<string, string>();
 
