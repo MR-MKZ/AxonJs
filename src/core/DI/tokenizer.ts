@@ -99,8 +99,9 @@ const tokenize = (str: string): Token[] => {
     return tokens;
 };
 
-
-/** Parser: extract keys from the 3rd argument if it's a destructured object */
+/**
+ * Parser: extract keys from the 3rd argument of function, class method and class constrcutor if it exist.
+ */
 export function extractDestructuredThirdArgKeys(fn: Function): string[] {
     const fnStr = fn.toString();
     const match = fnStr.match(/\(([^)]*)\)/);
