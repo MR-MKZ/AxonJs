@@ -1,5 +1,5 @@
 import { Axon, BaseController, Router } from '../../src';
-import type { Request, Response } from '../../src/types';
+import type { Request, Response } from '../../src';
 import * as http from 'http';
 import { makeRequest } from '../utils';
 
