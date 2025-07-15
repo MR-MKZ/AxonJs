@@ -24,6 +24,9 @@ class NeuronContainer {
 
     /**
      * Register a static value or instance (object, function, class instance).
+     * @param keys String, array of string or Function key for the dependency
+     * @param value Function, object or instance to register as dependency value
+     * @param options Some options for configuring the dependency
      * @example
      * container.registerValue('logger', new Logger())
      * container.registerValue('config', { port: 3000 })
@@ -38,6 +41,9 @@ class NeuronContainer {
 
     /**
      * Register a factory function that creates the dependency (sync or async).
+     * @param keys String, array of string or Function key for the dependency
+     * @param factory Factory function or something that must run to return the instance of dependency
+     * @param options Some options for configuring the dependency
      * @example
      * container.registerFactory('db', () => new DB())
      * container.registerFactory('auth', async () => await AuthService.build())
@@ -52,6 +58,9 @@ class NeuronContainer {
 
     /**
      * Main registration method used internally by value/factory variants.
+     * @param keys String, array of string or Function key for the dependency
+     * @param value Value to inject as dependency value
+     * @param options Some options for configuring the dependency
      */
     public register<T>(
         keys: string | string[] | Function,
@@ -70,9 +79,9 @@ class NeuronContainer {
     }
 
     /**
-     * 
-     * @param key Get the original (main) key from an alias or actual key.
-     * @returns 
+     * Get the original (main) key from an alias or actual key.
+     * @param key key or alias of dependency
+     * @returns The main key of dependency.
      */
     private getMainKey(key: string | Function): string | Function {
         return this.DependencyAliases.get(key) || key;
@@ -80,6 +89,9 @@ class NeuronContainer {
 
     /**
      * Resolve a dependency, respecting its lifecycle (singleton, scoped, transient).
+     * @param key Key or alias of dependency
+     * @param scopeId The ID of scope that you want to resolve
+     * @returns value or instance of the dependency
      * @example
      * const logger = await container.resolve('logger')
      * const auth = await container.resolve('auth', req.id)
@@ -115,6 +127,8 @@ class NeuronContainer {
 
     /**
      * Instantiate a dependency, calling factory fuctions or returning raw values.
+     * @param record A dependency record
+     * @returns value or instance of the dependency
      */
     private async instantiate<T>(record: DependencyRecord<T>): Promise<T> {
         return record.isFactory
@@ -127,12 +141,22 @@ class NeuronContainer {
      * @example
      * const db = await container.use(DBService);
      */
+    /**
+     * Shortcut for resolve(), mostly for user-facing code.
+     * @param key Key or alias of dependency
+     * @param scopeId The ID of scope that you want to resolve
+     * @returns value or instance of the dependency
+     * @example
+     * const db = await container.use(DBService);
+     */
     public async use<T>(key: string | Function, scopeId?: string): Promise<T> {
         return this.resolve<T>(key, scopeId);
     }
 
     /**
-     * Override a registered dependency with a new singleton value.
+     * Override a registered dependency with a new singleton and non-factory value.
+     * @param key Key or alias of an exist dependency
+     * @param value value of dependency
      * @example
      * container.override('logger', customLogger);
      */
@@ -152,6 +176,7 @@ class NeuronContainer {
 
     /**
      * List all registered dependency keys.
+     * @returns Array of dependencies
      * @example
      * console.log(container.listDependencies());
      */
@@ -161,6 +186,8 @@ class NeuronContainer {
 
     /**
      * Inspect metadata of a registered dependency.
+     * @param key Key or alias of dependency
+     * @returns metadata of dependency
      * @example
      * container.inspect('db');
      */
@@ -179,6 +206,7 @@ class NeuronContainer {
 
     /**
      * Clone the entire container with same dependencies.
+     * @returns A clone of current container
      * @example
      * const testContainer = container.clone();
      */
@@ -197,6 +225,7 @@ class NeuronContainer {
 
     /**
      * Clear all scoped instances for a specific scope ID.
+     * @param scopeId The ID of scope that you want to clear
      * @example
      * container.clearScope(req.id);
      */
