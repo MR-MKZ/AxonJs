@@ -1,14 +1,14 @@
-import { ExceptionMeta, RouterExceptionError } from "../../types/GlobalTypes";
+import { ExceptionMeta, RouterExceptionError } from '../../types/GlobalTypes';
 
 class RouterException extends Error {
-    public name: string;
-    private meta: ExceptionMeta;
+  public name: string;
+  private meta: ExceptionMeta;
 
-    constructor(error: RouterExceptionError) {
-        super(error.msg)
-        this.name = error.name
-        this.meta = error.meta
-    }
+  constructor(error: RouterExceptionError) {
+    super(error.msg);
+    this.name = error.name;
+    this.meta = error.meta;
+  }
 }
 
 export default RouterException;

@@ -1,8 +1,7 @@
-import { ControllerRegistry } from "./ControllerRegistry";
-import { BaseController } from ".";
-import { ClassController, FuncController } from "../../types/RouterTypes";
-import { extractDestructuredThirdArgKeys } from "../DI";
-
+import { ControllerRegistry } from './ControllerRegistry';
+import { BaseController } from '.';
+import { ClassController, FuncController } from '../../types/RouterTypes';
+import { extractDestructuredThirdArgKeys } from '../DI';
 
 /**
  * Creates an executable request handler from a class-based route definition.
@@ -11,25 +10,27 @@ import { extractDestructuredThirdArgKeys } from "../DI";
  * @param classRouteHandler A tuple [ControllerClass, 'methodName']
  * @returns An executable route handler function `(req, res) => ...`
  */
-export const createClassHandler = (controllerClassHandler: ClassController<any, any>): [FuncController, Function] => {
-    const [ControllerClass, methodName] = controllerClassHandler;
+export const createClassHandler = (
+  controllerClassHandler: ClassController<any, any>
+): [FuncController, Function] => {
+  const [ControllerClass, methodName] = controllerClassHandler;
 
-     // Check if the controller class extends BaseController
-    if (!(ControllerClass?.prototype instanceof BaseController)) {
-        throw new Error(`Controller class must extend BaseController`, {
-            cause: ControllerClass
-        });
-    }
+  // Check if the controller class extends BaseController
+  if (!(ControllerClass?.prototype instanceof BaseController)) {
+    throw new Error(`Controller class must extend BaseController`, {
+      cause: ControllerClass,
+    });
+  }
 
-    const instance = ControllerRegistry.getInstance(ControllerClass);
+  const instance = ControllerRegistry.getInstance(ControllerClass);
 
-    const unboundMethod = (ControllerClass.prototype as any)[methodName];
+  const unboundMethod = (ControllerClass.prototype as any)[methodName];
 
-    // const args = extractDestructuredThirdArgKeys(unboundMethod);
+  // const args = extractDestructuredThirdArgKeys(unboundMethod);
 
-    try {
-        return [instance[methodName].bind(instance), unboundMethod];
-    } catch (error) {
-        throw new Error(`Method ${methodName.toString()} is not bound to the instance`);
-    }
-}
+  try {
+    return [instance[methodName].bind(instance), unboundMethod];
+  } catch (error) {
+    throw new Error(`Method ${methodName.toString()} is not bound to the instance`);
+  }
+};

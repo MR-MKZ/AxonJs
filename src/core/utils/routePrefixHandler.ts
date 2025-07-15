@@ -1,19 +1,16 @@
 const addRoutePrefix = (route: string, prefix: string) => {
-    route = route.toString()
-    prefix = prefix.toString()
-    
-    if (route[0] === "/")
-        route = route.slice(1, route.length)
+  route = route.toString();
+  prefix = prefix.toString();
 
-    if (prefix[prefix.length - 1] === "/")
-        prefix = prefix.slice(0, prefix.length - 1)
+  if (route[0] === '/') route = route.slice(1, route.length);
 
-    if (prefix[0] !== "/")
-        prefix = `/${prefix}`
+  if (prefix[prefix.length - 1] === '/') prefix = prefix.slice(0, prefix.length - 1);
 
-    route = `${prefix}/${route}`
+  if (prefix[0] !== '/') prefix = `/${prefix}`;
 
-    return route
-}
+  route = `${prefix}/${route}`;
 
-export default addRoutePrefix
+  return route;
+};
+
+export default addRoutePrefix;

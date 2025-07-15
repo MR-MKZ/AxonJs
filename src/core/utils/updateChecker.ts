@@ -1,5 +1,5 @@
-import projectPackage from "../../../package.json";
+import projectPackage from '../../../package.json';
 
 export function getVersion() {
-    return projectPackage.version;
+  return projectPackage.version;
 }
