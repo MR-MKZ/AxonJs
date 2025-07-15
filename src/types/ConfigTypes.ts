@@ -44,6 +44,16 @@ interface AxonConfig {
      * @default development
      */
     PROJECT_ENV?: "development" | "production";
+
+    /**
+     * Cache dependencies of controller, middleware handlers.
+     * 
+     * This option will improve the performance of your application but it affect on 
+     * updating dependencies and their lifecycle because they will resolve just once in lifetime of application.
+     * 
+     * @default false
+     */
+    DEPENDENCY_CACHE?: boolean;
 }
 
 export default AxonConfig;

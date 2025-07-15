@@ -46,9 +46,10 @@ const Router = (prefix?: string): AxonRouter => new AxonRouter(prefix);
 
 /**
  * Instance of AxonCore for easier usage
+ * @param {AxonConfig} config Hardcoded core config
  * @returns {AxonCore} returns an instance of AxonCore
  */
-const Axon = (): AxonCore => new AxonCore();
+const Axon = (config?: AxonConfig): AxonCore => new AxonCore(config);
 
 /**
  * Pino logger instance used in Axon core and exposed for external use.

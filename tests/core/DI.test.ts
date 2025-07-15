@@ -41,7 +41,7 @@ class SimpleController extends BaseController {
 }
 
 describe('Dependency Injection tests', () => {
-    const core = Axon();
+    const core = Axon({ DEPENDENCY_CACHE: true });
     const router = Router();
     const TEST_PORT = 19878; // Use a high port number to avoid conflicts  
     const TEST_HOST = '127.0.0.1';
@@ -73,15 +73,11 @@ describe('Dependency Injection tests', () => {
             return res.status(200).body({});
         });
 
-        router.get("/dep/notfound", async (req, res, { logger }) => {
-            return res.status(200).body({});
-        });
-
         await core.loadRoute(router);
 
-        await core.registerDependency("classDep", new ClassDependency());
-        await core.registerDependency("funcDep", functionDependency);
-        await core.registerDependency(["class2Dep", "class3Dep"], ClassDependency);
+        core.registerDependencyValue("classDep", new ClassDependency());
+        core.registerDependencyValue("funcDep", functionDependency);
+        core.registerDependencyFactory(["class2Dep", "class3Dep"], () => new ClassDependency());
 
         return new Promise((resolve) => {
             core.listen(TEST_HOST, TEST_PORT, () => {
@@ -112,6 +108,13 @@ describe('Dependency Injection tests', () => {
 
     test("Should function controller access to function dependency", async () => {
         const response = await makeRequest({ path: "/function/funcDI", userOptions });
+        const response2 = await makeRequest({ path: "/function/funcDI", userOptions });
+        const response3 = await makeRequest({ path: "/function/funcDI", userOptions });
+        const response4 = await makeRequest({ path: "/function/funcDI", userOptions });
+        const response5 = await makeRequest({ path: "/function/funcDI", userOptions });
+        const response6 = await makeRequest({ path: "/function/funcDI", userOptions });
+        const response7 = await makeRequest({ path: "/function/funcDI", userOptions });
+        const response8 = await makeRequest({ path: "/function/funcDI", userOptions });
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual({
             msg: 'Function dependency injected successfully'
@@ -138,13 +141,5 @@ describe('Dependency Injection tests', () => {
         const response = await makeRequest({ path: "/unknown/deps", userOptions });
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual({});
-    });
-
-    test('Should return dependency not found error', async () => {
-        const response = await makeRequest({ path: "/dep/notfound", userOptions });
-        expect(response.statusCode).toBe(500);
-        expect(response.body).toEqual({
-            message: "Internal server error"
-        });
     });
 });

@@ -94,6 +94,8 @@ export interface Route<P = {}> {
     regex: RegExp;
     paramNames: string[];
     handler: AxonRouteHandler<P>;
+    handlerDependency: string[];
+    handlerDependencyCache: { [key: string]: any };
 }
 
 export interface HttpMethods {

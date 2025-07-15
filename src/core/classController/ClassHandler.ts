@@ -1,7 +1,6 @@
 import { ControllerRegistry } from "./ControllerRegistry";
 import { BaseController } from ".";
 import { ClassController, FuncController } from "../../types/RouterTypes";
-import { logger } from "../utils/coreLogger";
 import { extractDestructuredThirdArgKeys } from "../DI";
 
 
@@ -12,7 +11,7 @@ import { extractDestructuredThirdArgKeys } from "../DI";
  * @param classRouteHandler A tuple [ControllerClass, 'methodName']
  * @returns An executable route handler function `(req, res) => ...`
  */
-export const createClassHandler = (controllerClassHandler: ClassController<any, any>): [FuncController, string[]] => {
+export const createClassHandler = (controllerClassHandler: ClassController<any, any>): [FuncController, Function] => {
     const [ControllerClass, methodName] = controllerClassHandler;
 
      // Check if the controller class extends BaseController
@@ -26,19 +25,11 @@ export const createClassHandler = (controllerClassHandler: ClassController<any, 
 
     const unboundMethod = (ControllerClass.prototype as any)[methodName];
 
-    const args = extractDestructuredThirdArgKeys(unboundMethod);
+    // const args = extractDestructuredThirdArgKeys(unboundMethod);
 
     try {
-        return [instance[methodName].bind(instance), args];
+        return [instance[methodName].bind(instance), unboundMethod];
     } catch (error) {
         throw new Error(`Method ${methodName.toString()} is not bound to the instance`);
     }
-
-    // const method = (instance as any)[methodName];
-
-    // if (typeof method !== "function") {
-    //     throw new Error(`Method '${methodName}' not found on controller '${ControllerClass.name}'.`);
-    // }
-
-    // return method;
 }

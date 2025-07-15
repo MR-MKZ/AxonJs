@@ -1,10 +1,10 @@
-type Constructor = new (...args: any[]) => any;
+// type Constructor = new (...args: any[]) => any;
 
-type Func = (...args: any[]) => any;
+// type Func = (...args: any[]) => any;
 
-type Instance = object & { constructor: Function }
+// type Instance = object & { constructor: Function }
 
-type DependencyValue = Constructor | Instance | Func;
+// type DependencyValue = Constructor | Instance | Func;
 
 /**
  * ### 1. Singleton
@@ -44,10 +44,6 @@ interface DependencyRecord<T = any> {
 }
 
 export type {
-    Constructor,
-    Func,
-    Instance,
-    DependencyValue,
     Lifecycle,
     DependencyRecord
 }

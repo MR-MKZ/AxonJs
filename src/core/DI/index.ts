@@ -1,12 +1,6 @@
 import NeuronContainer from "./NeuronContainer";
+import AxonDependencyHandler from "./DependencyHandler";
 
-export {
-    registerDependency,
-    funcRunner,
-    DependecyStorage,
-    DependencyAliases
-} from "./DependencyHandler";
-
-export { NeuronContainer };
+export { NeuronContainer, AxonDependencyHandler };
 
 export { extractDestructuredThirdArgKeys } from "./tokenizer";

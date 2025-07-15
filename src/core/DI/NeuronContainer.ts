@@ -126,6 +126,27 @@ class NeuronContainer {
     }
 
     /**
+     * Check status of a dependency in scope or outside of a scope.
+     * @param key Key or alias of dependency
+     * @param scopeId The ID of scope that you want to resolve
+     * @returns Throw error if something wrong and return true if everything was ok
+     */
+    public checkDependency(key: string | Function, scopeId?: string) {
+        const mainKey = this.getMainKey(key);
+        const record = this.DependencyStorage.get(mainKey);
+        if (!record) throw new Error(`Dependency '${String(key)}' not found`);
+
+        if (record.lifecycle === 'scoped') {
+            if (!scopeId) throw new Error(`Scope ID is required for scoped dependency '${String(key)}'`);
+            const scopedMap = this.ScopedInstances.get(scopeId);
+
+            if (!scopedMap) throw new Error(`Scope '${String(scopeId)}' not found`);
+        }
+
+        return true;
+    }
+
+    /**
      * Instantiate a dependency, calling factory fuctions or returning raw values.
      * @param record A dependency record
      * @returns value or instance of the dependency

@@ -15,7 +15,7 @@ import type { JsonResponse } from "../types/GlobalTypes";
 import type { AxonConfig } from "../types/ConfigTypes";
 import type { UnloadRouteParams } from "../types/CoreTypes";
 import type { ClassController, MiddlewareStorage } from "../types/RouterTypes";
-import type { DependencyValue } from "../types/Dependency";
+import type { Lifecycle } from "../types/Dependency";
 
 // Exceptions
 import { routeDuplicateException } from "./exceptions/CoreExceptions";
@@ -29,7 +29,7 @@ import AxonCors from "./cors/AxonCors";
 import { PluginLoader } from "./plugin/PluginLoader";
 import { resolveConfig } from "./config/AxonConfig";
 import { unloadRouteService, unloadRoutesService } from "./services/unloadRoutesService";
-import { registerDependency as DIRegisterDependency, funcRunner } from "./DI";
+import { AxonDependencyHandler, NeuronContainer } from "./DI";
 
 // Default values
 const defaultResponses = {
@@ -84,7 +84,12 @@ export default class AxonCore {
      */
     private pluginLoader: PluginLoader = new PluginLoader();
 
-    constructor() {
+    /**
+     * @description The dependency handler of Axon core.
+     */
+    private dependencyHandler: AxonDependencyHandler = new AxonDependencyHandler();
+
+    constructor(config?: AxonConfig) {
         this.servers = {
             http: null,
             https: null
@@ -101,7 +106,7 @@ export default class AxonCore {
 
         this.globalMiddlewares = [];
 
-        this.config = {};
+        this.config = config || {};
         this.configsLoaded = false;
         this.passRoutes = true;
         this.routesLoaded = false;
@@ -145,7 +150,9 @@ export default class AxonCore {
     private async loadConfig() {
         const startTime = performance.now();
 
-        this.config = await resolveConfig();
+        if (!this.config) {
+            this.config = await resolveConfig();
+        }
 
         this.configsLoaded = true;
 
@@ -238,18 +245,58 @@ export default class AxonCore {
         await unloadRoutesService(this.routes)
     }
 
-    async registerDependency(name: string | string[], dependency: DependencyValue) {
-        DIRegisterDependency(name, dependency);
+    /**
+     * Register a static value or instance (object, function, class instance).
+     * 
+     * Default lifecycle of dependencies is **singleton**
+     * @param name String, array of string or Function key for the dependency
+     * @param value Function, object or instance to register as dependency value
+     * @param options Some options for configuring the dependency
+     * 
+     * @since 0.13.0
+     * 
+     * @example
+     * core.registerDependencyValue('logger', new Logger());
+     * core.registerDependencyValue('config', { port: 3000 });
+     */
+    registerDependencyValue<T>(
+        name: string | string[],
+        value: T,
+        options?: { lifecycle?: Lifecycle }
+    ) {
+        this.dependencyHandler.register(name, value, { ...options, isFactory: false });
+    }
+
+    /**
+     * Register a factory function that creates the dependency (sync or async).
+     * 
+     * Default lifecycle of dependencies is **singleton**
+     * @param name String, array of string or Function key for the dependency
+     * @param factory Factory function or something that must run to return the instance of dependency
+     * @param options Some options for configuring the dependency
+     * 
+     * @since 0.13.0
+     * 
+     * @example
+     * core.registerDependencyFactory('db', () => new DB())
+     * core.registerDependencyFactory('auth', async () => await AuthService.build())
+     */
+    registerDependencyFactory<T>(
+        name: string | string[],
+        factory: () => T | Promise<T>,
+        options?: { lifecycle?: Lifecycle }
+    ) {
+        this.dependencyHandler.register(name, factory, { ...options, isFactory: true });
     }
 
     /**
      * You can set one or many middlewares in global scope with this method.
-     * @example
-     * core.globalMiddleware(authMiddleware, 5000, true) // critical middleware with 5s timeout
-     * core.globalMiddleware([uploadMiddleware, userMiddleware], 10000, false) // optional middlewares with 10s timeout
      * @param fn middleware function or array of middleware functions
      * @param timeout timeout in milliseconds
      * @param critical whether the middleware is critical (defaults to false)
+     * @example
+     * core.globalMiddleware(authMiddleware, 5000, true) // critical middleware with 5s timeout
+     * core.globalMiddleware([uploadMiddleware, userMiddleware], 10000, false) // optional middlewares with 10s timeout
      */
     async globalMiddleware(fn: Middleware | Middleware[], timeout?: number, critical: boolean = false) {
         const startTime = performance.now();
@@ -347,8 +394,6 @@ export default class AxonCore {
 
                         const route = this.routes[method][path];
 
-                        // logger.coreDebug([path, pathname, req.url, this.routes[method][path]["paramNames"]]);
-
                         const params: Record<string, string | undefined> = {};
                         const queryParams: Record<string, string | undefined> = {};
 
@@ -372,6 +417,7 @@ export default class AxonCore {
 
                         let controller: FuncController;
                         let manualArgs: string[];
+                        let dependencies: { [key: string]: any };
 
                         if (Array.isArray(controllerInstance)) {
                             // --- Logic for ClassController [Controller, 'method'] ---
@@ -379,21 +425,34 @@ export default class AxonCore {
                             // This is where you use the factory function we built.
 
                             // The 'controllerInstance' is exactly what createClassHandler was designed for!
-                            const [handler, args] = createClassHandler(controllerInstance);
+                            const [handler, _] = createClassHandler(controllerInstance);
                             controller = handler;
-                            manualArgs = args;
-
                         } else if (typeof controllerInstance === 'function') {
                             // --- Logic for FuncController ---
                             // If it's not an array, we check if it's a function.
                             // In this block, TypeScript knows it's a function.
 
                             controller = controllerInstance;
-
                         } else {
                             // --- Error Case ---
                             // The definition is neither a valid array nor a function.
                             throw new Error("Invalid handler definition. Expected an array [Controller, 'method'] or a function.");
+                        }
+
+                        // check, resolve, resolve from cache and cache dependencies.
+                        if (route["handlerDependency"].length > 0) {
+                            if (Object.entries(route["handlerDependencyCache"]).length !== 0) {
+                                // pass dependencies from cache because cache is exist.
+                                dependencies = route["handlerDependencyCache"]
+                            } else {
+                                // cache doesn't exist and dependencies will resolve from storage
+                                dependencies = await this.dependencyHandler.resolve(route["handlerDependency"]);
+                                
+                                if (this.config.DEPENDENCY_CACHE) {
+                                    // cache dependencies if dependency cache activated
+                                    route["handlerDependencyCache"] = dependencies;
+                                }
+                            }
                         }
 
                         const axonCors = await AxonCors.middlewareWrapper(this.config.CORS);
@@ -407,11 +466,7 @@ export default class AxonCore {
                         await this.handleMiddleware(req, res, async () => {
                             await this.handleMiddleware(req, res, async () => {
                                 await this.handleMiddleware(req, res, async () => {
-                                    if (manualArgs) {
-                                        await funcRunner(controller, req, res, manualArgs);
-                                    } else {
-                                        await funcRunner(controller, req, res);
-                                    }
+                                    await controller(req, res, dependencies);
 
                                     // log incoming requests
                                     if (this.config.LOGGER_VERBOSE) {
@@ -471,13 +526,13 @@ export default class AxonCore {
         res: Response,
         next: () => Promise<void>,
         middlewares: MiddlewareStorage[]
-    ) {    
+    ) {
         for (const { middleware, timeout, critical } of middlewares) {
             if (res.headersSent) return;
-    
+
             const ms = timeout;
             let nextCalled = false;
-    
+
             try {
                 // Execute middleware with optional timeout
                 await new Promise<void>((resolve, reject) => {
@@ -487,14 +542,14 @@ export default class AxonCore {
                             reject(new Error(`Middleware timeout exceeded after ${ms}ms`));
                         }, ms);
                     }
-    
+
                     // Wrap next() to signal completion and clear timer
                     const wrappedNext = () => {
                         nextCalled = true;
                         if (timer) clearTimeout(timer);
                         resolve();
                     };
-    
+
                     // Call the middleware
                     Promise.resolve(middleware(req, res, wrappedNext))
                         .then(() => {
@@ -510,7 +565,7 @@ export default class AxonCore {
                 });
             } catch (err) {
                 if (res.headersSent) return;
-    
+
                 const errMsg = err instanceof Error ? err.message : String(err);
                 if (critical) {
                     logger.error({
@@ -518,7 +573,7 @@ export default class AxonCore {
                         error: errMsg,
                         critical: true
                     }, "Critical middleware failure");
-    
+
                     return this.response(req, res, {
                         body: {
                             message: this.config.RESPONSE_MESSAGES?.serverError ?? defaultResponses.serverError,
@@ -532,10 +587,10 @@ export default class AxonCore {
                     continue;
                 }
             }
-    
+
             if (nextCalled) continue;
         }
-    
+
         if (!res.headersSent) {
             await next();
         }
@@ -769,5 +824,14 @@ export default class AxonCore {
      */
     getConfig(): AxonConfig {
         return this.config;
+    }
+
+    /**
+     * Get instance of dependency container that is using by Axon core.
+     * @returns {NeuronContainer} Dependency Container
+     * @since 0.13.0
+     */
+    getContainer(): NeuronContainer {
+        return this.dependencyHandler.getContainer();
     }
 }

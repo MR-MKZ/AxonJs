@@ -19,16 +19,17 @@ const core = Axon();
 
 // Register dependency with a name
 // class as dependency
-core.registerDependency("MainDB", new MainDB());
+core.registerDependencyValue("MainDB", new MainDB());
 
 // Register dependency with aliases
 // Main name will choose ReplicateDB (first item)
-core.registerDependency(["ReplicateDB", "RDB", "secondDB"], new MainDB());
+core.registerDependencyValue(["ReplicateDB", "RDB", "secondDB"], new MainDB());
 
-// Register dependency without making instance. (core will make instance automatically)
-core.registerDependency("testDep", MainDB);
+// Register a factory function to make instance each time the dependency will call. 
+// (core will run factory automatically)
+core.registerDependencyFactory("testDep", () => new MainDB());
 
 // Register function as dependency
-core.registerDependency("userQuery", findUser);
+core.registerDependencyValue("userQuery", findUser);
 
 core.listen();

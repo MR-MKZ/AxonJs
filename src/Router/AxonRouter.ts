@@ -6,6 +6,9 @@ import { resolveConfig } from "../core/config/AxonConfig";
 import { AxonValidator } from "../core/validation/AxonValidator";
 import type { ClassController, ValidationObj } from "../types/RouterTypes";
 import { BaseController } from "../core/classController";
+import { AxonDependencyHandler } from "../core/DI";
+import AxonConfig from "../types/ConfigTypes";
+import { createClassHandler } from "../core/classController/ClassHandler";
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {
     throw new RouterException({
@@ -19,8 +22,12 @@ const duplicateError = (path: string, method: keyof HttpMethods) => {
 }
 
 let MIDDLEWARE_TIMEOUT: number;
+let Config: AxonConfig;
 
-resolveConfig(false).then(config => MIDDLEWARE_TIMEOUT = config.MIDDLEWARE_TIMEOUT || 10000);
+resolveConfig(false).then(config => {
+    Config = config;
+    MIDDLEWARE_TIMEOUT = config.MIDDLEWARE_TIMEOUT || 10000;
+});
 
 export class AxonRouteHandler<P = {}> {
     public _controller: FuncController<P> | ClassController<any, any>;
@@ -89,12 +96,12 @@ class AxonRouter {
      * ])
      */
     public get<Path extends string, C extends BaseController, M extends keyof C>(
-            path: Path,
-            controller: (
+        path: Path,
+        controller: (
             FuncController<RouteParams<Path>>
             | ClassController<C, M>),
-            validation?: ValidationObj[]
-        ) {
+        validation?: ValidationObj[]
+    ) {
 
         if (this.routes.GET[path]) {
             duplicateError(path, "GET")
@@ -111,10 +118,17 @@ class AxonRouter {
             this.registerValidationMiddlewares(validation, handler);
         }
 
+        const {
+            handlerDependency,
+            handlerDependencyCache
+        } = this.handleDependencies(controller);
+
         this.routes.GET[path] = {
             handler,
             paramNames,
-            regex
+            regex,
+            handlerDependency,
+            handlerDependencyCache
         }
 
         return handler;
@@ -149,13 +163,13 @@ class AxonRouter {
      * ])
      */
     public post<Path extends string, C extends BaseController, M extends keyof C>(
-            path: Path,
-            controller: (
+        path: Path,
+        controller: (
             FuncController<RouteParams<Path>>
             | ClassController<C, M>),
-            validation?: ValidationObj[]
-        ) {
-            
+        validation?: ValidationObj[]
+    ) {
+
         if (this.routes.POST[path]) {
             duplicateError(path, "POST")
         }
@@ -171,10 +185,17 @@ class AxonRouter {
             this.registerValidationMiddlewares(validation, handler);
         }
 
+        const {
+            handlerDependency,
+            handlerDependencyCache
+        } = this.handleDependencies(controller);
+
         this.routes.POST[path] = {
             handler,
             paramNames,
-            regex
+            regex,
+            handlerDependency,
+            handlerDependencyCache
         }
 
         return handler;
@@ -204,12 +225,12 @@ class AxonRouter {
      * ])
      */
     public put<Path extends string, C extends BaseController, M extends keyof C>(
-            path: Path,
-            controller: (
+        path: Path,
+        controller: (
             FuncController<RouteParams<Path>>
             | ClassController<C, M>),
-            validation?: ValidationObj[]
-        ) {
+        validation?: ValidationObj[]
+    ) {
 
         if (this.routes.PUT[path]) {
             duplicateError(path, "PUT")
@@ -226,10 +247,17 @@ class AxonRouter {
             this.registerValidationMiddlewares(validation, handler);
         }
 
+        const {
+            handlerDependency,
+            handlerDependencyCache
+        } = this.handleDependencies(controller);
+
         this.routes.PUT[path] = {
             handler,
             paramNames,
-            regex
+            regex,
+            handlerDependency,
+            handlerDependencyCache
         }
 
         return handler;
@@ -263,12 +291,12 @@ class AxonRouter {
      * ])
      */
     public patch<Path extends string, C extends BaseController, M extends keyof C>(
-            path: Path,
-            controller: (
+        path: Path,
+        controller: (
             FuncController<RouteParams<Path>>
             | ClassController<C, M>),
-            validation?: ValidationObj[]
-        ) {
+        validation?: ValidationObj[]
+    ) {
 
         if (this.routes.PATCH[path]) {
             duplicateError(path, "PATCH")
@@ -285,10 +313,17 @@ class AxonRouter {
             this.registerValidationMiddlewares(validation, handler);
         }
 
+        const {
+            handlerDependency,
+            handlerDependencyCache
+        } = this.handleDependencies(controller);
+
         this.routes.PATCH[path] = {
             handler,
             paramNames,
-            regex
+            regex,
+            handlerDependency,
+            handlerDependencyCache
         }
 
         return handler;
@@ -319,12 +354,12 @@ class AxonRouter {
      * ])
      */
     public delete<Path extends string, C extends BaseController, M extends keyof C>(
-            path: Path,
-            controller: (
+        path: Path,
+        controller: (
             FuncController<RouteParams<Path>>
             | ClassController<C, M>),
-            validation?: ValidationObj[]
-        ) {
+        validation?: ValidationObj[]
+    ) {
 
         if (this.routes.DELETE[path]) {
             duplicateError(path, "DELETE")
@@ -341,10 +376,17 @@ class AxonRouter {
             this.registerValidationMiddlewares(validation, handler);
         }
 
+        const {
+            handlerDependency,
+            handlerDependencyCache
+        } = this.handleDependencies(controller);
+
         this.routes.DELETE[path] = {
             handler,
             paramNames,
-            regex
+            regex,
+            handlerDependency,
+            handlerDependencyCache
         }
 
         return handler;
@@ -364,12 +406,12 @@ class AxonRouter {
      * });
      */
     public options<Path extends string, C extends BaseController, M extends keyof C>(
-            path: Path,
-            controller: (
+        path: Path,
+        controller: (
             FuncController<RouteParams<Path>>
             | ClassController<C, M>),
-            validation?: ValidationObj[]
-        ) {
+        validation?: ValidationObj[]
+    ) {
 
         if (this.routes.OPTIONS[path]) {
             duplicateError(path, "OPTIONS")
@@ -386,10 +428,17 @@ class AxonRouter {
             this.registerValidationMiddlewares(validation, handler);
         }
 
+        const {
+            handlerDependency,
+            handlerDependencyCache
+        } = this.handleDependencies(controller);
+
         this.routes.OPTIONS[path] = {
             handler,
             paramNames,
-            regex
+            regex,
+            handlerDependency,
+            handlerDependencyCache
         }
 
         return handler;
@@ -495,6 +544,36 @@ class AxonRouter {
                     cause: ControllerClass
                 });
             }
+        }
+    }
+
+    /**
+     * Extract dependencies of a handler
+     */
+    private extractDependencies(handler: Function) {
+        return AxonDependencyHandler.extractDependencies(handler);
+    }
+
+    private handleDependencies
+    (handler: FuncController<any> | ClassController<any, any>): {
+        handlerDependency: string[],
+        handlerDependencyCache: { [key: string]: any }
+    } {
+        let handlerDependency: string[] = [];
+        const handlerDependencyCache: { [key: string]: any } = {};
+
+        if (Array.isArray(handler)) {
+            const [_, classHandler] = createClassHandler(handler);
+            handlerDependency = this.extractDependencies(classHandler);
+
+            logger.info(handlerDependency);
+        } else {
+            handlerDependency = this.extractDependencies(handler);
+        }
+
+        return {
+            handlerDependency,
+            handlerDependencyCache
         }
     }
 }

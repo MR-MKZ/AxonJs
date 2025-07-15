@@ -16,5 +16,6 @@ export default {
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
         preflightContinue: false
     },
-    HTTPS: {}
+    HTTPS: {},
+    DEPENDENCY_CACHE: false
 } as AxonConfig;

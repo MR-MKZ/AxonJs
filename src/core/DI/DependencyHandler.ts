@@ -1,79 +1,71 @@
-import type {
-    DependencyValue
-} from "../../types/Dependency";
-import { isFunction, isConstructor, isInstance } from ".";
-import { Request, Response } from "../../types/RouterTypes";
-import { isAsync } from "../utils/helpers";
 import { extractDestructuredThirdArgKeys } from "./tokenizer";
+import NeuronContainer from "./NeuronContainer"
 
-const DependecyStorage = new Map<string, DependencyValue>();
-const DependencyAliases = new Map<string, string>();
+// Types
+import type { Lifecycle } from "../../types/Dependency";
 
-const registerDependency = async (name: string | string[], dependency: DependencyValue) => {
-    const names = Array.isArray(name) ? name : [name];
-    const [mainName, ...aliases] = names;
+/**
+ * Axon dependency handler created to handle core dependencies and lifecycle
+ */
+class AxonDependencyHandler {
+    private container: NeuronContainer;
 
-    if (!isConstructor(dependency) && !isInstance(dependency) && !isFunction(dependency)) {
-        throw new Error(`Unsupported dependency type for '${mainName}'`);
+    constructor() {
+        this.container = new NeuronContainer();
     }
 
-    // Set main item, first name as main name.
-    DependecyStorage.set(mainName, dependency);
+    /**
+     * Static method to extract the dependencies of a handler (Class constructor, Clas method, Function)
+     * @param handler The handler that you want to extract its dependencies
+     * @returns Array of dependency names
+     */
+    static extractDependencies(handler: Function): string[] {
+        return extractDestructuredThirdArgKeys(handler);
+    }
 
-    // Map all aliases for dependency to main item.
-    for (const alias of aliases) {
-        DependencyAliases.set(alias, mainName);
+    /**
+     * Register new dependency in a container
+     * @param keys Key or alias of the dependency
+     * @param handler Handler which should inject as dependency
+     * @param options Options of the dependency storage
+     */
+    public register<T>(
+        keys: string | string[] | Function,
+        handler: T | (() => T | Promise<T>),
+        options: { lifecycle?: Lifecycle, isFactory: boolean }
+    ) {
+        this.container.register(keys, handler, options);
+    }
+
+    /**
+     * resolve all dependency values and return them as object
+     * @param keys Key or alias of the dependency
+     * @returns Object of dependency values
+     */
+    public async resolve(
+        keys: string | string[]
+    ) {
+        const dependencies: { [name: string]: any } = {};
+        
+        if (!Array.isArray(keys)) {
+            dependencies[keys] = await this.container.resolve(keys);
+
+            return dependencies;
+        }
+
+        keys.forEach(async (key) => {
+            dependencies[key] = await this.container.resolve(key);
+        });
+
+        return dependencies;
+    }
+
+    /**
+     * @returns Dependency container that is using by Axon core
+     */
+    public getContainer(): NeuronContainer {
+        return this.container;
     }
 }
 
-const funcRunner = async (func: Function, req: Request<any>, res: Response, manualArgs?: string[]) => {
-    let args = manualArgs || extractDestructuredThirdArgKeys(func);
-
-    const dependencies: { [name: string]: any } = {};
-
-    args.map(arg => {
-        const realName = DependencyAliases.get(arg) || arg;
-        let dep = DependecyStorage.get(realName);
-
-        if (!dep) {
-            throw new Error(
-                `Dependency '${arg}' not found ❌`,
-                {
-                    cause: "You can only add dependencies that the core has them."
-                }
-            )
-        }
-
-        if (isConstructor(dep)) {
-            const instance = new dep();
-            DependecyStorage.set(realName, instance);
-            dependencies[arg] = instance;
-            return;
-        }
-
-        if (isInstance(dep)) {
-            dependencies[arg] = dep;
-            return;
-        }
-
-        if (isFunction(dep)) {
-            dependencies[arg] = dep;
-            return;
-        }
-
-        throw new Error(`Unsupported dependency type for '${arg}'`);
-    });
-
-    if (isAsync(func)) {
-        await func(req, res, dependencies);
-    } else {
-        func(req, res, dependencies);
-    }
-}
-
-export {
-    DependecyStorage,
-    DependencyAliases,
-    funcRunner,
-    registerDependency
-}
+export default AxonDependencyHandler;
