@@ -23,5 +23,5 @@ export default defineConfig({
   treeshake: true,  // remove dead code
   clean: true,
   skipNodeModulesBundle: true, // ✅ don’t bundle external deps
-  external: ["zod", "joi", "yup", "moment", "pino", "pino-pretty"], // if peer or runtime only
+  external: ["zod", "joi", "yup", "pino", "pino-pretty"], // if peer or runtime only
 });
