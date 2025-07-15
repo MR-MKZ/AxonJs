@@ -7,14 +7,15 @@ import AxonRouter from "./Router/AxonRouter";
 import { logger } from "./core/utils/coreLogger";
 import AxonCookie from "./core/cookie/AxonCookie";
 import { BaseController } from "./core/classController";
+import { NeuronContainer } from "./core/DI";
 
 // Types
 import type { RouterExceptionError } from "./types/GlobalTypes";
-import type { 
-  AxonResponseMessage, 
-  AxonCorsConfig, 
-  AxonHttpsConfig, 
-  UnloadRouteParams 
+import type {
+  AxonResponseMessage,
+  AxonCorsConfig,
+  AxonHttpsConfig,
+  UnloadRouteParams
 } from "./types/CoreTypes";
 import type {
   Request,
@@ -33,6 +34,7 @@ import type {
   ValidationTargets
 } from "./types/ValidatorTypes";
 import type { CookieOptions } from "./types/CookieTypes";
+import type { Lifecycle } from "./types/Dependency";
 
 /**
  * Instance of AxonRouter for easier usage
@@ -68,8 +70,25 @@ export {
   Axon,
   Router,
 
-  // Core config
-  AxonConfig,
+  // Request life cycle
+  Headers,
+
+  // Handlers
+  BaseController,
+
+  // Pino logger - Logger feature
+  axonLogger,
+
+  // Axon Cookie Manager
+  AxonCookie,
+
+  // Neuron Container (Axon Dependency Injection System)
+  NeuronContainer,
+}
+
+export type {
+  // Errors 
+  RouterExceptionError,
 
   // Configs - configuration feature
   AxonResponseMessage,
@@ -78,31 +97,26 @@ export {
 
   // Main core
   UnloadRouteParams,
-  
-  // Router
-  HttpMethods,
-  ValidationObj,
 
   // Request life cycle
   Request,
   Response,
-  Headers,
   NextFunc,
+
+  // Handlers
+  Middleware,
+  FuncController,
+
+  // Router
+  HttpMethods,
+  ValidationObj,
+
+  // Core config
+  AxonConfig,
 
   // Plugin
   AxonPlugin,
   PluginMode,
-
-  // Handlers
-  FuncController,
-  BaseController,
-  Middleware,
-
-  // Errors
-  RouterExceptionError,
-
-  // Pino logger - Logger feature
-  axonLogger,
 
   // Axon Validator - Validation feature
   ValidationConfig,
@@ -111,5 +125,7 @@ export {
 
   // Axon Cookie Manager
   CookieOptions,
-  AxonCookie
+
+  // Neuron Container (Axon Dependency Injection System)
+  Lifecycle,
 }
