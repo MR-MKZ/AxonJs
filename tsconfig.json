@@ -1,26 +1,17 @@
 {
-    "compilerOptions": {
-        "target": "ES2022",
-        "typeRoots": [
-            "./node_modules/@types",
-            "./src/types"
-        ],
-        "module": "commonjs",
-        "types": [
-            "node",
-            "jest"
-        ],
-        "resolveJsonModule": true,
-        "declaration": true,
-        "outDir": "./dist",
-        "noEmitOnError": true,
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "skipLibCheck": true
-    },
-    "include": [
-        "src/**/*.ts",
-        "tests/**/*.ts"
-    ]
+  "compilerOptions": {
+    "target": "ES2022",
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "module": "commonjs",
+    "types": ["node", "jest"],
+    "resolveJsonModule": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
 }

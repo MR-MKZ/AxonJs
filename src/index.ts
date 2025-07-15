@@ -1,38 +1,16 @@
 // Libraries
-import * as http from "http";
+import * as http from 'http';
 
 // Instances
-import AxonCore from "./core/AxonCore";
-import AxonRouter from "./Router/AxonRouter";
-import { logger } from "./core/utils/coreLogger";
-import AxonCookie from "./core/cookie/AxonCookie";
-import { BaseController } from "./core/classController";
+import AxonCore from './core/AxonCore';
+import AxonRouter from './Router/AxonRouter';
+import { logger } from './core/utils/coreLogger';
+import AxonCookie from './core/cookie/AxonCookie';
+import { BaseController } from './core/classController';
+import { NeuronContainer } from './core/DI';
 
 // Types
-import type { RouterExceptionError } from "./types/GlobalTypes";
-import type { 
-  AxonResponseMessage, 
-  AxonCorsConfig, 
-  AxonHttpsConfig, 
-  UnloadRouteParams 
-} from "./types/CoreTypes";
-import type {
-  Request,
-  Response,
-  Middleware,
-  NextFunc,
-  FuncController,
-  HttpMethods,
-  ValidationObj
-} from "./types/RouterTypes";
-import type { AxonConfig } from "./types/ConfigTypes";
-import type { AxonPlugin, PluginMode } from "./types/PluginTypes";
-import type {
-  ValidationConfig,
-  ValidationSchema,
-  ValidationTargets
-} from "./types/ValidatorTypes";
-import type { CookieOptions } from "./types/CookieTypes";
+import type { AxonConfig } from './types/ConfigTypes';
 
 /**
  * Instance of AxonRouter for easier usage
@@ -46,9 +24,10 @@ const Router = (prefix?: string): AxonRouter => new AxonRouter(prefix);
 
 /**
  * Instance of AxonCore for easier usage
+ * @param {AxonConfig} config Hardcoded core config
  * @returns {AxonCore} returns an instance of AxonCore
  */
-const Axon = (): AxonCore => new AxonCore();
+const Axon = (config?: AxonConfig): AxonCore => new AxonCore(config);
 
 /**
  * Pino logger instance used in Axon core and exposed for external use.
@@ -67,9 +46,25 @@ export {
   Axon,
   Router,
 
-  // Core config
-  AxonConfig,
+  // Request life cycle
+  Headers,
 
+  // Handlers
+  BaseController,
+
+  // Pino logger - Logger feature
+  axonLogger,
+
+  // Axon Cookie Manager
+  AxonCookie,
+
+  // Neuron Container (Axon Dependency Injection System)
+  NeuronContainer,
+};
+
+export type { RouterExceptionError } from './types/GlobalTypes';
+
+export type {
   // Configs - configuration feature
   AxonResponseMessage,
   AxonCorsConfig,
@@ -77,38 +72,36 @@ export {
 
   // Main core
   UnloadRouteParams,
-  
-  // Router
-  HttpMethods,
-  ValidationObj,
+} from './types/CoreTypes';
 
+export type {
   // Request life cycle
   Request,
   Response,
-  Headers,
   NextFunc,
 
-  // Plugin
-  AxonPlugin,
-  PluginMode,
-
   // Handlers
-  FuncController,
-  BaseController,
   Middleware,
+  FuncController,
 
-  // Errors
-  RouterExceptionError,
+  // Router
+  HttpMethods,
+  ValidationObj,
+} from './types/RouterTypes';
 
-  // Pino logger - Logger feature
-  axonLogger,
+export type { AxonConfig } from './types/ConfigTypes';
 
+export type { AxonPlugin, PluginMode } from './types/PluginTypes';
+
+export type {
   // Axon Validator - Validation feature
   ValidationConfig,
   ValidationSchema,
   ValidationTargets,
+} from './types/ValidatorTypes';
 
-  // Axon Cookie Manager
-  CookieOptions,
-  AxonCookie
-}
+// Axon Cookie Manager
+export type { CookieOptions } from './types/CookieTypes';
+
+// Neuron Container (Axon Dependency Injection System)
+export type { Lifecycle } from './types/Dependency';

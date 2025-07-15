@@ -9,14 +9,15 @@ const prettyStream = pretty({
     fatal: 60,
     error: 50,
     warn: 40,
-    request: 35,  // HTTP request logs
-    core: 34,     // Core system messages
+    request: 35, // HTTP request logs
+    core: 34, // Core system messages
     coreDebug: 33, // Core debug messages
     info: 30,
     debug: 20,
-    plugin: 10
+    plugin: 10,
   },
-  customColors: 'fatal:red,error:red,core:magenta,coreDebug:blue,request:cyan,info:green,debug:black,plugin:white,warn:yellow',
+  customColors:
+    'fatal:red,error:red,core:magenta,coreDebug:blue,request:cyan,info:green,debug:black,plugin:white,warn:yellow',
 });
 
 const logger = pino(
@@ -31,13 +32,11 @@ const logger = pino(
       coreDebug: 33,
       info: 30,
       debug: 20,
-      plugin: 10
+      plugin: 10,
     },
-    useOnlyCustomLevels: false
+    useOnlyCustomLevels: false,
   },
   prettyStream
 );
 
-export {
-  logger
-}
+export { logger };

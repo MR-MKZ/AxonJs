@@ -1,5 +1,5 @@
-import { Axon } from "../../src";
-import authRouter from "./routers/auth.route";
+import { Axon } from '../../src';
+import authRouter from './routers/auth.route';
 
 const core = Axon();
 

@@ -1,30 +1,30 @@
-import { AxonCore, axonLogger, AxonPlugin, Router } from "../../../src";
-import { PluginMode } from "../../../src/types/PluginTypes";
+import { AxonCore, axonLogger, AxonPlugin, Router } from '../../../src';
+import { PluginMode } from '../../../src/types/PluginTypes';
 export class LogPluginTest implements AxonPlugin {
-    private logs: number;
+  private logs: number;
 
-    constructor() {
-        this.logs = 0;
-    }
+  constructor() {
+    this.logs = 0;
+  }
 
-    name: string = "Pretty Logger";
-    version: string = "1.2.0-beta";
-    mode: PluginMode = "both";
-    
-    async init(core: AxonCore): Promise<void> {
-        const router = Router("/pretty-logger");
+  name: string = 'Pretty Logger';
+  version: string = '1.2.0-beta';
+  mode: PluginMode = 'both';
 
-        router.get('/log', async (req, res) => {
-            this.logs++;
+  async init(core: AxonCore): Promise<void> {
+    const router = Router('/pretty-logger');
 
-            axonLogger.plugin(`[${this.name}] logs: ${this.logs}`);
-            
-            return res.status(200).body({
-                message: "This is the fist plugin of AxonJs",
-                logs: this.logs
-            });
-        });
+    router.get('/log', async (req, res) => {
+      this.logs++;
 
-        core.loadRoute(router);
-    }
+      axonLogger.plugin(`[${this.name}] logs: ${this.logs}`);
+
+      return res.status(200).body({
+        message: 'This is the fist plugin of AxonJs',
+        logs: this.logs,
+      });
+    });
+
+    core.loadRoute(router);
+  }
 }

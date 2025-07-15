@@ -8,7 +8,7 @@ on:
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,4 +45,4 @@ jobs:
           github_token: ${{ secrets.NPM_GITHUB_TOKEN }}
           publish_dir: ./
           publish_branch: docs
-          commit_message: "docs: update documentation" 
+          commit_message: 'docs: update documentation'

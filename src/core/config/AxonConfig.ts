@@ -7,7 +7,7 @@ import { pathToFileURL } from 'url';
 import { logger } from '../utils/coreLogger';
 
 // types
-import type { AxonConfig } from "../../types/ConfigTypes";
+import type { AxonConfig } from '../../types/ConfigTypes';
 
 // default items
 import defaultConfig from '../config/defaultConfig';
@@ -15,61 +15,56 @@ import defaultConfig from '../config/defaultConfig';
 const dynamicImport = new Function('file', 'return import(file)');
 
 async function loadJSConfig(filePath: string) {
-    const fileUrl = pathToFileURL(filePath).href;
-    const module = await dynamicImport(fileUrl);
-    return module.default || module;
+  const fileUrl = pathToFileURL(filePath).href;
+  const module = await dynamicImport(fileUrl);
+  return module.default || module;
 }
 
 async function loadTSConfig(filePath: string) {
-    const result = await esbuild.build({
-        entryPoints: [filePath],
-        bundle: true,
-        external: ["esbuild"],
-        platform: 'node',
-        format: 'cjs',
-        target: 'es2020',
-        write: false,
-    });
-    const code = result.outputFiles[0].text;
-    const module = { exports: {} };
-    const fn = new Function('module', 'exports', 'require', code);
-    fn(module, module.exports, require);
-    return module.exports;
+  const result = await esbuild.build({
+    entryPoints: [filePath],
+    bundle: true,
+    external: ['esbuild'],
+    platform: 'node',
+    format: 'cjs',
+    target: 'es2020',
+    write: false,
+  });
+  const code = result.outputFiles[0].text;
+  const module = { exports: {} };
+  const fn = new Function('module', 'exports', 'require', code);
+  fn(module, module.exports, require);
+  return module.exports;
 }
 
 export async function resolveConfig(log: boolean = true): Promise<AxonConfig> {
-    const explorer = lilconfig('axon', {
-        searchPlaces: [
-            'axon.config.ts',
-            'axon.config.js',
-            'axon.config.cjs',
-            'axon.config.mjs',
-        ],
-        loaders: {
-            '.ts': (filePath) => loadTSConfig(filePath),
-            '.mjs': (filePath) => loadJSConfig(filePath),
-            '.js': (filePath) => require(filePath),
-            '.cjs': (filePath) => require(filePath),
-        }
-    });
+  const explorer = lilconfig('axon', {
+    searchPlaces: ['axon.config.ts', 'axon.config.js', 'axon.config.cjs', 'axon.config.mjs'],
+    loaders: {
+      '.ts': filePath => loadTSConfig(filePath),
+      '.mjs': filePath => loadJSConfig(filePath),
+      '.js': filePath => require(filePath),
+      '.cjs': filePath => require(filePath),
+    },
+  });
 
-    const result = await explorer.search(process.cwd());
+  const result = await explorer.search(process.cwd());
 
-    if (!result?.config) return defaultConfig;
+  if (!result?.config) return defaultConfig;
 
-    if (Object.keys(result.config).includes("default")) result.config = result.config?.default;
+  if (Object.keys(result.config).includes('default')) result.config = result.config?.default;
 
-    const config = { ...defaultConfig, ...result.config };
+  const config = { ...defaultConfig, ...result.config };
 
-    if (config.DEBUG) {
-        logger.level = "debug"
-    }
+  if (config.DEBUG) {
+    logger.level = 'debug';
+  }
 
-    if (!config.LOGGER) {
-        logger.level = "silent"
-    }
+  if (!config.LOGGER) {
+    logger.level = 'silent';
+  }
 
-    if (log) logger.debug(config, "Config loaded");
+  if (log) logger.debug(config, 'Config loaded');
 
-    return config;
+  return config;
 }
