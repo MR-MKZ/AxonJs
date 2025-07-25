@@ -1,7 +1,9 @@
 name: "\U0001F680 Feature Request"
 description: "I have a suggestion \U0001F63B!"
-title: "[Parser]:"
-labels: ["type: enhancement :wolf:"]
+title: "[Feat]: "
+labels: ["Enhancement 💡"]
+assignees: ["mr-mkz"]
+projects: ["AxonJsLabs/1"]
 body:
   - type: checkboxes
     attributes:
