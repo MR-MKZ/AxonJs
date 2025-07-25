@@ -1,7 +1,8 @@
 name: "\U0001F41B Bug Report"
 description: "If something isn't working as expected \U0001F914"
-title: "[Bug]:"
-labels: ["type: potential issue :broken_heart:"]
+title: "[Bug]: "
+labels: ["Bug 🪲"]
+assignees: ["mr-mkz"]
 body:
   - type: checkboxes
     attributes:
