@@ -3,6 +3,7 @@ description: "If something isn't working as expected \U0001F914"
 title: "[Bug]: "
 labels: ["Bug 🪲"]
 assignees: ["mr-mkz"]
+projects: ["AxonJsLabs/1"]
 body:
   - type: checkboxes
     attributes:
