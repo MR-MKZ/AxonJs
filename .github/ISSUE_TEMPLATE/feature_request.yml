@@ -1,6 +1,6 @@
 name: "\U0001F680 Feature Request"
 description: "I have a suggestion \U0001F63B!"
-title: "[Parser]:"
+title: "[Feat]: "
 labels: ["type: enhancement :wolf:"]
 body:
   - type: checkboxes
