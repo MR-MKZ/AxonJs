@@ -6,13 +6,15 @@
 
 **like the brain's powerful neural pathways, simple yet strong. 🧠**
 
-Axon is a backend library that aims to be simple and powerfull.
+Axon is a backend framework that aims to be simple and powerfull.
 
 Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](./benchmarks/README.md)
 
 [Axon telegram channel](https://t.me/axonjs)
 
-Latest change: (v0.12.0)
+[Axon Documentation](https://axonjslabs.github.io/AxonJs/)
+
+Latest change: (v0.13.0)
 
 - Dependency injection
   Fixed some problems and dependency injection system redesigned.
@@ -51,117 +53,6 @@ Latest change: (v0.12.0)
   container.inspect();
   ```
 
-Past changes:
-
-#### (v0.12.0)
-
-- Dependency injection
-  Axon's new feature is dependency injection for class methods and controller functions.
-  support for class constructor and middlewar;es will add soon.
-  How to use:
-  1. Register your dependency into the Axon core:
-
-     ```typescript
-     // class instance
-     core.registerDependencyValue('dependencyName', new DependencyClass(arg1, arg2));
-
-     // class with factory function (core will run factory function before injection process)
-     core.registerDependencyFactory('dependencyName2', () => new DependencyClass());
-
-     // function
-     core.registerDependencyValue('dependencyName3', dependencyFunction);
-
-     // Also you can register dependencies with name aliases
-     core.registerDependencyValue(['depClass', 'classDep', 'DB'], new DependencyClass());
-     ```
-
-  2. Use you dependency in controller
-
-     ```typescript
-     // When you want to use dependencies, make sure you enter exact dependency name or alias
-     // in 3rd argument of controller method or function into the object.
-     interface IDependencies {
-       DB: DependencyClass;
-       dependencyName3: (...args: any[]) => any;
-     }
-
-     class UserController extends BaseController {
-       async index(req: Request<any>, res: Response, { DB, dependencyName3 }: IDependencies) {
-         const result = dependencyName3();
-         const db = DB.get();
-       }
-     }
-
-     // Or functional controller:
-     const getUsers = async (
-       req: Request<any>,
-       res: Response,
-       { DB, dependencyName3 }: IDependencies
-     ) => {
-       const result = dependencyName3();
-       const db = DB.get();
-     };
-
-     router.get('/users/class', [UserController, 'index']);
-     router.get('/users/function', getUsers);
-     ```
-
-#### (v0.11.0)
-
-- Class-Based Controllers
-  You can use the new generation of controllers in Axon.
-  In class-based controllers you can use state managing of classes in your application without any instance making.
-  More organized controllers!
-
-  ```ts
-  class UsersController extends BaseController {
-    async index(req: Request<any>, res: Response) {
-      return res.status(200).body({});
-    }
-  }
-
-  // [Class, Method]
-  router.get('/users', [UsersController, 'index']);
-  ```
-
-  Your controller class must extends from BaseController, Otherwise the router will throw error.
-
-  ```ts
-  class UsersController {
-    async index(req: Request<any>, res: Response) {
-      return res.status(200).body({});
-    }
-  }
-
-  router.get('/users', [UsersController, 'index']);
-
-  // Error: Controller class must extends from BaseController
-  ```
-
-#### (v0.10.0)
-
-- Cookie manager added to Axon.
-  You can access cookie manager by importing AxonCookie class in your code.
-  AxonCookie has some static methods for managing cookies easily.
-  Example:
-
-  ```ts
-  import { AxonCookie } from '@axonlabs/core';
-
-  AxonCookie.set(res, name, value, options);
-  AxonCookie.parse(req);
-  AxonCookie.clear(res, name, options);
-  ```
-
-#### (v0.9.0)
-
-- Plugin system updated.
-- Project environment state added to core config.
-- Validation system added to router.
-
-> [!WARNING]
-> @mr-mkz/axon deprecated and transferred to @axonlabs/core
-
 ## Installation 📥
 
 Install Axon.js with npm
@@ -170,11 +61,38 @@ Install Axon.js with npm
   npm install @axonlabs/core
 ```
 
+## Create new project 🧰
+
+Create new project using Axon CLI tool.
+
+```bash
+npm install -g @axonlabs/cli
+```
+
+After installing Axon CLI you can manager your Axon apps in the fastest way.
+
+```bash
+axon create:project
+```
+
+or also you can work with `npx`
+
+```bash
+npx @axonlabs/cli create:project
+```
+
 ## Benchmarks 🧪
 
 You can checkout Axon benchmarks document and results from below link.
 
 [Axon Benchmarks](./benchmarks/README.md)
+
+|  Name   |  Request  | Response|
+|---------|-----------|---------|
+|  Axon   |  16146.45 | 42.79ms |
+| Express |  8865.71  | 45.89ms |
+
+
 
 ## Badges 📛
 
@@ -223,6 +141,8 @@ You can checkout Axon benchmarks document and results from below link.
 - Default cors configuration method
 - Support https server
 - Auto validation handler (Yup, Zod, Joi)
+- Built-in dependency injection system.
+- Neuron Container, Special dependency injection container of Axon.
 
 **More features soon...**
 
@@ -230,17 +150,24 @@ You can checkout Axon benchmarks document and results from below link.
 
 - Response meta generator.
 - Auto error detector (maybe)
-- Default schemas.
 - Default database connection methods.
+- HTTP/2 support
+- HTTP/3 support
+- Websockets support
+- Queue workers
+- Event channels
 - Improve plugin system
   - Core versioning
   - Plugin dependencies
 - Improve AxonCore
   - Cleaner code
 
+
 ## Documentation 📚
 
 Currently Axon has a main core and a router class which you can make instance from router class every where you want and then gave the router instance to core to load routes.
+
+[Axon Documentation](https://axonjslabs.github.io/AxonJs/)
 
 More complete examples:
 
@@ -355,9 +282,29 @@ Example:
 ```js
 const controller = async (req, res) => {
   return res.status(200).body({
-    message: 'Hello, World',
+    message: 'Hello, World'
   });
 };
+```
+
+```js
+class AuthController extends BaseController {
+  async index(req, res) {
+    return res.status(200).body({
+      message: 'Hello, World'
+    });
+  }
+}
+```
+
+Registering controllers:
+
+```js
+// function controller
+router.get("/", controller);
+
+// class controller
+router.get("/auth", [AuthController, "index"]);
 ```
 
 ### Middleware 🚓
@@ -369,13 +316,13 @@ middleware is a function which runs before running controller for validations or
      ```js
      router
        .get('/', controller)
-       .middleware(async (req, res, next) => next(), (timeout = 2000), (critical = true));
+       .middleware(async (req, res, next) => next(), timeout = 2000, critical = true);
      ```
      you can also use multiple middlewares for a route by repeating middleware function and middlewares will run in order.
 2. loading middleware as a global middleware in Axon core.
    - Example:
      ```js
-     core.globalMiddleware(async (req, res, next) => next(), (timeout = 2000), (critical = true));
+     core.globalMiddleware(async (req, res, next) => next(), timeout = 2000, critical = true);
      ```
      you can also use multiple middlewares in this way by adding middleware functions into an array (suggested method) or repeating this line of code.
 
@@ -395,7 +342,7 @@ AxonJs has some types which can help you in developing your applications for aut
 - `Response`: Type of controller response param. (ServerResponse)
 - `Headers`: Type of response headers. (OutgoingHeaders)
 - `NextFunc`: Type of next function param in middleware.
-- `Controller`: Type of controller function.
+- `FuncController`: Type of controller function.
 - `Middleware`: Type of middleware function.
 - `HttpMethods`: Type of router http methods.
 - `RouterExceptionError`: Type of router exceptions.
@@ -403,6 +350,12 @@ AxonJs has some types which can help you in developing your applications for aut
 - `ValidationConfig`: Config type of AxonValidator. (including joi, yup and zod config options)
 - `ValidationSchema`: Schema type of AxonValidator.
 - `ValidationTargets`: Target list of AxonValidator.
+- `CookieOptions`: Option type for Axon Cookie Manager class.
+- `Lifecycle`: Dependency lifecycle list.
+- `UnloadRouteParams`: Prop type of unloadRouteparams method of Axon core.
+- `AxonConfig`: Axon config type which used in `axon.config.*` as config object.
+- `AxonPlugin`: Axon plugin interface for implementation in plugins.
+- `PluginMode`: Plugin mode of Axon plugins.
 
 ### Axon Core logger (pino & pino-pretty)
 
@@ -451,6 +404,8 @@ Configs:
 - `CORS`: object to change core cors settings. (type: AxonCorsConfig)
 - `HTTPS`: object to config server for https. (type: AxonHttpsConfig)
 - `MIDDLEWARE_TIMEOUT`: variable to set global timeout of waiting for middleware to response or call next function. (ms, default 10000ms)
+- `PROJECT_ENV`: Project environment type to manage features more secure and automatically in AxonCore.
+- `DEPENDENCY_CACHE`: Cache dependencies of controller, middleware handlers. (Currently dependency injection just support controllers)
 
 ### Running server 🔑
 
