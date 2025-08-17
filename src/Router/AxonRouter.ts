@@ -9,12 +9,12 @@ import {
 } from '../types/RouterTypes';
 import { logger } from '../core/utils/coreLogger';
 import { resolveConfig } from '../core/config/AxonConfig';
-import { AxonValidator } from '../core/validation/AxonValidator';
+import { AxonValidator } from '../modules/validation';
 import type { ClassController, ValidationObj } from '../types/RouterTypes';
-import { BaseController } from '../core/classController';
-import { AxonDependencyHandler } from '../core/DI';
+import { BaseController } from '../modules/ClassController';
+import { AxonDependencyHandler } from '../modules/DI';
 import AxonConfig from '../types/ConfigTypes';
-import { createClassHandler } from '../core/classController/ClassHandler';
+import { createClassHandler } from '../modules/ClassController';
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {
   throw new RouterException({
@@ -536,8 +536,6 @@ class AxonRouter {
     if (Array.isArray(handler)) {
       const [_, classHandler] = createClassHandler(handler);
       handlerDependency = this.extractDependencies(classHandler);
-
-      logger.info(handlerDependency);
     } else {
       handlerDependency = this.extractDependencies(handler);
     }

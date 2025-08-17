@@ -5,9 +5,9 @@ import * as http from 'http';
 import AxonCore from './core/AxonCore';
 import AxonRouter from './Router/AxonRouter';
 import { logger } from './core/utils/coreLogger';
-import AxonCookie from './core/cookie/AxonCookie';
-import { BaseController } from './core/classController';
-import { NeuronContainer } from './core/DI';
+import { AxonCookie } from './modules/Cookie';
+import { BaseController } from './modules/ClassController';
+import { NeuronContainer } from './modules/DI';
 
 // Types
 import type { AxonConfig } from './types/ConfigTypes';
@@ -67,7 +67,7 @@ export type { RouterExceptionError } from './types/GlobalTypes';
 export type {
   // Configs - configuration feature
   AxonResponseMessage,
-  AxonCorsConfig,
+  CorsOptions,
   AxonHttpsConfig,
 
   // Main core
