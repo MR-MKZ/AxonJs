@@ -336,7 +336,7 @@ AxonJs has some types which can help you in developing your applications for aut
 
 - `AxonCoreConfig`: Type of core config object for configuration Axon core as you want.
 - `AxonResponseMessage`: Type of core config option RESPONSE_MESSAGES.
-- `AxonCorsConfig`: Type of core config option CORS.
+- `CorsOptions`: Type of core config option CORS.
 - `AxonHttpsConfig`: Type of core config option HTTPS.
 - `Request<Params>`: Type of controller request param. (IncomingMessage)
 - `Response`: Type of controller response param. (ServerResponse)
@@ -401,7 +401,7 @@ Configs:
 - `LOGGER`: boolean to set core logger on or off. (default true)
 - `LOGGER_VERBOSE`: boolean to set core logger in verbose mode. (default false)
 - `RESPONSE_MESSAGES`: object to change default value of some core responses. (type: AxonResponseMessage)
-- `CORS`: object to change core cors settings. (type: AxonCorsConfig)
+- `CORS`: object to change core cors settings. (type: CorsOptions)
 - `HTTPS`: object to config server for https. (type: AxonHttpsConfig)
 - `MIDDLEWARE_TIMEOUT`: variable to set global timeout of waiting for middleware to response or call next function. (ms, default 10000ms)
 - `PROJECT_ENV`: Project environment type to manage features more secure and automatically in AxonCore.
