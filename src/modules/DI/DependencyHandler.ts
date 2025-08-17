@@ -1,5 +1,7 @@
-import { extractDestructuredThirdArgKeys } from './tokenizer';
-import NeuronContainer from './NeuronContainer';
+import { 
+  NeuronContainer,
+  extractDestructuredThirdArgKeys
+} from '.';
 
 // Types
 import type { Lifecycle } from '../../types/Dependency';
@@ -45,9 +47,9 @@ class AxonDependencyHandler {
   public async resolve(keys: string | string[]) {
     const dependencies: { [name: string]: any } = {};
 
-    if (!Array.isArray(keys)) {
+    if (!Array.isArray(keys) || keys.length === 1) {
+      if (Array.isArray(keys)) keys = keys[0];
       dependencies[keys] = await this.container.resolve(keys);
-
       return dependencies;
     }
 
