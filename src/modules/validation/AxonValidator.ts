@@ -2,13 +2,13 @@ import * as yup from 'yup';
 import joi from 'joi';
 import { ZodSchema, z } from 'zod';
 
-import { Middleware } from '../../types/RouterTypes';
+import { Middleware } from '../../types/Router';
 
 import type {
   ValidationConfig,
   ValidationSchema,
   ValidationTargets,
-} from '../../types/ValidatorTypes';
+} from '../../types/Validator';
 
 export class AxonValidator {
   static validate(

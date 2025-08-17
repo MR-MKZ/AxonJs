@@ -6,14 +6,14 @@ import {
   RouteParams,
   HttpMethods,
   MiddlewareStorage,
-} from '../types/RouterTypes';
+} from '../types/Router';
 import { logger } from '../core/utils/coreLogger';
 import { resolveConfig } from '../core/config/AxonConfig';
 import { AxonValidator } from '../modules/validation';
-import type { ClassController, ValidationObj } from '../types/RouterTypes';
+import type { ClassController, ValidationObj } from '../types/Router';
 import { BaseController } from '../modules/ClassController';
 import { AxonDependencyHandler } from '../modules/DI';
-import AxonConfig from '../types/ConfigTypes';
+import AxonConfig from '../types/Config';
 import { createClassHandler } from '../modules/ClassController';
 
 const duplicateError = (path: string, method: keyof HttpMethods) => {

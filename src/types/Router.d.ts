@@ -2,7 +2,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 import AxonResponse from '../core/response/AxonResponse';
 import { AxonRouteHandler } from '../Router/AxonRouter';
 import { BaseController } from '../modules/ClassController';
-import type { ValidationConfig, ValidationSchema, ValidationTargets } from './ValidatorTypes';
+import type { ValidationConfig, ValidationSchema, ValidationTargets } from './Validator';
 
 /**
  * Incoming request, including some information about the client.

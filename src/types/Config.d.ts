@@ -1,4 +1,4 @@
-import type { AxonResponseMessage, CorsOptions, AxonHttpsConfig } from './CoreTypes';
+import type { AxonResponseMessage, CorsOptions, AxonHttpsConfig } from './Core';
 
 interface AxonConfig {
   /**

@@ -5,8 +5,8 @@
  */
 
 import { logger } from '../../core/utils/coreLogger';
-import type { Request, Response, NextFunc } from '../../types/RouterTypes';
-import type { CorsOptions } from "../../types/CoreTypes";
+import type { Request, Response, NextFunc } from '../../types/Router';
+import type { CorsOptions } from "../../types/Core";
 
 
 // --- Type Definitions for CORS ---

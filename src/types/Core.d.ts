@@ -1,6 +1,6 @@
 import { ServerOptions } from 'https';
 import AxonRouter from '../Router/AxonRouter';
-import { HttpMethods } from './RouterTypes';
+import { HttpMethods } from './Router';
 
 type AxonHttpsConfig = ServerOptions;
 

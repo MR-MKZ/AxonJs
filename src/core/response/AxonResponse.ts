@@ -1,4 +1,4 @@
-import { Response } from '../../types/RouterTypes';
+import { Response } from '../../types/Router';
 
 class AxonResponse {
   private res: Response;

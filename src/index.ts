@@ -10,7 +10,7 @@ import { BaseController } from './modules/ClassController';
 import { NeuronContainer } from './modules/DI';
 
 // Types
-import type { AxonConfig } from './types/ConfigTypes';
+import type { AxonConfig } from './types/Config';
 
 /**
  * Instance of AxonRouter for easier usage
@@ -62,7 +62,7 @@ export {
   NeuronContainer,
 };
 
-export type { RouterExceptionError } from './types/GlobalTypes';
+export type { RouterExceptionError } from './types/Global';
 
 export type {
   // Configs - configuration feature
@@ -72,7 +72,7 @@ export type {
 
   // Main core
   UnloadRouteParams,
-} from './types/CoreTypes';
+} from './types/Core';
 
 export type {
   // Request life cycle
@@ -87,21 +87,21 @@ export type {
   // Router
   HttpMethods,
   ValidationObj,
-} from './types/RouterTypes';
+} from './types/Router';
 
-export type { AxonConfig } from './types/ConfigTypes';
+export type { AxonConfig } from './types/Config';
 
-export type { AxonPlugin, PluginMode } from './types/PluginTypes';
+export type { AxonPlugin, PluginMode } from './types/Plugin';
 
 export type {
   // Axon Validator - Validation feature
   ValidationConfig,
   ValidationSchema,
   ValidationTargets,
-} from './types/ValidatorTypes';
+} from './types/Validator';
 
 // Axon Cookie Manager
-export type { CookieOptions } from './types/CookieTypes';
+export type { CookieOptions } from './types/Cookie';
 
 // Neuron Container (Axon Dependency Injection System)
 export type { Lifecycle } from './types/Dependency';

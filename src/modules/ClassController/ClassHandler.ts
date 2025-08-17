@@ -1,5 +1,5 @@
 import { BaseController, ControllerRegistry } from '.';
-import { ClassController, FuncController } from '../../types/RouterTypes';
+import { ClassController, FuncController } from '../../types/Router';
 /**
  * Creates an executable request handler from a class-based route definition.
  * It fetches the controller's singleton instance and returns a correctly bound method.

@@ -9,12 +9,12 @@ import getRequestBody from './utils/getRequestBody';
 import { createClassHandler } from '../modules/ClassController';
 
 // Types
-import type { FuncController, Request, Response, Middleware, HttpMethods } from '../types/RouterTypes';
-import type { AxonPlugin } from '../types/PluginTypes';
-import type { JsonResponse } from '../types/GlobalTypes';
-import type { AxonConfig } from '../types/ConfigTypes';
-import type { UnloadRouteParams } from '../types/CoreTypes';
-import type { ClassController, MiddlewareStorage } from '../types/RouterTypes';
+import type { FuncController, Request, Response, Middleware, HttpMethods } from '../types/Router';
+import type { AxonPlugin } from '../types/Plugin';
+import type { JsonResponse } from '../types/Global';
+import type { AxonConfig } from '../types/Config';
+import type { UnloadRouteParams } from '../types/Core';
+import type { ClassController, MiddlewareStorage } from '../types/Router';
 import type { Lifecycle } from '../types/Dependency';
 
 // Exceptions

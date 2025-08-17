@@ -1,5 +1,5 @@
 import AxonRouter from '../../Router/AxonRouter';
-import { HttpMethods } from '../../types/RouterTypes';
+import { HttpMethods } from '../../types/Router';
 import { logger } from '../utils/coreLogger';
 
 interface UnloadRouteParams {

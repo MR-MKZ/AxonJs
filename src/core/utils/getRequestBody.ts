@@ -1,4 +1,4 @@
-import { Request } from '../../types/RouterTypes';
+import { Request } from '../../types/Router';
 
 const getRequestBody = async (
   req: Request<any>

@@ -7,7 +7,7 @@ import { pathToFileURL } from 'url';
 import { logger } from '../utils/coreLogger';
 
 // types
-import type { AxonConfig } from '../../types/ConfigTypes';
+import type { AxonConfig } from '../../types/Config';
 
 // default items
 import defaultConfig from '../config/defaultConfig';

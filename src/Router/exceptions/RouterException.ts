@@ -1,4 +1,4 @@
-import { ExceptionMeta, RouterExceptionError } from '../../types/GlobalTypes';
+import { ExceptionMeta, RouterExceptionError } from '../../types/Global';
 
 class RouterException extends Error {
   public name: string;
