@@ -87,10 +87,10 @@ You can checkout Axon benchmarks document and results from below link.
 
 [Axon Benchmarks](./benchmarks/README.md)
 
-|  Name   |  Request  | Response|
-|---------|-----------|---------|
-|  Axon   |  16146.45 | 42.79ms |
-| Express |  8865.71  | 45.89ms |
+| Name    | Request  | Response |
+| ------- | -------- | -------- |
+| Axon    | 16146.45 | 42.79ms  |
+| Express | 8865.71  | 45.89ms  |
 
 
 

@@ -1,6 +1,7 @@
 import { FuncController, Router, Request } from '../../src';
 
-import { z } from 'zod';
+import * as z3 from 'zod/v3';
+import * as z4 from 'zod';
 import * as yup from 'yup';
 import Joi from 'joi';
 
@@ -27,10 +28,16 @@ const bodySchema = Joi.object({
   age: Joi.number().integer().min(0).required(),
 });
 
-// --- Zod for QUERY validation ---
-const querySchema = z.object({
-  search: z.string().min(1),
-  limit: z.coerce.number().min(1).max(100).default(10),
+// --- Zod v3 for QUERY validation ---
+const querySchema = z3.object({
+  search: z3.string().min(1),
+  limit: z3.number().min(1).max(100),
+});
+
+// --- Zod v4 for QUERY validation ---
+const querySchemaZ4 = z4.object({
+  search: z4.string().min(10),
+  limit: z4.number().min(1).max(100).default(10),
 });
 
 // --- Yup for PARAMS validation ---
@@ -62,13 +69,22 @@ router
           abortEarly: false,
         } as Joi.ValidationOptions,
       },
+      // Zod Schema using Zod v3
       {
         schema: querySchema,
         target: 'query',
         options: {
-          path: ['Query Schema'],
-        } as z.ParseParams,
+          path: ['Query Schema v3'],
+        } as z3.ParseParams,
       },
+      // Zod Schema using Zod v4
+      // {
+      //   schema: querySchemaZ4,
+      //   target: 'query',
+      //   options: {
+      //     path: ['Query Schema v4']
+      //   },
+      // },
       {
         schema: paramsSchema,
         target: 'params',

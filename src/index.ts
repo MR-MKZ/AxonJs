@@ -37,6 +37,11 @@ const axonLogger = logger;
 // interface Headers extends http.OutgoingHttpHeaders { }
 type Headers = http.OutgoingHttpHeaders;
 
+export type {
+  // Request life cycle
+  Headers,
+}
+
 export {
   // Cores - Router and Main core
   AxonCore,
@@ -45,9 +50,6 @@ export {
   // Core instance generators
   Axon,
   Router,
-
-  // Request life cycle
-  Headers,
 
   // Handlers
   BaseController,

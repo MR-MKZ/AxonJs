@@ -7,7 +7,7 @@ router.get('/{name}([a-z]+)/{id}(\\d+)', async (req, res) => {
   return res.status(200).body({
     url: req.url,
     params: req.params,
-    query: req.query,
+    query: req.query
   });
 });
 
