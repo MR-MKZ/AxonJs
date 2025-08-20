@@ -1,3 +1,3 @@
-import AxonCookie from "./AxonCookie";
+import AxonCookie from './AxonCookie';
 
 export { AxonCookie };

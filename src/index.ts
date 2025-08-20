@@ -40,7 +40,7 @@ type Headers = http.OutgoingHttpHeaders;
 export type {
   // Request life cycle
   Headers,
-}
+};
 
 export {
   // Cores - Router and Main core

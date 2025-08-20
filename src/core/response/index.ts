@@ -1,3 +1,3 @@
-import AxonResponse from "./AxonResponse";
+import AxonResponse from './AxonResponse';
 
 export default AxonResponse;

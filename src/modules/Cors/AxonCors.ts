@@ -6,8 +6,7 @@
 
 import { logger } from '../../core/utils/coreLogger';
 import type { Request, Response, NextFunc } from '../../types/Router';
-import type { CorsOptions } from "../../types/Core";
-
+import type { CorsOptions } from '../../types/Core';
 
 // --- Type Definitions for CORS ---
 
@@ -32,7 +31,6 @@ type Header = [string, string | false];
  * Can contain single headers, nested arrays of headers, or null values.
  */
 type HeadersList = (Header | Header[] | null)[];
-
 
 // --- Refactored CORS Middleware ---
 
@@ -98,7 +96,6 @@ const appendToVaryHeader = (res: Response, field: string) => {
   const newVary = existingVary ? `${existingVary}, ${field}` : field;
   res.setHeader('Vary', newVary);
 };
-
 
 // --- Header Configuration Functions ---
 
@@ -242,7 +239,6 @@ const applyHeaders = (headers: HeadersList, res: Response) => {
   }
 };
 
-
 /**
  * The core CORS handling logic that distinguishes between preflight and actual requests.
  * @param options The resolved CORS options for the current request.
@@ -261,7 +257,7 @@ const cors = async (options: CorsOptions, req: Request<any>, res: Response, next
       configureMethods(options),
       configureAllowedHeaders(options, req),
       configureMaxAge(options),
-      configureExposedHeaders(options)
+      configureExposedHeaders(options),
     ];
     applyHeaders(headers, res);
 
@@ -277,7 +273,7 @@ const cors = async (options: CorsOptions, req: Request<any>, res: Response, next
     const headers: HeadersList = [
       configureOrigin(options, req),
       configureCredentials(options),
-      configureExposedHeaders(options)
+      configureExposedHeaders(options),
     ];
     applyHeaders(headers, res);
     await next();
@@ -291,9 +287,8 @@ const cors = async (options: CorsOptions, req: Request<any>, res: Response, next
  * @returns An async middleware function compatible with frameworks like Express.
  */
 export const corsMiddleware = (options?: CorsOptions | CorsOptionsDelegate) => {
-  const optionsCallback: CorsOptionsDelegate = typeof options === 'function'
-    ? options
-    : (req, cb) => cb(null, options);
+  const optionsCallback: CorsOptionsDelegate =
+    typeof options === 'function' ? options : (req, cb) => cb(null, options);
 
   return async (req: Request<any>, res: Response, next: NextFunc) => {
     optionsCallback(req, async (err, corsOptions) => {
@@ -309,7 +304,7 @@ export const corsMiddleware = (options?: CorsOptions | CorsOptionsDelegate) => {
       try {
         await cors(finalOptions, req, res, next);
       } catch (e: any) {
-        logger.error(e, "Error in CORS middleware");
+        logger.error(e, 'Error in CORS middleware');
         if (!res.headersSent) {
           res.status(500).body({ error: 'Internal Server Error in CORS' });
         } else {

@@ -20,5 +20,5 @@ export abstract class BaseController {
   constructor() {}
 }
 
-export * from "./ClassHandler";
-export * from "./ControllerRegistry";
+export * from './ClassHandler';
+export * from './ControllerRegistry';

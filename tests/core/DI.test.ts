@@ -70,14 +70,17 @@ describe('Dependency Injection tests', () => {
       return res.status(200).body(response);
     });
 
-    router.get('/function/multipleDeps', async (req, res, { class2Dep, classDep, funcDep }: IClassArgs) => {
-      const response = {
-        class2: await class2Dep.get(),
-        class: await classDep.get(),
-        func: await funcDep()
-      };
-      return res.status(200).body(response);
-    });
+    router.get(
+      '/function/multipleDeps',
+      async (req, res, { class2Dep, classDep, funcDep }: IClassArgs) => {
+        const response = {
+          class2: await class2Dep.get(),
+          class: await classDep.get(),
+          func: await funcDep(),
+        };
+        return res.status(200).body(response);
+      }
+    );
 
     router.get('/unknown/deps', async (req, res) => {
       return res.status(200).body({});
@@ -145,14 +148,14 @@ describe('Dependency Injection tests', () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual({
       class2: {
-        msg: 'Class dependency injected successfully'
+        msg: 'Class dependency injected successfully',
       },
       class: {
-        msg: 'Class dependency injected successfully'
+        msg: 'Class dependency injected successfully',
       },
       func: {
-        msg: 'Function dependency injected successfully'
-      }
+        msg: 'Function dependency injected successfully',
+      },
     });
   });
 

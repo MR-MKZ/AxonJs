@@ -1,1 +1,1 @@
-export * from "./AxonCors";
+export * from './AxonCors';

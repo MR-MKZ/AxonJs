@@ -1,1 +1,1 @@
-export * from "./AxonValidator";
+export * from './AxonValidator';

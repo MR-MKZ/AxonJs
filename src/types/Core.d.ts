@@ -79,8 +79,8 @@ interface CorsOptions {
    */
   optionsSuccessStatus?: number;
   /**
-     * Alias for `allowedHeaders`.
-     */
+   * Alias for `allowedHeaders`.
+   */
   headers?: string | string[];
 }
 

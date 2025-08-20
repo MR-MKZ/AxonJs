@@ -1,7 +1,4 @@
-import { 
-  NeuronContainer,
-  extractDestructuredThirdArgKeys
-} from '.';
+import { NeuronContainer, extractDestructuredThirdArgKeys } from '.';
 
 // Types
 import type { Lifecycle } from '../../types/Dependency';
