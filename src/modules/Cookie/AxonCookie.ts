@@ -1,5 +1,5 @@
-import type { Request, Response } from '../../types/RouterTypes';
-import type { CookieOptions } from '../../types/CookieTypes';
+import type { Request, Response } from '../../types/Router';
+import type { CookieOptions } from '../../types/Cookie';
 
 type TimeUnit = 's' | 'm' | 'h' | 'd' | 'M' | 'y';
 

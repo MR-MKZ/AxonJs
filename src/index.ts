@@ -5,12 +5,12 @@ import * as http from 'http';
 import AxonCore from './core/AxonCore';
 import AxonRouter from './Router/AxonRouter';
 import { logger } from './core/utils/coreLogger';
-import AxonCookie from './core/cookie/AxonCookie';
-import { BaseController } from './core/classController';
-import { NeuronContainer } from './core/DI';
+import { AxonCookie } from './modules/Cookie';
+import { BaseController } from './modules/ClassController';
+import { NeuronContainer } from './modules/DI';
 
 // Types
-import type { AxonConfig } from './types/ConfigTypes';
+import type { AxonConfig } from './types/Config';
 
 /**
  * Instance of AxonRouter for easier usage
@@ -37,6 +37,11 @@ const axonLogger = logger;
 // interface Headers extends http.OutgoingHttpHeaders { }
 type Headers = http.OutgoingHttpHeaders;
 
+export type {
+  // Request life cycle
+  Headers,
+};
+
 export {
   // Cores - Router and Main core
   AxonCore,
@@ -45,9 +50,6 @@ export {
   // Core instance generators
   Axon,
   Router,
-
-  // Request life cycle
-  Headers,
 
   // Handlers
   BaseController,
@@ -62,17 +64,17 @@ export {
   NeuronContainer,
 };
 
-export type { RouterExceptionError } from './types/GlobalTypes';
+export type { RouterExceptionError } from './types/Global';
 
 export type {
   // Configs - configuration feature
   AxonResponseMessage,
-  AxonCorsConfig,
+  CorsOptions,
   AxonHttpsConfig,
 
   // Main core
   UnloadRouteParams,
-} from './types/CoreTypes';
+} from './types/Core';
 
 export type {
   // Request life cycle
@@ -87,21 +89,21 @@ export type {
   // Router
   HttpMethods,
   ValidationObj,
-} from './types/RouterTypes';
+} from './types/Router';
 
-export type { AxonConfig } from './types/ConfigTypes';
+export type { AxonConfig } from './types/Config';
 
-export type { AxonPlugin, PluginMode } from './types/PluginTypes';
+export type { AxonPlugin, PluginMode } from './types/Plugin';
 
 export type {
   // Axon Validator - Validation feature
   ValidationConfig,
   ValidationSchema,
   ValidationTargets,
-} from './types/ValidatorTypes';
+} from './types/Validator';
 
 // Axon Cookie Manager
-export type { CookieOptions } from './types/CookieTypes';
+export type { CookieOptions } from './types/Cookie';
 
 // Neuron Container (Axon Dependency Injection System)
 export type { Lifecycle } from './types/Dependency';

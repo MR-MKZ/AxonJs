@@ -1,14 +1,13 @@
 import * as yup from 'yup';
 import joi from 'joi';
-import { ZodSchema, z } from 'zod';
 
-import { Middleware } from '../../types/RouterTypes';
+// Currently the default zod is zod v4 and also we used import of zod/v3 to support version 3 for old users
+import * as z from 'zod';
+import * as z3 from 'zod/v3';
 
-import type {
-  ValidationConfig,
-  ValidationSchema,
-  ValidationTargets,
-} from '../../types/ValidatorTypes';
+import { Middleware } from '../../types/Router';
+
+import type { ValidationConfig, ValidationSchema, ValidationTargets } from '../../types/Validator';
 
 export class AxonValidator {
   static validate(
@@ -23,8 +22,16 @@ export class AxonValidator {
 
         if (schema instanceof yup.Schema) {
           await schema.validate(dataToValidate, options as yup.ValidateOptions);
-        } else if (schema instanceof ZodSchema) {
-          await schema.parseAsync(dataToValidate, options as z.ParseParams);
+        } else if (
+          schema instanceof z3.ZodSchema ||
+          schema instanceof z3.ZodType ||
+          schema instanceof z.ZodType
+        ) {
+          if ('_zod' in schema) {
+            await schema.parseAsync(dataToValidate, options);
+          } else {
+            await schema.parseAsync(dataToValidate, options as z3.ParseParams);
+          }
         } else if (joi.isSchema(schema)) {
           const { error } = schema.validate(dataToValidate, options as joi.ValidationOptions);
 
@@ -41,13 +48,13 @@ export class AxonValidator {
         if (error instanceof yup.ValidationError) {
           errorMessage = error.errors;
         } else if (error instanceof joi.ValidationError) {
-          errorMessage = error.details.map(
-            element => `${element.message} | path: ${element.path.join(', ')}`
-          );
-        } else if (error instanceof z.ZodError) {
-          errorMessage = error.issues.map(
-            element => `${element.message} | path: ${element.path.join(', ')}`
-          );
+          errorMessage = error.details.map(element => {
+            return { message: element.message, path: element.path };
+          });
+        } else if (error instanceof z3.ZodError || error instanceof z.ZodError) {
+          errorMessage = error.issues.map(element => {
+            return { message: element.message, path: element.path };
+          });
         } else {
           try {
             if (error instanceof Error) {

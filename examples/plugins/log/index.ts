@@ -1,5 +1,5 @@
 import { AxonCore, axonLogger, AxonPlugin, Router } from '../../../src';
-import { PluginMode } from '../../../src/types/PluginTypes';
+import { PluginMode } from '../../../src/types/Plugin';
 export class LogPluginTest implements AxonPlugin {
   private logs: number;
 

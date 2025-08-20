@@ -1,4 +1,5 @@
 {
+  "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["src/index.ts", "src/types/index.ts"],
   "out": "docs",
   "plugin": [],

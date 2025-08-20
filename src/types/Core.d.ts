@@ -1,13 +1,13 @@
 import { ServerOptions } from 'https';
 import AxonRouter from '../Router/AxonRouter';
-import { HttpMethods } from './RouterTypes';
+import { HttpMethods } from './Router';
 
 type AxonHttpsConfig = ServerOptions;
 
 /**
  * Cors configuration for AxonCore.
  */
-interface AxonCorsConfig {
+interface CorsOptions {
   /**
    * Configures the Access-Control-Allow-Origin CORS header.
    *
@@ -23,7 +23,7 @@ interface AxonCorsConfig {
    *
    * * Function - set origin to a function implementing some custom logic. The function takes the request origin as the first parameter and a callback (which expects the signature err [object], allow [bool]) as the second.
    */
-  origin?: boolean | string | Array<string | RegExp> | Function;
+  origin?: boolean | string | RegExp | (string | RegExp)[];
   /**
    * Configures the Access-Control-Allow-Methods CORS header.
    *
@@ -78,6 +78,10 @@ interface AxonCorsConfig {
    * Provides a status code to use for successful `OPTIONS` requests, since some legacy browsers (IE11, various SmartTVs) choke on `204`.
    */
   optionsSuccessStatus?: number;
+  /**
+   * Alias for `allowedHeaders`.
+   */
+  headers?: string | string[];
 }
 
 /**
@@ -138,4 +142,4 @@ interface UnloadRouteParams {
   route?: string;
 }
 
-export { AxonResponseMessage, AxonCorsConfig, AxonHttpsConfig, UnloadRouteParams };
+export { AxonResponseMessage, CorsOptions, AxonHttpsConfig, UnloadRouteParams };

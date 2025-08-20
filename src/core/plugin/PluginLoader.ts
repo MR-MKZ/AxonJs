@@ -1,4 +1,4 @@
-import { AxonPlugin } from '../../types/PluginTypes';
+import { AxonPlugin } from '../../types/Plugin';
 import AxonCore from '../AxonCore';
 import { logger } from '../utils/coreLogger';
 

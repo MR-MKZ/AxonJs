@@ -33,11 +33,13 @@ Latest change: (v0.13.0)
      // Also you can register dependencies with name aliases
      core.registerDependencyValue(['depClass', 'classDep', 'DB'], new DependencyClass());
      ```
+
 - NeuronContainer service
   Neuron Container is a service to create and handle dependency containers in your project.
   Also Axon core is using Neuron Container for dependency injection feature.
+
   ```typescript
-  import { NeuronContainer } from "@axonlabs/core";
+  import { NeuronContainer } from '@axonlabs/core';
 
   const container = new NeuronContainer();
   container.registerValue();
@@ -87,12 +89,10 @@ You can checkout Axon benchmarks document and results from below link.
 
 [Axon Benchmarks](./benchmarks/README.md)
 
-|  Name   |  Request  | Response|
-|---------|-----------|---------|
-|  Axon   |  16146.45 | 42.79ms |
-| Express |  8865.71  | 45.89ms |
-
-
+| Name    | Request  | Response |
+| ------- | -------- | -------- |
+| Axon    | 16146.45 | 42.79ms  |
+| Express | 8865.71  | 45.89ms  |
 
 ## Badges 📛
 
@@ -161,7 +161,6 @@ You can checkout Axon benchmarks document and results from below link.
   - Plugin dependencies
 - Improve AxonCore
   - Cleaner code
-
 
 ## Documentation 📚
 
@@ -282,7 +281,7 @@ Example:
 ```js
 const controller = async (req, res) => {
   return res.status(200).body({
-    message: 'Hello, World'
+    message: 'Hello, World',
   });
 };
 ```
@@ -291,7 +290,7 @@ const controller = async (req, res) => {
 class AuthController extends BaseController {
   async index(req, res) {
     return res.status(200).body({
-      message: 'Hello, World'
+      message: 'Hello, World',
     });
   }
 }
@@ -301,10 +300,10 @@ Registering controllers:
 
 ```js
 // function controller
-router.get("/", controller);
+router.get('/', controller);
 
 // class controller
-router.get("/auth", [AuthController, "index"]);
+router.get('/auth', [AuthController, 'index']);
 ```
 
 ### Middleware 🚓
@@ -316,13 +315,13 @@ middleware is a function which runs before running controller for validations or
      ```js
      router
        .get('/', controller)
-       .middleware(async (req, res, next) => next(), timeout = 2000, critical = true);
+       .middleware(async (req, res, next) => next(), (timeout = 2000), (critical = true));
      ```
      you can also use multiple middlewares for a route by repeating middleware function and middlewares will run in order.
 2. loading middleware as a global middleware in Axon core.
    - Example:
      ```js
-     core.globalMiddleware(async (req, res, next) => next(), timeout = 2000, critical = true);
+     core.globalMiddleware(async (req, res, next) => next(), (timeout = 2000), (critical = true));
      ```
      you can also use multiple middlewares in this way by adding middleware functions into an array (suggested method) or repeating this line of code.
 
@@ -336,7 +335,7 @@ AxonJs has some types which can help you in developing your applications for aut
 
 - `AxonCoreConfig`: Type of core config object for configuration Axon core as you want.
 - `AxonResponseMessage`: Type of core config option RESPONSE_MESSAGES.
-- `AxonCorsConfig`: Type of core config option CORS.
+- `CorsOptions`: Type of core config option CORS.
 - `AxonHttpsConfig`: Type of core config option HTTPS.
 - `Request<Params>`: Type of controller request param. (IncomingMessage)
 - `Response`: Type of controller response param. (ServerResponse)
@@ -401,7 +400,7 @@ Configs:
 - `LOGGER`: boolean to set core logger on or off. (default true)
 - `LOGGER_VERBOSE`: boolean to set core logger in verbose mode. (default false)
 - `RESPONSE_MESSAGES`: object to change default value of some core responses. (type: AxonResponseMessage)
-- `CORS`: object to change core cors settings. (type: AxonCorsConfig)
+- `CORS`: object to change core cors settings. (type: CorsOptions)
 - `HTTPS`: object to config server for https. (type: AxonHttpsConfig)
 - `MIDDLEWARE_TIMEOUT`: variable to set global timeout of waiting for middleware to response or call next function. (ms, default 10000ms)
 - `PROJECT_ENV`: Project environment type to manage features more secure and automatically in AxonCore.

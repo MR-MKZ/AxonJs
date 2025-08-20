@@ -1,8 +1,5 @@
-import { ControllerRegistry } from './ControllerRegistry';
-import { BaseController } from '.';
-import { ClassController, FuncController } from '../../types/RouterTypes';
-import { extractDestructuredThirdArgKeys } from '../DI';
-
+import { BaseController, ControllerRegistry } from '.';
+import { ClassController, FuncController } from '../../types/Router';
 /**
  * Creates an executable request handler from a class-based route definition.
  * It fetches the controller's singleton instance and returns a correctly bound method.

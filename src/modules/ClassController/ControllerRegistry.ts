@@ -1,5 +1,5 @@
 import { BaseController } from '.';
-import { ControllerConstructor } from '../../types/RouterTypes';
+import { ControllerConstructor } from '../../types/Router';
 
 /**
  * Manages singleton instances of all controller classes.

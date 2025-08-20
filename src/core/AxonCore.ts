@@ -6,15 +6,15 @@ import { performance } from 'perf_hooks';
 // Utils
 import { logger } from './utils/coreLogger';
 import getRequestBody from './utils/getRequestBody';
-import { createClassHandler } from './classController/ClassHandler';
+import { createClassHandler } from '../modules/ClassController';
 
 // Types
-import type { FuncController, Request, Response, Middleware, HttpMethods } from '../types/RouterTypes';
-import type { AxonPlugin } from '../types/PluginTypes';
-import type { JsonResponse } from '../types/GlobalTypes';
-import type { AxonConfig } from '../types/ConfigTypes';
-import type { UnloadRouteParams } from '../types/CoreTypes';
-import type { ClassController, MiddlewareStorage } from '../types/RouterTypes';
+import type { FuncController, Request, Response, Middleware, HttpMethods } from '../types/Router';
+import type { AxonPlugin } from '../types/Plugin';
+import type { JsonResponse } from '../types/Global';
+import type { AxonConfig } from '../types/Config';
+import type { UnloadRouteParams } from '../types/Core';
+import type { ClassController, MiddlewareStorage } from '../types/Router';
 import type { Lifecycle } from '../types/Dependency';
 
 // Exceptions
@@ -24,12 +24,12 @@ import { routeDuplicateException } from './exceptions/CoreExceptions';
 import Router from '../Router/AxonRouter';
 
 // Features
-import AxonResponse from './response/AxonResponse';
-import AxonCors from './cors/AxonCors';
-import { PluginLoader } from './plugin/PluginLoader';
+import AxonResponse from './response';
+import { corsMiddleware } from '../modules/Cors';
+import { PluginLoader } from './plugin';
 import { resolveConfig } from './config/AxonConfig';
-import { unloadRouteService, unloadRoutesService } from './services/unloadRoutesService';
-import { AxonDependencyHandler, NeuronContainer } from './DI';
+import { unloadRouteService, unloadRoutesService } from './services/unloadRoutes.service';
+import { AxonDependencyHandler, NeuronContainer } from '../modules/DI';
 
 // Default values
 const defaultResponses = {
@@ -464,7 +464,7 @@ export default class AxonCore {
               }
             }
 
-            const axonCors = await AxonCors.middlewareWrapper(this.config.CORS);
+            const axonCors = corsMiddleware(this.config.CORS);
 
             const AxonCorsMiddleware: MiddlewareStorage = {
               timeout: this.config.MIDDLEWARE_TIMEOUT || 10000,
@@ -485,25 +485,6 @@ export default class AxonCore {
                       res,
                       async () => {
                         await controller(req, res, dependencies);
-
-                        // log incoming requests
-                        if (this.config.LOGGER_VERBOSE) {
-                          logger.request(
-                            {
-                              ip: req.socket.remoteAddress,
-                              url: req.url,
-                              method: req.method,
-                              headers: req.headers,
-                              body: req.body,
-                              code: res.statusCode,
-                            },
-                            'new http request'
-                          );
-                        } else {
-                          logger.request(
-                            `${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers['user-agent']}`
-                          );
-                        }
                       },
                       middlewares
                     );
@@ -513,6 +494,25 @@ export default class AxonCore {
               },
               [AxonCorsMiddleware]
             );
+
+            // log incoming requests
+            if (this.config.LOGGER_VERBOSE) {
+              logger.request(
+                {
+                  ip: req.socket.remoteAddress,
+                  url: req.url,
+                  method: req.method,
+                  headers: req.headers,
+                  body: req.body,
+                  code: res.statusCode,
+                },
+                'new http request'
+              );
+            } else {
+              logger.request(
+                `${req.socket.remoteAddress} - ${req.method} ${req.url} ${res.statusCode} - ${req.headers['user-agent']}`
+              );
+            }
           } else {
             continue;
           }
