@@ -14,46 +14,10 @@ Currently Axon is 2X faster than Express. :D please checkout [Axon Benchmarks](.
 
 [Axon Documentation](https://axonjslabs.github.io/AxonJs/)
 
-Latest change: (v0.13.0)
+Latest change: (v0.13.1)
 
-- Dependency injection
-  Fixed some problems and dependency injection system redesigned.
-  1. Register your dependency into the Axon core:
-
-     ```typescript
-     // class instance
-     core.registerDependencyValue('dependencyName', new DependencyClass(arg1, arg2));
-
-     // class with factory function (core will run factory function before injection process)
-     core.registerDependencyFactory('dependencyName2', () => new DependencyClass());
-
-     // function
-     core.registerDependencyValue('dependencyName3', dependencyFunction);
-
-     // Also you can register dependencies with name aliases
-     core.registerDependencyValue(['depClass', 'classDep', 'DB'], new DependencyClass());
-     ```
-
-- NeuronContainer service
-  Neuron Container is a service to create and handle dependency containers in your project.
-  Also Axon core is using Neuron Container for dependency injection feature.
-
-  ```typescript
-  import { NeuronContainer } from '@axonlabs/core';
-
-  const container = new NeuronContainer();
-  container.registerValue();
-  container.registerFactory();
-  container.register();
-  container.resolve();
-  container.use();
-  container.clone();
-  container.clearScope();
-  container.checkDependency();
-  container.override();
-  container.listDependencies();
-  container.inspect();
-  ```
+- Axon core hardcode config problem
+- Some dependencies removed from project and the code and project structure improved.
 
 ## Installation 📥
 

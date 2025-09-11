@@ -1,6 +1,6 @@
 {
   "name": "@axonlabs/core",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "A blazing-fast backend framework core built for simplicity, power, and modern developer experience.",
   "author": {
     "name": "Mr.MKZ",
@@ -56,7 +56,7 @@
     "@spacingbat3/kolor": "^4.0.0",
     "esbuild": "^0.25.9",
     "lilconfig": "^3.1.3",
-    "pino": "^9.9.0",
+    "pino": "^9.9.5",
     "pino-pretty": "^13.1.1"
   },
   "peerDependencies": {

@@ -7,7 +7,9 @@ import { v1Routes } from './routers/v1';
 import { v2Routes } from './routers/v2';
 import { LogPluginTest } from './plugins/log';
 
-const core = Axon();
+const core = Axon({
+  DEBUG: true
+});
 
 interface Params {
   id?: string;

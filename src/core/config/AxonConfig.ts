@@ -37,24 +37,29 @@ async function loadTSConfig(filePath: string) {
   return module.exports;
 }
 
-export async function resolveConfig(log: boolean = true): Promise<AxonConfig> {
-  const explorer = lilconfig('axon', {
-    searchPlaces: ['axon.config.ts', 'axon.config.js', 'axon.config.cjs', 'axon.config.mjs'],
-    loaders: {
-      '.ts': filePath => loadTSConfig(filePath),
-      '.mjs': filePath => loadJSConfig(filePath),
-      '.js': filePath => require(filePath),
-      '.cjs': filePath => require(filePath),
-    },
-  });
+export async function resolveConfig(log: boolean = true, hardcoded_config?: AxonConfig): Promise<AxonConfig> {
+  let config: AxonConfig = {};
+  if (!hardcoded_config) {
+    const explorer = lilconfig('axon', {
+      searchPlaces: ['axon.config.ts', 'axon.config.js', 'axon.config.cjs', 'axon.config.mjs'],
+      loaders: {
+        '.ts': filePath => loadTSConfig(filePath),
+        '.mjs': filePath => loadJSConfig(filePath),
+        '.js': filePath => require(filePath),
+        '.cjs': filePath => require(filePath),
+      },
+    });
 
-  const result = await explorer.search(process.cwd());
+    const result = await explorer.search(process.cwd());
 
-  if (!result?.config) return defaultConfig;
+    if (!result?.config) return defaultConfig;
 
-  if (Object.keys(result.config).includes('default')) result.config = result.config?.default;
+    if (Object.keys(result.config).includes('default')) result.config = result.config?.default;
 
-  const config = { ...defaultConfig, ...result.config };
+    config = { ...defaultConfig, ...result.config };
+  } else {
+    config = { ...defaultConfig, ...hardcoded_config };
+  }
 
   if (config.DEBUG) {
     logger.level = 'debug';
@@ -64,7 +69,7 @@ export async function resolveConfig(log: boolean = true): Promise<AxonConfig> {
     logger.level = 'silent';
   }
 
-  if (log) logger.debug(config, 'Config loaded');
+  if (log) logger.debug('Config loaded\n' + JSON.stringify(config));
 
   return config;
 }
