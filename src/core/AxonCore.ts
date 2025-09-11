@@ -30,6 +30,7 @@ import { PluginLoader } from './plugin';
 import { resolveConfig } from './config/AxonConfig';
 import { unloadRouteService, unloadRoutesService } from './services/unloadRoutes.service';
 import { AxonDependencyHandler, NeuronContainer } from '../modules/DI';
+import { getVersion } from './utils/updateChecker';
 
 // Default values
 const defaultResponses = {
@@ -150,9 +151,7 @@ export default class AxonCore {
   private async loadConfig() {
     const startTime = performance.now();
 
-    if (!this.config) {
-      this.config = await resolveConfig();
-    }
+    this.config = await resolveConfig(true, this.config);
 
     this.configsLoaded = true;
 
